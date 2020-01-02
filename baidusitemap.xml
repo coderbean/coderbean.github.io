@@ -14,6 +14,28 @@
     
     
   <url>
+    <loc>https://jacobchang.cn/record-of-deadlock-analytics.html</loc>
+    <lastmod>2020-01-02T09:28:21.961Z</lastmod>
+    <data>
+        <display>
+        <title>线上死锁分析解决纪实</title>
+        <pubTime>2019-05-17T08:30:53.000Z</pubTime>
+        
+        <tag>tech</tag>
+         
+        <tag>MySQL</tag>
+         
+         
+           
+             
+              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>https://jacobchang.cn/ConcurrentModificationException.html</loc>
     <lastmod>2020-01-02T09:28:21.961Z</lastmod>
     <data>
@@ -21,9 +43,9 @@
         <title>聊聊 ConcurrentModificationException</title>
         <pubTime>2019-06-03T12:40:32.000Z</pubTime>
         
-        <tag>tech</tag>
-         
         <tag>Java</tag>
+         
+        <tag>tech</tag>
          
          
            
@@ -56,28 +78,26 @@
     </url>
 
     
+    
   <url>
-    <loc>https://jacobchang.cn/record-of-deadlock-analytics.html</loc>
-    <lastmod>2020-01-02T09:28:21.961Z</lastmod>
+    <loc>https://jacobchang.cn/idempotence-design.html</loc>
+    <lastmod>2020-01-02T09:28:21.960Z</lastmod>
     <data>
         <display>
-        <title>线上死锁分析解决纪实</title>
-        <pubTime>2019-05-17T08:30:53.000Z</pubTime>
+        <title>幂等设计</title>
+        <pubTime>2018-12-18T03:38:29.000Z</pubTime>
         
-        <tag>tech</tag>
-         
-        <tag>MySQL</tag>
+        <tag>Java</tag>
          
          
            
              
-              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
+              <breadCrumb title="设计" url="https://jacobchang.cn/categories/%E8%AE%BE%E8%AE%A1/"/>
           
         </display>
     </data>
     </url>
 
-    
     
   <url>
     <loc>https://jacobchang.cn/solve-dp-problems.html</loc>
@@ -120,26 +140,6 @@
 
     
   <url>
-    <loc>https://jacobchang.cn/idempotence-design.html</loc>
-    <lastmod>2020-01-02T09:28:21.960Z</lastmod>
-    <data>
-        <display>
-        <title>幂等设计</title>
-        <pubTime>2018-12-18T03:38:29.000Z</pubTime>
-        
-        <tag>Java</tag>
-         
-         
-           
-             
-              <breadCrumb title="设计" url="https://jacobchang.cn/categories/%E8%AE%BE%E8%AE%A1/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>https://jacobchang.cn/meaning-of-retained-size.html</loc>
     <lastmod>2020-01-02T09:28:21.960Z</lastmod>
     <data>
@@ -147,11 +147,55 @@
         <title>理解VisualVM中的保留大小(Retained Size)</title>
         <pubTime>2018-08-08T08:30:53.000Z</pubTime>
         
+        <tag>Java</tag>
+         
         <tag>JVM</tag>
          
         <tag>tech</tag>
          
+         
+           
+             
+              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://jacobchang.cn/how-to-use-java-se-create-simple-httpserver.html</loc>
+    <lastmod>2020-01-02T09:28:21.959Z</lastmod>
+    <data>
+        <display>
+        <title>利用 JavaSE 创建简单 HTTP Server</title>
+        <pubTime>2019-01-24T03:27:57.000Z</pubTime>
+        
         <tag>Java</tag>
+         
+        <tag>tech</tag>
+         
+         
+           
+             
+              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://jacobchang.cn/create-right-singleton.html</loc>
+    <lastmod>2020-01-02T09:28:21.959Z</lastmod>
+    <data>
+        <display>
+        <title>如何构建一个正确的单例</title>
+        <pubTime>2019-05-30T15:26:28.000Z</pubTime>
+        
+        <tag>Java</tag>
+         
+        <tag>tech</tag>
          
          
            
@@ -178,50 +222,6 @@
         <tag>CAP</tag>
          
         <tag>BASE</tag>
-         
-         
-           
-             
-              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://jacobchang.cn/how-to-use-java-se-create-simple-httpserver.html</loc>
-    <lastmod>2020-01-02T09:28:21.959Z</lastmod>
-    <data>
-        <display>
-        <title>利用 JavaSE 创建简单 HTTP Server</title>
-        <pubTime>2019-01-24T03:27:57.000Z</pubTime>
-        
-        <tag>tech</tag>
-         
-        <tag>Java</tag>
-         
-         
-           
-             
-              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://jacobchang.cn/create-right-singleton.html</loc>
-    <lastmod>2020-01-02T09:28:21.959Z</lastmod>
-    <data>
-        <display>
-        <title>如何构建一个正确的单例</title>
-        <pubTime>2019-05-30T15:26:28.000Z</pubTime>
-        
-        <tag>tech</tag>
-         
-        <tag>Java</tag>
          
          
            
@@ -283,9 +283,9 @@
         <title>Spring 中 Transactional 注解原理</title>
         <pubTime>2019-02-28T08:08:53.000Z</pubTime>
         
-        <tag>tech</tag>
-         
         <tag>Java</tag>
+         
+        <tag>tech</tag>
          
          
            
@@ -305,11 +305,11 @@
         <title>Java类加载器的准备和初始化</title>
         <pubTime>2019-03-25T11:42:05.000Z</pubTime>
         
+        <tag>Java</tag>
+         
         <tag>JVM</tag>
          
         <tag>tech</tag>
-         
-        <tag>Java</tag>
          
          
            
@@ -329,9 +329,9 @@
         <title>Java压缩流GZIPStream导致的内存泄露</title>
         <pubTime>2017-11-16T09:51:20.000Z</pubTime>
         
-        <tag>tech</tag>
-         
         <tag>Java</tag>
+         
+        <tag>tech</tag>
          
          
            
@@ -390,18 +390,18 @@
 
     
   <url>
-    <loc>https://jacobchang.cn/tools-of-jvm.html</loc>
+    <loc>https://jacobchang.cn/gc-algorithms-and-garbage-collector.html</loc>
     <lastmod>2020-01-02T09:28:21.954Z</lastmod>
     <data>
         <display>
-        <title>JVM-探究（四）：虚拟机监控和分析工具</title>
-        <pubTime>2018-01-30T13:15:58.000Z</pubTime>
+        <title>JVM 探究（三）：垃圾回收算法和垃圾回收器</title>
+        <pubTime>2018-01-03T12:36:53.000Z</pubTime>
         
+        <tag>Java</tag>
+         
         <tag>JVM</tag>
          
         <tag>tech</tag>
-         
-        <tag>Java</tag>
          
          
            
@@ -414,18 +414,18 @@
 
     
   <url>
-    <loc>https://jacobchang.cn/gc-algorithms-and-garbage-collector.html</loc>
+    <loc>https://jacobchang.cn/tools-of-jvm.html</loc>
     <lastmod>2020-01-02T09:28:21.954Z</lastmod>
     <data>
         <display>
-        <title>JVM 探究（三）：垃圾回收算法和垃圾回收器</title>
-        <pubTime>2018-01-03T12:36:53.000Z</pubTime>
+        <title>JVM-探究（四）：虚拟机监控和分析工具</title>
+        <pubTime>2018-01-30T13:15:58.000Z</pubTime>
         
+        <tag>Java</tag>
+         
         <tag>JVM</tag>
          
         <tag>tech</tag>
-         
-        <tag>Java</tag>
          
          
            
@@ -445,11 +445,35 @@
         <title>JVM 探究（一）：JVM内存模型概念模型</title>
         <pubTime>2017-11-12T13:08:53.000Z</pubTime>
         
+        <tag>Java</tag>
+         
         <tag>JVM</tag>
          
         <tag>tech</tag>
          
+         
+           
+             
+              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://jacobchang.cn/experiment-on-jvm.html</loc>
+    <lastmod>2020-01-02T09:28:21.952Z</lastmod>
+    <data>
+        <display>
+        <title>JVM-探究（二）：JVM实验和 GC 日志解读</title>
+        <pubTime>2017-11-30T12:42:05.000Z</pubTime>
+        
         <tag>Java</tag>
+         
+        <tag>JVM</tag>
+         
+        <tag>tech</tag>
          
          
            
@@ -475,30 +499,6 @@
            
              
               <breadCrumb title="工具" url="https://jacobchang.cn/categories/%E5%B7%A5%E5%85%B7/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://jacobchang.cn/experiment-on-jvm.html</loc>
-    <lastmod>2020-01-02T09:28:21.952Z</lastmod>
-    <data>
-        <display>
-        <title>JVM-探究（二）：JVM实验和 GC 日志解读</title>
-        <pubTime>2017-11-30T12:42:05.000Z</pubTime>
-        
-        <tag>JVM</tag>
-         
-        <tag>tech</tag>
-         
-        <tag>Java</tag>
-         
-         
-           
-             
-              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
           
         </display>
     </data>

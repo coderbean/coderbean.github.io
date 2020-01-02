@@ -44,14 +44,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/baidu_verify_ALK0STR65j.html</loc>
+    <loc>https://jacobchang.cn/alipay.html</loc>
     
     <lastmod>2020-01-02T09:28:21.962Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/alipay.html</loc>
+    <loc>https://jacobchang.cn/baidu_verify_ALK0STR65j.html</loc>
     
     <lastmod>2020-01-02T09:28:21.962Z</lastmod>
     
@@ -72,6 +72,13 @@
   </url>
   
   <url>
+    <loc>https://jacobchang.cn/record-of-deadlock-analytics.html</loc>
+    
+    <lastmod>2020-01-02T09:28:21.961Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://jacobchang.cn/ConcurrentModificationException.html</loc>
     
     <lastmod>2020-01-02T09:28:21.961Z</lastmod>
@@ -86,16 +93,16 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/record-of-deadlock-analytics.html</loc>
+    <loc>https://jacobchang.cn/about/index.html</loc>
     
     <lastmod>2020-01-02T09:28:21.961Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/about/index.html</loc>
+    <loc>https://jacobchang.cn/idempotence-design.html</loc>
     
-    <lastmod>2020-01-02T09:28:21.961Z</lastmod>
+    <lastmod>2020-01-02T09:28:21.960Z</lastmod>
     
   </url>
   
@@ -114,23 +121,9 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/idempotence-design.html</loc>
-    
-    <lastmod>2020-01-02T09:28:21.960Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://jacobchang.cn/meaning-of-retained-size.html</loc>
     
     <lastmod>2020-01-02T09:28:21.960Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://jacobchang.cn/2PC-and-3PC.html</loc>
-    
-    <lastmod>2020-01-02T09:28:21.959Z</lastmod>
     
   </url>
   
@@ -143,6 +136,13 @@
   
   <url>
     <loc>https://jacobchang.cn/create-right-singleton.html</loc>
+    
+    <lastmod>2020-01-02T09:28:21.959Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jacobchang.cn/2PC-and-3PC.html</loc>
     
     <lastmod>2020-01-02T09:28:21.959Z</lastmod>
     
@@ -198,14 +198,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/tools-of-jvm.html</loc>
+    <loc>https://jacobchang.cn/gc-algorithms-and-garbage-collector.html</loc>
     
     <lastmod>2020-01-02T09:28:21.954Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/gc-algorithms-and-garbage-collector.html</loc>
+    <loc>https://jacobchang.cn/tools-of-jvm.html</loc>
     
     <lastmod>2020-01-02T09:28:21.954Z</lastmod>
     
@@ -219,14 +219,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/theme-and-plugin-of-atom.html</loc>
+    <loc>https://jacobchang.cn/experiment-on-jvm.html</loc>
     
     <lastmod>2020-01-02T09:28:21.952Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/experiment-on-jvm.html</loc>
+    <loc>https://jacobchang.cn/theme-and-plugin-of-atom.html</loc>
     
     <lastmod>2020-01-02T09:28:21.952Z</lastmod>
     
