@@ -72,14 +72,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/record-of-deadlock-analytics.html</loc>
+    <loc>https://jacobchang.cn/ConcurrentModificationException.html</loc>
     
     <lastmod>2020-01-02T09:28:21.961Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/ConcurrentModificationException.html</loc>
+    <loc>https://jacobchang.cn/record-of-deadlock-analytics.html</loc>
     
     <lastmod>2020-01-02T09:28:21.961Z</lastmod>
     
@@ -100,14 +100,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/solve-dp-problems.html</loc>
+    <loc>https://jacobchang.cn/idempotence-design.html</loc>
     
     <lastmod>2020-01-02T09:28:21.960Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/idempotence-design.html</loc>
+    <loc>https://jacobchang.cn/solve-dp-problems.html</loc>
     
     <lastmod>2020-01-02T09:28:21.960Z</lastmod>
     
@@ -163,13 +163,6 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/transactional-of-spring.html</loc>
-    
-    <lastmod>2020-01-02T09:28:21.957Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://jacobchang.cn/preparation-and-init-of-classloader.html</loc>
     
     <lastmod>2020-01-02T09:28:21.957Z</lastmod>
@@ -177,14 +170,21 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/things-about-java-gzipstream.html</loc>
+    <loc>https://jacobchang.cn/transactional-of-spring.html</loc>
+    
+    <lastmod>2020-01-02T09:28:21.957Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jacobchang.cn/lock-of-mysql.html</loc>
     
     <lastmod>2020-01-02T09:28:21.956Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/lock-of-mysql.html</loc>
+    <loc>https://jacobchang.cn/things-about-java-gzipstream.html</loc>
     
     <lastmod>2020-01-02T09:28:21.956Z</lastmod>
     
