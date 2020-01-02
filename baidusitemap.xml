@@ -164,32 +164,6 @@
 
     
   <url>
-    <loc>https://jacobchang.cn/2PC-and-3PC.html</loc>
-    <lastmod>2020-01-02T09:28:21.959Z</lastmod>
-    <data>
-        <display>
-        <title>分布式一致性协议学习笔记：2PC 和 3PC</title>
-        <pubTime>2019-07-12T15:24:17.000Z</pubTime>
-        
-        <tag>分布式</tag>
-         
-        <tag>一致性协议</tag>
-         
-        <tag>CAP</tag>
-         
-        <tag>BASE</tag>
-         
-         
-           
-             
-              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>https://jacobchang.cn/how-to-use-java-se-create-simple-httpserver.html</loc>
     <lastmod>2020-01-02T09:28:21.959Z</lastmod>
     <data>
@@ -234,6 +208,54 @@
 
     
   <url>
+    <loc>https://jacobchang.cn/2PC-and-3PC.html</loc>
+    <lastmod>2020-01-02T09:28:21.959Z</lastmod>
+    <data>
+        <display>
+        <title>分布式一致性协议学习笔记：2PC 和 3PC</title>
+        <pubTime>2019-07-12T15:24:17.000Z</pubTime>
+        
+        <tag>分布式</tag>
+         
+        <tag>一致性协议</tag>
+         
+        <tag>CAP</tag>
+         
+        <tag>BASE</tag>
+         
+         
+           
+             
+              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://jacobchang.cn/Monty-Hall-problem.html</loc>
+    <lastmod>2020-01-02T09:28:21.958Z</lastmod>
+    <data>
+        <display>
+        <title>三门问题</title>
+        <pubTime>2019-06-19T05:13:46.000Z</pubTime>
+        
+        <tag>算法</tag>
+         
+        <tag>概率论</tag>
+         
+         
+           
+             
+              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>https://jacobchang.cn/curses-programming-with-python.html</loc>
     <lastmod>2020-01-02T09:28:21.958Z</lastmod>
     <data>
@@ -254,16 +276,16 @@
 
     
   <url>
-    <loc>https://jacobchang.cn/Monty-Hall-problem.html</loc>
-    <lastmod>2020-01-02T09:28:21.958Z</lastmod>
+    <loc>https://jacobchang.cn/transactional-of-spring.html</loc>
+    <lastmod>2020-01-02T09:28:21.957Z</lastmod>
     <data>
         <display>
-        <title>三门问题</title>
-        <pubTime>2019-06-19T05:13:46.000Z</pubTime>
+        <title>Spring 中 Transactional 注解原理</title>
+        <pubTime>2019-02-28T08:08:53.000Z</pubTime>
         
-        <tag>算法</tag>
+        <tag>Java</tag>
          
-        <tag>概率论</tag>
+        <tag>tech</tag>
          
          
            
@@ -300,12 +322,12 @@
 
     
   <url>
-    <loc>https://jacobchang.cn/transactional-of-spring.html</loc>
-    <lastmod>2020-01-02T09:28:21.957Z</lastmod>
+    <loc>https://jacobchang.cn/things-about-java-gzipstream.html</loc>
+    <lastmod>2020-01-02T09:28:21.956Z</lastmod>
     <data>
         <display>
-        <title>Spring 中 Transactional 注解原理</title>
-        <pubTime>2019-02-28T08:08:53.000Z</pubTime>
+        <title>Java压缩流GZIPStream导致的内存泄露</title>
+        <pubTime>2017-11-16T09:51:20.000Z</pubTime>
         
         <tag>Java</tag>
          
@@ -332,28 +354,6 @@
         <tag>tech</tag>
          
         <tag>SQL</tag>
-         
-         
-           
-             
-              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://jacobchang.cn/things-about-java-gzipstream.html</loc>
-    <lastmod>2020-01-02T09:28:21.956Z</lastmod>
-    <data>
-        <display>
-        <title>Java压缩流GZIPStream导致的内存泄露</title>
-        <pubTime>2017-11-16T09:51:20.000Z</pubTime>
-        
-        <tag>Java</tag>
-         
-        <tag>tech</tag>
          
          
            
