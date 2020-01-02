@@ -1,0 +1,534 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hans">
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
+  <link rel="icon" sizes="any" mask href="/images/favicon.ico" /> 
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+  
+
+  <!-- viewjs support -->
+  
+    <!-- for theme: default is false -->
+    <!-- for page: default is true -->
+    <link  href="css/viewer.min.css" rel="stylesheet" >
+    <script src="js/viewer.min.js" type="text/javascript" charset="utf-8"></script>
+  
+  
+  
+    <meta name="keywords" content="translate," />
+  
+
+  
+    <meta name="description" content="分享 Java 技术，做有趣的程序员" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.png">
+  <title>【译】Python Curses 编程 [ 黄小豆的博客 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+</head>
+
+
+<body>
+  <div class="nav-container">
+    <nav id="menu" class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="/images/logo.png">
+    <span class="title">黄小豆的博客</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives/" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags/" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/about/" class="pure-menu-link">关于</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/atom.xml" class="pure-menu-link">订阅</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        【译】Python Curses 编程
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2018-04-18T23:58:58.000Z">
+        2018-04-19
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/translate/">translate</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </header>
+
+    <div class="post-content">
+      <p>本文介绍如何使用 <a href="https://docs.python.org/3.6/library/curses.html#module-curses" target="_blank" rel="noopener">curses</a> 扩展去控制命令行模式的显示。</p>
+<blockquote>
+<p>原文链接：<a href="https://docs.python.org/3.6/howto/curses.html" target="_blank" rel="noopener">https://docs.python.org/3.6/howto/curses.html</a><br>原文作者: A.M. Kuchling, Eric S. Raymond<br>版本：Release-2.04</p>
+</blockquote>
+<a id="more"></a>
+<h2 id="什么是-curses"><a href="#什么是-curses" class="headerlink" title="什么是 curses?"></a>什么是 curses?</h2><p>curses 是为文本终端提供一个界面绘图和键盘输入响应的库。这些终端包括 VT100s、Linux终端，和不同程序提供的模拟终端。终端支持使用不同的控制代码来实现相同的操作，类似移动光标、滚动屏幕、擦除屏幕区域等。不同的终端的控制代码大部分都不相同，并且有着自己的特殊操作习惯和技巧。</p>
+<p>也许有人会问，在这个图形化显示的时代，为什么还需要这种终端操作库，基于字符的终端显示确实是一个过时的技术，但是在很多有价值的场景下还是能够使用终端显示做出一些十分迷人的产物。其中一个场景就是在并不具备图形显示的便携式和嵌入式 Linux 中，另外还有就是在安装系统或者配置内核的时候，这些操作都不得不在图像界面启动之前操作。</p>
+<p>Curses 提供的基本功能，是为程序员提供一个不重复的文本窗口。窗口的内容可以通过不同的方式改变：添加文本、删除文本、修改外观等等。curses 会屏蔽掉底层终端命令的差异性，计算出你需要执行的命令。curses 并不提供类似按钮、复选框，或者对话这种用户界面。如果你需要这些元素可以使用一些类似 <a href="https://pypi.python.org/pypi/urwid/" target="_blank" rel="noopener">Urwid</a> 的用户界面库。</p>
+<p>Curses 一开始是为了 BSD Unix写的；后来的 AT&amp;T 的 System V 版本对原有功能做了增强，同时添加了许多新的功能。 BSD curses 就不再维护了，而是被 ncurses 替代了。ncurses 是一个 AT&amp;T 接口的一个开源实现。如果你正在使用一个开源的 Unix，类似Linux或者FreeBSD，你的系统应该已经包含了ncurses。因为现在大多数的商业 Unix 版本都是基于 System V 的代码开发的，这里描述的功能理论上也会存在于上述 Unix 版本中。尽管如此，一些老版本 unix 对 curses 可能并不会有很好的支持。</p>
+<p>Windows 版本的 Python 并不包含 curses 模块。而是有一个类似的替代版本 <a href="https://pypi.python.org/pypi/UniCurses" target="_blank" rel="noopener">UniCurses</a>。你也可以尝试使用 Fredrik Lundh 写的<a href="http://effbot.org/zone/console-index.htm" target="_blank" rel="noopener">the Console module</a>，虽然和 curses 的 API 不一样，但是也可以提供基于光标的输出，并且为鼠标和键盘提供全方位支持。</p>
+<h2 id="Python-curses-模块"><a href="#Python-curses-模块" class="headerlink" title="Python curses 模块"></a>Python curses 模块</h2><p>这个 python 模块是针对 C 语言版本 curses 的简单封装，如果你已经熟悉了 C 语言的 curses 编程，在 Python 中应用这些知识也会变得非常简单。最大的不同就是，由于合并了一些C语言中的不同函数 Python 接口会比 C 语言函数更加简单。比如 <code>addstr()</code>,<code>mvaddstr()</code>, 和<code>mvwaddstr()</code>被合并成了一个函数<a href="https://docs.python.org/3.6/library/curses.html#curses.window.addstr" target="_blank" rel="noopener"><code>addstr()</code></a>。后面你会看到更多这样的例子。</p>
+<p>这篇教程是使用 curses 和 Python 编写终端文本程序的介绍，并不尝试成为一个 curses API 的复杂手册。查看 Python curses 手册和 C 语言的 ncurses 手册可以得到更详细的 API 介绍。</p>
+<h2 id="一个-curses-程序的开始和结束"><a href="#一个-curses-程序的开始和结束" class="headerlink" title="一个 curses 程序的开始和结束"></a>一个 curses 程序的开始和结束</h2><p>在开始之前，Curses 必须先经过初始化。通过调用<a href="https://docs.python.org/3.6/library/curses.html#curses.initscr" target="_blank" rel="noopener"><code>initscr()</code></a>来实现。这个函数会判断终端类型，并发送一些启动需要的指令给终端、创建内部的数据结构。如果执行成功，<code>initscr()</code> 返回一个代表整个屏幕的窗口类；这沿袭 C 语言中的变量名<code>stdscr</code>.</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> Curses</span><br><span class="line">stdscr = curses.initscr()</span><br></pre></td></tr></table></figure>
+<p>通常 curses 会关闭屏幕回显，保证只在特定条件下才会读取键盘输入并显示。这需要调用 <a href="https://docs.python.org/3.6/library/curses.html#curses.noecho" target="_blank" rel="noopener"><code>noecho()</code></a>方法。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">curses.noecho()</span><br></pre></td></tr></table></figure>
+<p>应用程序通常需要对键盘输入立即做出响应，而不需要特意的按下回车键；这叫做 cbreak 模式，与之对应的是常用的缓冲输入模式。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">curses.cbreak()</span><br></pre></td></tr></table></figure>
+<p>终端通常返回特殊键作为多字节转义序列，比如光标键、Home键、Page Up等， curses 可以让你的程序根据转义序列执行相应的代码。让 curses  可以响应这些特殊值，需要开启 keypad 模式。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">stdscr.keypad(<span class="keyword">True</span>)</span><br></pre></td></tr></table></figure>
+<p>结束一个 curses 应用比启动简单多了。只需要执行下面的方法：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">curses.nocbreak()</span><br><span class="line">stdscr.keypad(<span class="keyword">False</span>)</span><br><span class="line">curses.echo()</span><br></pre></td></tr></table></figure>
+<p>为了恢复 curses 的终端设置。调用 endwin() 方法重置为原来的操作模式</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">curses.endwin()</span><br></pre></td></tr></table></figure>
+<p>在你调试你的程序的时候，一个经常出现的问题就是你会把终端搞得一团糟，通常是因为你的代码产生了 bug 并且引发了一个没有捕获的异常。例如：键盘输入不会在回显在屏幕上，这回让终端使用起来很困难。</p>
+<p>在 Python 中你可以使用 <a href="https://docs.python.org/3.6/library/curses.html#curses.wrapper" target="_blank" rel="noopener"><code>curses.wrapper()</code></a>来避免这种问题，让调试变得简单。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> curses <span class="keyword">import</span> wrapper</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">(stdscr)</span>:</span></span><br><span class="line">  <span class="comment"># Clear screen</span></span><br><span class="line">  stdscr.clear()</span><br><span class="line">  <span class="comment"># This raises ZeroDivisionError when i == 10.</span></span><br><span class="line">  <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>, <span class="number">11</span>):</span><br><span class="line">      v = i<span class="number">-10</span></span><br><span class="line">      stdscr.addstr(i, <span class="number">0</span>, <span class="string">'10 divided by &#123;&#125; is &#123;&#125;'</span>.format(v, <span class="number">10</span>/v))</span><br><span class="line"></span><br><span class="line">  stdscr.refresh()</span><br><span class="line">  stdscr.getkey()</span><br><span class="line"></span><br><span class="line">wrapper(main)</span><br></pre></td></tr></table></figure>
+<p><a href="https://docs.python.org/3.6/library/curses.html#curses.wrapper" target="_blank" rel="noopener"><code>wrapper()</code></a>函数接收一个可调用对象并且执行上文描述的初始化过程。如果支持颜色配置，同时会初始化颜色配置。然后会运行你的代码。一旦代码 return，<code>wrapper()</code> 会重置终端一开始的状态，并且代码会放在<code>try</code><br>…<code>except</code>中执行，如果异常抛出会将终端重置为原始状态然后将异常抛出。因此，在有异常抛出的时候，你的终端不会处在一个可笑的状态，并且能够根据异常信息定位问题。</p>
+<h2 id="窗口和-Pad"><a href="#窗口和-Pad" class="headerlink" title="窗口和 Pad"></a>窗口和 Pad</h2><p>窗口是 curses 中最基本的元素。一个窗口代表着屏幕中的一块矩形区域，支持展示文本，删除文本，用户输入等等。</p>
+<p><code>initscr()</code>函数返回的<code>stdscr</code>对象就是一个覆盖了整个屏幕的窗口对象。对于许多程序来说一个窗口就足够了，但是有时候也需要将屏幕分割为不同的窗口，以便于分别重绘和清除这些窗口。<code>newwin()</code>函数创建一个给定大小的新窗口，并返回这个窗口类。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">begin_x = <span class="number">20</span>; begin_y = <span class="number">7</span></span><br><span class="line">height = <span class="number">5</span>; width = <span class="number">40</span></span><br><span class="line">win = curses.newwin(height, width, begin_y, begin_x)</span><br></pre></td></tr></table></figure>
+<p>注意到 curses 的坐标系统是不同寻常的。坐标通常是以 y，x 的格式，坐标的原点在窗口的左上角。这和通常程序中处理坐标时以 x 开头的方式是不同的。虽然这样令人有些不舒服，但是这是 curses 诞生的时候的设置，现在修改为时已晚。</p>
+<p>你可以通过<code>curses.LINES</code>和<code>curses.COLS</code>来获取屏幕的大小。从<code>(0,0)</code>到<code>(curses.LINES - 1, curses.COLS - 1)</code>就是都是可以使用的坐标。</p>
+<p>当你调用函数去展示或者擦除文本，效果并不会立即展现在屏幕上。你必须调用窗口实例的<code>refresh()</code>方法才能更新屏幕显示。</p>
+<p>这是因为 curses 终端连接的带宽比较小，减少屏幕重绘时间变得十分有必要。因此，Curses 会积累修改，当你调用<code>refresh()</code>方法的时候，以最有效率的方式来重绘窗口。举例说明：如果你在一个窗口添加了一些文本，然后又清除了这个窗口的内容，这样添加文本的操作就变得没有必要了，因为你不会看到被添加的文本。</p>
+<p>实际上，显式的通知 curses 来刷新窗口并不会对编程增加很多的复杂性。大部分程序都是在经历一系列的活动之后等待用户的操作，只需要在等待用户输入之前调用<code>stdscr.refresh()</code>或者<code>refresh()</code>方法。</p>
+<p>Pad 是窗口的特殊形式，它可以比屏幕面积更大，并且可以每次只展示 pad 的一部分。创建 pad 需要制定 pad 的高和宽，刷新需要给定pad的在屏幕上显示部分的坐标。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">pad = curses.newpad(<span class="number">100</span>, <span class="number">100</span>)</span><br><span class="line"><span class="comment"># These loops fill the pad with letters; addch() is</span></span><br><span class="line"><span class="comment"># explained in the next section</span></span><br><span class="line"><span class="keyword">for</span> y <span class="keyword">in</span> range(<span class="number">0</span>, <span class="number">99</span>):</span><br><span class="line">    <span class="keyword">for</span> x <span class="keyword">in</span> range(<span class="number">0</span>, <span class="number">99</span>):</span><br><span class="line">        pad.addch(y,x, ord(<span class="string">'a'</span>) + (x*x+y*y) % <span class="number">26</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Displays a section of the pad in the middle of the screen.</span></span><br><span class="line"><span class="comment"># (0,0) : coordinate of upper-left corner of pad area to display.</span></span><br><span class="line"><span class="comment"># (5,5) : coordinate of upper-left corner of window area to be filled</span></span><br><span class="line"><span class="comment">#         with pad content.</span></span><br><span class="line"><span class="comment"># (20, 75) : coordinate of lower-right corner of window area to be</span></span><br><span class="line"><span class="comment">#          : filled with pad content.</span></span><br><span class="line">pad.refresh( <span class="number">0</span>,<span class="number">0</span>, <span class="number">5</span>,<span class="number">5</span>, <span class="number">20</span>,<span class="number">75</span>)</span><br></pre></td></tr></table></figure>
+<p>这个<code>refresh()</code>方法会在屏幕的<code>(5,5)</code>到<code>(10,75)</code>的部分显示pad的一部分；显示部分左上角的pad坐标是<code>(0,0)</code>。除此之外，pad和窗口的使用都是相同的，并且有相同的方法。</p>
+<p>如果你需要多个窗口和pad协作的话，有一个更加高效的方式来刷新屏幕并避免每个部分更新时候烦人的闪烁。<code>refresh()</code>实际上做了两件事：</p>
+<ul>
+<li>调用每个窗口的<code>noutrefresh()</code>方法更新屏幕显示的底层数据结构，并不会刷新屏幕。</li>
+<li>调用 <code>doupdate()</code>方法来将上面的数据结构物理的刷新到屏幕上。</li>
+</ul>
+<p>所以，你可以在一些窗口调用<code>noutrefresh()</code>方法更新数据结构，然后调用<code>doupdate()</code>方法来刷新屏幕。</p>
+<h2 id="展示文本"><a href="#展示文本" class="headerlink" title="展示文本"></a>展示文本</h2><p>C 语言程序员也许会觉得 cursers 的方法像迷宫一样错综复杂，方法之间只有着很细微的区别。例如：<code>addstr()</code> 会在当前 <code>stdscr</code> 窗口的光标处展示文字，而<code>mvaddstr()</code>则是在指定的坐标展示文字。<code>waddstr()</code>功能和<code>addstr()</code>类似，但是允许指定窗口而不是默认的<code>stdscr</code>，<code>mvwaddstr</code>允许同时指定窗口和坐标。</p>
+<p>幸运的是，Python 的接口隐藏了这些细节。<code>stdscr</code>是一个和其他相同的窗口类，类似<code>addstr()</code>的方法可以接收不同的参数类型。<br>通常包含以下四种参数类型。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>参数类型</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>str 或者 ch</td>
+<td>在当前位置展示 str 或者 ch</td>
+</tr>
+<tr>
+<td>str 或者 ch，attr</td>
+<td>在当前位置使用属性 attr 展示str或者ch</td>
+</tr>
+<tr>
+<td>y,x str 或者 ch</td>
+<td>在坐标 y,x 展示 str 或者 ch</td>
+</tr>
+<tr>
+<td>y,x str 或者 ch, attr</td>
+<td>在坐标 y,x 使用attr 属性显示 str 或者 ch</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>属性(attributes) 可以突出显示文本，类似粗体、下划线、负片显示，或者为文本着色。这会在下面的部分详细解释。</p>
+<p><code>addstr()</code>函数在终端显示一个字符串或者字节串。字节串直接发送给终端，字符串通过窗口属性编码为字节发送给终端，默认的系统编码可以通过<code>locale.getpreferredcoding()</code>获得。</p>
+<p><code>addch()</code>函数可以接收一个字符，可以是一个长度为1的字符串，或者长度为1的字节串，或者一个整型数。</p>
+<p>针对扩展的字符提供了一些常量，这些常量都大于255。例如：<code>ACS_PLMINUS</code> 代表 <code>+/-</code> 符号，<code>ACS_ULCORNER</code> 代表一个 box（处理绘制边框） 的左上角。你还可以使用其他合适 Unicode 字符。</p>
+<p>窗口会自动记住上次操作之后光标的位置，如果你不使用坐标，所有的的操作都会开始于上次结束的地方。你也可以通过 <code>move(y,x)</code> 移动光标。因为有些终端光标是默认闪烁的，将光标移动到一些不是那么烦人的位置是很有必要的。</p>
+<p>如果你的应用不需要闪烁的光标，你可以调用<code>curs_set(False)</code>将光标设置为不可见。为了和旧版本的 curses 版本兼容，<code>leaveok(bool)</code>和<code>curs_set</code>有着相同的功能。当 bool 是 true 的时候，光标就会变得不可见，你也不必担心光标会在一些奇怪的地方闪烁。</p>
+<h2 id="属性和颜色"><a href="#属性和颜色" class="headerlink" title="属性和颜色"></a>属性和颜色</h2><p>字符可以用不同的方式展示。基于文本的应用程序通常使用负片显示状态。文本编辑器往往需要高亮一些特定的单词。 curses 支持通过属性来为每个字符进行配置以支持上面的描述。</p>
+<p>一个属性是一个整数，每一个 bit 都代表着不同的属性。你可以尝试设置不同的bit位来达到不同的效果，不过 curses 不保证所有的组合都是可用的，也不保证不同的组合就一定是不同的显示。这取决于被使用的终端，所以使用大部分终端都会支持的属性是最明智的。列表如下</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A_BLINK</td>
+<td>字符闪烁</td>
+</tr>
+<tr>
+<td>A_BOLD</td>
+<td>高亮或者加粗字符</td>
+</tr>
+<tr>
+<td>A_DIM</td>
+<td>半高亮字符</td>
+</tr>
+<tr>
+<td>A_REVERSE</td>
+<td>负片显示字符</td>
+</tr>
+<tr>
+<td>A_UNDERLINE</td>
+<td>为字符添加下划线</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>所以，想要在屏幕顶端显示负片字符状态，可以使用下面的代码：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">stdscr.addstr(<span class="number">0</span>, <span class="number">0</span>, <span class="string">"Current mode: Typing mode"</span>, curses.A_REVERSE)</span><br><span class="line">stdscr.refresh()</span><br></pre></td></tr></table></figure>
+<p>curses 同样支持为支持颜色显示的终端文字添加颜色。</p>
+<p>如果想使用颜色功能，必须要在执行玩<code>initscr()</code>之后执行<code>start_color()</code>函数（<code>curses.wrapper()</code>会自动执行）来初始化颜色管理，如果终端支持颜色显示，那么调用 <code>has_colors()</code>函数会返回 TRUE。</p>
+<p>curses 维护了有限的颜色搭配，包括前景色（文字颜色）和背景色，可以通过使用<code>color_pair()</code>函数来设置字体颜色，类似 A_REVERSE， 也是按照bit位的属性设置的，同样的，不保证所有的组合都能够在所有的终端上正确显示。</p>
+<p>使用颜色组合1来显示文字的例子：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">stdscr.addstr(<span class="string">"Pretty text"</span>, curses.color_pair(<span class="number">1</span>))</span><br><span class="line">stdscr.refresh()</span><br></pre></td></tr></table></figure>
+<p>像上文说的那样，每个颜色模式分为前景色和背景色。<code>init_pair(n, f, b)</code> 方法会修改颜色模式n的前景色为f，背景色为b。颜色模式0表示黑底白字，不可以修改。</p>
+<p>颜色是被编号的，<code>start_color()</code>方法会初始化八种基本颜色，分别是：0:黑色，1:红色，2:绿色，3:黄色，4:蓝色，5:洋红色，6:青色，7:白色。curses 同样也为这些颜色设置了常量值，curses.COLOR_BLACK, curses.COLOR_RED, curses.COLOR_GREEN, 等等。</p>
+<p>来实际应用一下，将1号颜色模式修改为白底红字：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">curses.init_pair(<span class="number">1</span>, curses.COLOR_RED, curses.COLOR_WHITE)</span><br></pre></td></tr></table></figure>
+<p>当你修改一个颜色模式的时候，所有使用了这个颜色模式的文字都会刷新为新的颜色。<br>你也可以通过下面的方式来添加文字</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">stdscr.addstr(<span class="number">0</span>, <span class="number">0</span>, <span class="string">"RED ALERT!"</span>, curs_set.color_pair(<span class="number">1</span>))</span><br></pre></td></tr></table></figure>
+<p>很多终端支持通过给定的 RGB 值来修改颜色。这可以将颜色模式修改为任何你想要的颜色。不幸的是，Linux 标准终端并不支持，所以我无法演示，或给出例子。你可以通过调用<code>can_change_color()</code>函数来确定你的终端是否支持这个功能。如果你的终端恰好返回的是 True，表示支持，可以查阅 man 手册来获取更多的信息。</p>
+<h2 id="用户输入"><a href="#用户输入" class="headerlink" title="用户输入"></a>用户输入</h2><p>C 语言的 curses 提供一个很简单的输入方式。python 的 curses 增加了一些基本的输入技巧（其他类似 Urwid 的库提供了更多种类的输入技巧）。</p>
+<p>在一个窗口上获取输入有两种方式：</p>
+<ul>
+<li><code>getch()</code>刷新屏幕并等待用户输入一个按键，如果<code>echo()</code>在这之前被调用，输入的按键会同步显示在屏幕上。你可以指定坐标控制显示的位置。</li>
+<li><code>getkey()</code>和上面的函数做了同样的事情，不同的是将整数转换成了字符串。单字符返回一个单字符串，特殊按键会返回一个长串，类似<code>KEY_UP</code>或者<code>^G</code></li>
+</ul>
+<p>通过调用<code>nodelay()</code>函数可以实现不等待用户的输入，如果设置<code>nodelay(True)</code>，<code>getch()</code>和 <code>getkey()</code>函数不会再等待输入。如果没有输入，<code>getch()</code>会返回 <code>curses.ERR</code>(值为-1),<code>getkey()</code>函数则是会抛出一个异常。<code>getch()</code>还有一个<code>halfdelay()</code>函数可以设定在指定的时间（单位为十分之一秒）内如果没有得到用户输入才会抛出异常。</p>
+<p><code>getch()</code>函数返回一个整数。如果在0～255范围内代表的是 ASCII 码，如果大于255，则可能是一些特殊按键类似： Page Up，Home，或者光标按键。你可以通过输入值和一些常量的比较确定输入。常量类似：curses.KEY_PPAGE, curses.KEY_HOME, curses.KEY_LEFT。所以你的代码主循环有可能是这样的：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">while</span> <span class="keyword">True</span>:</span><br><span class="line">  c = stdscr.getch()</span><br><span class="line">  <span class="keyword">if</span> c == ord(<span class="string">'p'</span>):</span><br><span class="line">    PrintDocunment()</span><br><span class="line">  <span class="keyword">elif</span> c == ord(<span class="string">'q'</span>):</span><br><span class="line">    <span class="keyword">break</span></span><br><span class="line">  <span class="keyword">elif</span> c == curses.KEY_HOME:</span><br><span class="line">    x = y = <span class="number">0</span></span><br></pre></td></tr></table></figure>
+<p><code>curses.ascii</code>模块提供了 ASCII 处理函数，参数为一个整数或者单字符。对于书写更加可读的代码很有用。同样提供接收一个整数或者字符的对话函数。例如：<code>curses.ascii.ctrl()</code>根据参数返回控制字符。</p>
+<p>还有一个可以获得整个字符串的函数，就是<code>getstr()</code>,由于功能限制很少使用。仅有的编辑按键就是 backspace 和 Enter 按键。 <code>getstr()</code>可以用于获取指定长度的字符串。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">curses.echo()            <span class="comment"># Enable echoing of characters</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Get a 15-character string, with the cursor on the top line</span></span><br><span class="line">s = stdscr.getstr(<span class="number">0</span>,<span class="number">0</span>, <span class="number">15</span>)</span><br></pre></td></tr></table></figure>
+<p><code>curses.textpad</code>模块提供一个支持类似 Emacs 键盘快捷键的文本框。<code>Textbox</code>的不同方法支持输入编辑和聚合编辑结果，无论是不是有多余的空格。<br>下面是例子</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> curses</span><br><span class="line"><span class="keyword">from</span> curses.textpad <span class="keyword">import</span> Textbox, rectangle</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">(stdscr)</span>:</span></span><br><span class="line">    stdscr.addstr(<span class="number">0</span>, <span class="number">0</span>, <span class="string">"Enter IM message: (hit Ctrl-G to send)"</span>)</span><br><span class="line"></span><br><span class="line">    editwin = curses.newwin(<span class="number">5</span>,<span class="number">30</span>, <span class="number">2</span>,<span class="number">1</span>)</span><br><span class="line">    rectangle(stdscr, <span class="number">1</span>,<span class="number">0</span>, <span class="number">1</span>+<span class="number">5</span>+<span class="number">1</span>, <span class="number">1</span>+<span class="number">30</span>+<span class="number">1</span>)</span><br><span class="line">    stdscr.refresh()</span><br><span class="line"></span><br><span class="line">    box = Textbox(editwin)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Let the user edit until Ctrl-G is struck.</span></span><br><span class="line">    box.edit()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Get resulting contents</span></span><br><span class="line">    message = box.gather()</span><br></pre></td></tr></table></figure>
+<p>更多内容参考<a href="https://docs.python.org/3.6/library/curses.html#module-curses.textpad" target="_blank" rel="noopener"><code>curses.textpad</code></a>的文档。</p>
+<h2 id="更多信息"><a href="#更多信息" class="headerlink" title="更多信息"></a>更多信息</h2><p>这篇教程并没有包含一些高级主题，例如读取屏幕的信息，捕获鼠标的动作。但是 Python 的 <a href="https://docs.python.org/3.6/library/curses.html#module-curses" target="_blank" rel="noopener">curses</a> 模块的文档现在已经完成了，下一步你应该阅读他们。</p>
+<p>如果你还对 curses 函数的一些行为细节只有怀疑，查询你的 curses 实现的文档吧，无论是 ncurses 或者其他 Unix 实现。手册中会记录各种小技巧，并提供完整的函数列表、属性，还有那些 ACS_* 字符可用。</p>
+<p>因为 curses 的 API 非常繁杂，因此有一些函数并没有得到 Python 的支持。这通常不是因为这些函数很难实现，而是因为这些函数已经没人需要了。同样，Python 也不支持 ncurses 的菜单库。欢迎大家是实现这些没有实现的功能，阅读<a href="https://devguide.python.org/" target="_blank" rel="noopener">Python Developer’s Guide</a>学习如何为 Python 提交代码。</p>
+<ul>
+<li><a href="http://invisible-island.net/ncurses/ncurses-intro.html" target="_blank" rel="noopener">Writing Programs with NCURSES</a> 针对C程序员的详细教程</li>
+<li><a href="http://linux.die.net/man/3/ncurses" target="_blank" rel="noopener">The ncurses man page</a></li>
+<li><a href="http://invisible-island.net/ncurses/ncurses.faq.html" target="_blank" rel="noopener">The ncurses FAQ</a></li>
+<li><a href="https://www.youtube.com/watch?v=eN1eZtjLEnU" target="_blank" rel="noopener">“Use curses… don’t swear”</a> PyCon 2013 中关于使用 curses 或者 Urwid 控制终端显示的视频</li>
+<li><a href="http://www.pyvideo.org/video/1568/console-applications-with-urwid" target="_blank" rel="noopener">“Console Applications with Urwid”</a> PyCon 2012 中使用 Urwid 编程的示范视频</li>
+</ul>
+
+    </div>
+    <br>
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#什么是-curses"><span class="toc-text">什么是 curses?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Python-curses-模块"><span class="toc-text">Python curses 模块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#一个-curses-程序的开始和结束"><span class="toc-text">一个 curses 程序的开始和结束</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#窗口和-Pad"><span class="toc-text">窗口和 Pad</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#展示文本"><span class="toc-text">展示文本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#属性和颜色"><span class="toc-text">属性和颜色</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#用户输入"><span class="toc-text">用户输入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#更多信息"><span class="toc-text">更多信息</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-qcode.jpg" height="200" width="200" alt="" style="margin: auto; display: block;" />
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">关注“豆菽技术”公众号</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/tools-of-jvm.html" rel="next" title="JVM-探究（四）：虚拟机监控和分析工具">
+          JVM-探究（四）：虚拟机监控和分析工具
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/meaning-of-retained-size.html" rel="prev" title="理解VisualVM中的保留大小(Retained Size)">
+            理解VisualVM中的保留大小(Retained Size)
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+  <section class="disqus-comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+  </section>
+
+  <script>
+    var disqus_shortname = 'coderbean';
+    
+    var disqus_url = 'https://jacobchang.cn/curses-programming-with-python.html';
+    
+    (function(){
+      var dsq = document.createElement('script');
+      dsq.type = 'text/javascript';
+      dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+
+  <script id="dsq-count-scr" src="//coderbean.disqus.com/count.js" async></script>
+
+
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://jacobchang.cn/">首页</a> |
+        <a class="bottom-item" href="https://jacobchang.cn/" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://zhangbo.site/" target="_blank">备份站点</a> |
+        <a class="bottom-item" href="https://github.com/coderbean" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/coderbean/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("menu");
+      if (logo) {
+        logo.onclick = function(event) {
+          // returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+  
+<!-- for theme: default is false -->
+<!-- for page: default is true -->
+<!-- 图片查看器实例配置 -->
+<script type="text/javascript">
+    //默认设置， 可以根据个人需求和喜好进行配置
+    //详细参考官方说明
+    Viewer.setDefaults({
+        //设置初始缩放 default: 1
+        zoomRatio: [0.5],
+        // 过渡动画
+        transition:true,
+        // 显示工具条
+        toolbar: false,
+    });
+    //获得content中所有的图片， 不同主题可能有所不同
+    //为了和其他的图片区别开来 所以在markdown中插入图片的时候使用独特的记号
+    //为了一次性得到所有的图片我这里采用的是class = 'article-image'
+    var article = document.querySelector('.post-content');
+    if(article!=null) {
+        var imageList = article.getElementsByTagName('img');
+        //将获取到的HTMLCollections转化成Array
+        var imageArray = new Array();
+        Array.prototype.forEach.call(imageList, element => {
+            imageArray.push(element);
+        });
+        //设置每个图片成为图片组
+        Array.prototype.forEach.call(imageList, element => {
+            var viewer1 = new Viewer(element);
+            viewer1.images = imageArray;
+            viewer1.length = imageArray.length;
+        });
+    }
+
+    
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>

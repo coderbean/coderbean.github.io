@@ -1,0 +1,426 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hans">
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
+  <link rel="icon" sizes="any" mask href="/images/favicon.ico" /> 
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+  
+
+  <!-- viewjs support -->
+  
+    <!-- for theme: default is false -->
+    <!-- for page: default is true -->
+    <link  href="css/viewer.min.css" rel="stylesheet" >
+    <script src="js/viewer.min.js" type="text/javascript" charset="utf-8"></script>
+  
+  
+  
+    <meta name="keywords" content="" />
+  
+
+  
+    <meta name="description" content="分享 Java 技术，做有趣的程序员" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.png">
+  <title>category: 技术 [ 黄小豆的博客 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+</head>
+
+
+<body>
+  <div class="nav-container">
+    <nav id="menu" class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="/images/logo.png">
+    <span class="title">黄小豆的博客</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives/" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags/" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/about/" class="pure-menu-link">关于</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/atom.xml" class="pure-menu-link">订阅</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      
+
+  
+  
+    
+    
+    <section class="post page archives">
+      <h3 class="archive-year-wrap">
+        <a href="/archives/2018" class="archive-year">
+          2018
+        </a>
+      </h3>
+      <div class="archives">
+  
+  <div class="archive" >
+  <a class="post-go" href="/meaning-of-retained-size.html">
+    <div>
+      <span class="date">
+        08-08
+      </span>
+      <span class="slash">/</span>
+      理解VisualVM中的保留大小(Retained Size)
+    </div>
+
+    <!--<div class="excerpt">-->
+      <!--<p>是否在各种内存分析工具中看到过保留大小的概念呐，保留大小到底代表着什么？<br>保留大小代表着实例本事和引用的对象的总大小吗？</p>-->
+    <!--</div>-->
+  </a>
+
+</div>
+
+  
+  
+  <div class="archive" >
+  <a class="post-go" href="/tools-of-jvm.html">
+    <div>
+      <span class="date">
+        01-30
+      </span>
+      <span class="slash">/</span>
+      JVM-探究（四）：虚拟机监控和分析工具
+    </div>
+
+    <!--<div class="excerpt">-->
+      <!--<p>文章用来介绍常用的虚拟机内存监控和虚拟机相关的故障排除工具。 包括<code>JDK</code>自带的命令行工具、和一些可视化工具，如<code>jvisualvm</code>。-->
+    <!--</div>-->
+  </a>
+
+</div>
+
+  
+  
+  <div class="archive" >
+  <a class="post-go" href="/gc-algorithms-and-garbage-collector.html">
+    <div>
+      <span class="date">
+        01-03
+      </span>
+      <span class="slash">/</span>
+      JVM 探究（三）：垃圾回收算法和垃圾回收器
+    </div>
+
+    <!--<div class="excerpt">-->
+      <!--<p>通过介绍当前的垃圾回收器和垃圾回收算法的对比和不同的优势，来帮助读者选择适合自己的垃圾回收器。主要涉及对象存活的判断、三种垃圾回收算法以及新生代和老年代的几种传统的收集器，最后会介绍一下比较火热的<code>Garbage First(G1)收集器</code>。<br>-->
+    <!--</div>-->
+  </a>
+
+</div>
+
+  
+  
+    
+      </div></section>
+    
+    
+    <section class="post page archives">
+      <h3 class="archive-year-wrap">
+        <a href="/archives/2017" class="archive-year">
+          2017
+        </a>
+      </h3>
+      <div class="archives">
+  
+  <div class="archive" >
+  <a class="post-go" href="/experiment-on-jvm.html">
+    <div>
+      <span class="date">
+        11-30
+      </span>
+      <span class="slash">/</span>
+      JVM-探究（二）：JVM实验和 GC 日志解读
+    </div>
+
+    <!--<div class="excerpt">-->
+      <!--<p>本文用于记录在学习 JVM 过程中的实验，在完成《深入理解Java虚拟机》第二版第三章中的实验的基础上，同时保证在<code>JDK1.8</code>上实验的可重复性，并且针对不同的垃圾收集器做实验扩充。在对不能在<code>JDK8</code>上重现的实验代码做了修正，在实验结果中分析了JVM的部分特性, 介绍了GC日志的解读等。<br>-->
+    <!--</div>-->
+  </a>
+
+</div>
+
+  
+  
+  <div class="archive" >
+  <a class="post-go" href="/things-about-java-gzipstream.html">
+    <div>
+      <span class="date">
+        11-16
+      </span>
+      <span class="slash">/</span>
+      Java压缩流GZIPStream导致的内存泄露
+    </div>
+
+    <!--<div class="excerpt">-->
+      <!--<p>我们来聊聊<code>GZIPOutputStream</code> 和 <code>GZIPInputStream</code>, 如果不关闭流会引起的内存泄露问题，以及<code>GZIPStream</code>申请和释放堆外内存的流程， Let’s do it!<br>-->
+    <!--</div>-->
+  </a>
+
+</div>
+
+  
+  
+  <div class="archive" >
+  <a class="post-go" href="/jmm-of-jvm.html">
+    <div>
+      <span class="date">
+        11-12
+      </span>
+      <span class="slash">/</span>
+      JVM 探究（一）：JVM内存模型概念模型
+    </div>
+
+    <!--<div class="excerpt">-->
+      <!--<p>作为一个 Java 程序员，不了解 Java 内存模型就不能写出能够充分利用内存的代码。本文通过对 Java 内存模型的介绍，让读者能够了解 Java 的内存的分配情况，适合 Java 初学者或者对 JMM 不熟悉的同学。后面的博客会针对每个部分做更加深入的解释。<br>-->
+    <!--</div>-->
+  </a>
+
+</div>
+
+
+  </div></section>
+
+    </div>
+
+    
+      <nav class="page-nav text-center">
+          <a class="extend prev" rel="prev" href="/categories/技术/">〈</a><a class="page-number" href="/categories/技术/">1</a><span class="page-number current">2</span>
+      </nav>
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://jacobchang.cn/">首页</a> |
+        <a class="bottom-item" href="https://jacobchang.cn/" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://zhangbo.site/" target="_blank">备份站点</a> |
+        <a class="bottom-item" href="https://github.com/coderbean" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/coderbean/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("menu");
+      if (logo) {
+        logo.onclick = function(event) {
+          // returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+  
+<!-- for theme: default is false -->
+<!-- for page: default is true -->
+<!-- 图片查看器实例配置 -->
+<script type="text/javascript">
+    //默认设置， 可以根据个人需求和喜好进行配置
+    //详细参考官方说明
+    Viewer.setDefaults({
+        //设置初始缩放 default: 1
+        zoomRatio: [0.5],
+        // 过渡动画
+        transition:true,
+        // 显示工具条
+        toolbar: false,
+    });
+    //获得content中所有的图片， 不同主题可能有所不同
+    //为了和其他的图片区别开来 所以在markdown中插入图片的时候使用独特的记号
+    //为了一次性得到所有的图片我这里采用的是class = 'article-image'
+    var article = document.querySelector('.post-content');
+    if(article!=null) {
+        var imageList = article.getElementsByTagName('img');
+        //将获取到的HTMLCollections转化成Array
+        var imageArray = new Array();
+        Array.prototype.forEach.call(imageList, element => {
+            imageArray.push(element);
+        });
+        //设置每个图片成为图片组
+        Array.prototype.forEach.call(imageList, element => {
+            var viewer1 = new Viewer(element);
+            viewer1.images = imageArray;
+            viewer1.length = imageArray.length;
+        });
+    }
+
+    
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>

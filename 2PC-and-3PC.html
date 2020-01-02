@@ -1,0 +1,467 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hans">
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
+  <link rel="icon" sizes="any" mask href="/images/favicon.ico" /> 
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+  
+
+  <!-- viewjs support -->
+  
+    <!-- for theme: default is false -->
+    <!-- for page: default is true -->
+    <link  href="css/viewer.min.css" rel="stylesheet" >
+    <script src="js/viewer.min.js" type="text/javascript" charset="utf-8"></script>
+  
+  
+  
+    <meta name="keywords" content="分布式,一致性协议,CAP,BASE," />
+  
+
+  
+    <meta name="description" content="分享 Java 技术，做有趣的程序员" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.png">
+  <title>分布式一致性协议学习笔记：2PC 和 3PC [ 黄小豆的博客 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+</head>
+
+
+<body>
+  <div class="nav-container">
+    <nav id="menu" class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="/images/logo.png">
+    <span class="title">黄小豆的博客</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives/" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags/" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/about/" class="pure-menu-link">关于</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/atom.xml" class="pure-menu-link">订阅</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        分布式一致性协议学习笔记：2PC 和 3PC
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2019-07-12T15:24:17.000Z">
+        2019-07-12
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/BASE/">BASE</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CAP/">CAP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/一致性协议/">一致性协议</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/分布式/">分布式</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </header>
+
+    <div class="post-content">
+      <p>了解分布式一致性的一些概念和理论，介绍简单常用的分布式一致性协议。主要介绍二阶段提交和三阶段提交的基本流程，并相互比较。</p>
+<a id="more"></a>
+<p><img src="../media/Transfagarasan_ZH-CN5760731327_1920x1080.jpg" alt="Transfagarasan_ZH-CN5760731327_1920x1080"></p>
+<h2 id="分布式的特点"><a href="#分布式的特点" class="headerlink" title="分布式的特点"></a>分布式的特点</h2><ol>
+<li>分布性：系统中的机器随意分布。</li>
+<li>对等性：组成分布式系统的所有节点都是对等的。</li>
+<li>并发性：需要协调并发操作一些共享资源。</li>
+<li>缺乏全局时钟：在分布式系统中，很难定义两件事情谁先谁后。</li>
+<li>故障总是会发生：任何在设计阶段考虑到的异常情况，一定会在系统实际运行中发生。</li>
+</ol>
+<h2 id="分布式系统常见问题"><a href="#分布式系统常见问题" class="headerlink" title="分布式系统常见问题"></a>分布式系统常见问题</h2><ol>
+<li>通讯异常：单机内存访问往往延时在纳秒数量级（通常是 10ns 左右）；网络则在 0.1～1ms，消息丢失和消息延迟变得非常普遍</li>
+<li>网络分区：俗称”脑裂”，部分节点和整个分布式系统失去联系，自己单独组成了一个小集群。</li>
+<li>三态：成功、失败和超时。无法预测超时的请求是否到达了接收方，还是在接收方返回的时候丢失了。</li>
+</ol>
+<h2 id="CAP-和-BASE-理论"><a href="#CAP-和-BASE-理论" class="headerlink" title="CAP 和 BASE 理论"></a>CAP 和 BASE 理论</h2><p>通常可以把一系列的分布式的操作序列称之为子事务。分布式事务也可以被定义为一种嵌套型事物。分布式系统不可能像单机系统那样可以严格满足 ACID 特性，所以要有不同的取舍，因此有了 CAP 和 BASE 理论。</p>
+<h3 id="CAP"><a href="#CAP" class="headerlink" title="CAP"></a>CAP</h3><p>一个分布式系统不可能同时满足<strong>一致性（C：Consistency）</strong>、<strong>可用性（A：Availability）</strong>和<strong>分区容错性（P：Partition tolerance）</strong>这三个基本需求。</p>
+<p><strong>一致性：</strong> 在分布式环境中，一致性是指数据在多个副本之间是否能够保持一致的特性。数据在发生变化的时候，需要保证发生变化之后，所有的副本都能保持一致。</p>
+<p><strong>可用性：</strong>系统提供的服务必须一直处于可运送的状态，对于每一个请求总是能够在有限的时间内返回结果。</p>
+<p><strong>分区容错性：</strong> 分布式系统在遇到任何网络分区故障的时候，仍然需要保证对外提供满足一致性和可用性的服务。</p>
+<p><img src="https://www.wangbase.com/blogimg/asset/201807/bg2018071607.jpg" alt="CAP 定理示意图"></p>
+<p>对于 CAP 的取舍：放弃 P 的通用做法是将所有的数据都放到一个节点，这样可以避免网络分区带来的问题，但是值得注意的是，<strong>放弃了 P 也就等于放弃了系统的扩展性</strong>；放弃 A ：当系统发生故障的时候，允许系统短时间内不可用，需要等待系统恢复后方可继续提供服务； 放弃 C：<strong>放弃 C 并不是说放弃最终一致性</strong>，而是说放弃强一致性，保证系统在某段时间之后能够达到最终一致性。</p>
+<p>对于一个分布式系统而言，不同节点之间必然存在网络通讯，因此网络分区问题是不可避免的。同时分布式系统的扩展特性也是无法舍弃的。<strong>因此系统的设计和架构一般都考虑如何权衡 A 和 C。</strong></p>
+<h3 id="BASE"><a href="#BASE" class="headerlink" title="BASE"></a>BASE</h3><p>BASE 是 Basically Available（基本可用）、Soft status（软状态）和 Eventually consistent（最终一致性）三个短语的缩写。</p>
+<p><strong>基本可用：</strong>在系统出现故障的时候，允许损失部分可用性。比如响应时间上的损失和功能上的损失。</p>
+<p><strong>软状态：</strong> 也称为弱状态，表示允许系统中的数据存在中间状态，即允许不同的数据副本之间数据同步存在延迟。</p>
+<p><strong>最终一致性：</strong> 经过一段时间的同步之后，系统最终能够达到一个数据一致的状态。</p>
+<blockquote>
+<p>最终一致性的一些变种：</p>
+<ol>
+<li>因果一致性：进程 A 更新数据后通知了进程 B，进程 B 必须对修改后的数据可见。</li>
+<li>读己之所写：进程 A 对数据做的更改，自己总是能够获得最新的值。</li>
+<li>会话一致性：在单个会话中，进程 A 总是能够看到最新的值。</li>
+<li>单调读一致性：在系统中读出数据项 Y 的值 y 后，后面的读取中不允许返回比 y 更旧的值。</li>
+<li>单调写一致性：系统需要保证来自同一个进程的写操作被顺序的执行。</li>
+</ol>
+</blockquote>
+<h2 id="2PC-与-3PC"><a href="#2PC-与-3PC" class="headerlink" title="2PC 与 3PC"></a>2PC 与 3PC</h2><p>2PC 和 3PC 就是用来保证 CAP 中的 C 或者 BASE 里面的 E 的协议。</p>
+<p>当一个事务需要跨越多个分布式节点的时候，需要引入一个成为<strong>“协调者”（Coordinator）</strong>的组件来统一调度所有分布式节点的执行逻辑，这些被调度的分布式节点则被称为<strong>“参与者”（Participant）</strong>。协调者负责调度参与者的行为，并最终决定这些参与者是否真的需要把事务进行真正的提交。由此，衍生出二阶段提交和三阶段提交两种协议。</p>
+<h3 id="2PC"><a href="#2PC" class="headerlink" title="2PC"></a>2PC</h3><p>两阶段提交主要包含<strong>投票（Propose）</strong>和<strong>执行（Commit）</strong>两个阶段。</p>
+<p>在 Propose 阶段，协调者向所有参与者（voter）发送事务内容，询问是否可以执行事务提交操作，并等待参与者的响应。各个参与者为该事务预留资源，保证在下一个阶段能够提交事务，如果资源可以获取反馈给协调者 agree 响应，反之返回 disagree 响应。</p>
+<p><img src="../media/v2-e2f7149a81d9ad3aa46589e25503d688_r.jpg" alt="事务提交流程"></p>
+<p><strong>事务提交：</strong>如果在 Propose 阶段，所有参与者都返回的是 agree 信号，那么协调者会发送提交事务的请求；所有参与者收到事务提交请求后会正式执行事务提交操作并释放事务执行期间占用的资源，执行完成后将事务执行结果反馈给协调者；协调者收到所有参与者的反馈信息后，事务执行完毕。</p>
+<p><img src="../media/v2-d40abfa365ed84e84e264ba13900f64b_hd.jpg" alt="事务中断流程"></p>
+<p><strong>事务中断：</strong> 如果在 Propose 阶段有参与者返回 disagree 或者有的节点超时未返回，没有投票达成一致，那么协调者会向所有参与者发送回滚请求；参与者收到回滚请求之后会释放掉在 Propose 阶段占用的资源，然后反馈信号给协调者；协调者收到反馈消息之后，完成事务终端。</p>
+<hr>
+<p>二阶段提交协议的优点是：原理简单，实现方便。</p>
+<p>二阶段提交协议的缺点是：</p>
+<ol>
+<li>同步阻塞：2PC 协议的各个阶段都是同步阻塞的，任何节点故障都有会导致事务提交失败。</li>
+<li>单点问题：一旦协调者出现问题，将无法提交事务。如果协调者在收到参与者的 Propose 确认之后，发送 Commit 信号之前发生故障，那么所有参与者占用的资源将无法得到释放。</li>
+<li>数据不一致：如果在 Commit 阶段部分参与者发生了故障，导致事务无法提交，但是正常的参与者提交了事务。导致数据不一致。</li>
+</ol>
+<blockquote>
+<p>假设coordinator和voter3都在Commit这个阶段crash了, 而voter1和voter2没有收到commit消息. 这时候voter1和voter2就陷入了一个困境. 因为他们并不能判断现在是两个场景中的哪一种: </p>
+<ol>
+<li>上轮全票通过然后 voter3 第一个收到了 commit 的消息并在 commit 操作之后 crash 了。</li>
+<li>上轮 voter3 反对所以干脆没有通过。</li>
+</ol>
+<p><img src="../media/v2-a9e4ef8b9082ffdf76bc426e61ba3ed2_hd.jpg" alt="coordinator和voter3 crash, voter{1,2}无法判断当前状态而卡死"></p>
+</blockquote>
+<hr>
+<h3 id="3PC"><a href="#3PC" class="headerlink" title="3PC"></a>3PC</h3><p>三阶段提交是在二阶段提交的基础上进行的改进，将二阶段提交的 Propose Phase 一分为二，形成了 CanCommit、PreCommit 和 doCommit 三个阶段。</p>
+<p><img src="../media/v2-28c17c86e689007015a4853f0d0c4a89_hd-3021775.jpg" alt="3PC, coordinator提议通过, voter{1,2,3}达成新的共识"></p>
+<p><strong>CanCommit：</strong>协调者向所有参与者询问是否可以执行事务提交操作；各参与者想协调者反馈是否可以提交事务。</p>
+<p><strong>PreCommit：</strong> </p>
+<ul>
+<li>如果所有参与者反馈的都是 agree， 那么就会执行事务预提交。协调者发送 PreCommit 请求，参与者收到请求之后进行资源的分配工作，最后将资源分配结果反馈这协调者。等待后面的  commit 命令或者 abort 命令。</li>
+<li>如果任意一个参与者返回了 disagree，或者在协调者等待超时之后。协调者将会向所有参与者节点发送 abort 请求。</li>
+</ul>
+<p><strong>doCommit：</strong> </p>
+<ul>
+<li>如果上面 PreCommit 全部成功，即协调者收到了全部参与者的成功反馈，那么协调者将会发送 doCommit 请求；参与者接收到 doCommit 会正式提交事务然后释放事务执行期间占用的资源，反馈事务提交结果给协调者；协调者收到参与者反馈的消息后，完成事务。</li>
+<li>如果上面的 PreCommit 有部分失败反馈，或者是等待超时就会中断事务。协调者会向所有参与者节点发送 abort 请求；参与者收到 abort 请求后执行回滚操作，并反馈给协调者；协调者收到反馈消息后，完成事务的中断。</li>
+</ul>
+<p>需要注意的是，在 doCommit 阶段，可能出现下面的两种故障：</p>
+<ul>
+<li>协调者出现问题</li>
+<li>协调者和参与者之间网络故障</li>
+</ul>
+<p>无论出现上面那种情况，都会造成从黁税额无法及时收到来自协调者的 doCommit 请求或者是 abort 请求，针对这种情况，参与者会在等待超时之后，继续事务的提交操作。</p>
+<hr>
+<p>三阶段提交协议的优点是：相比于 2PC 能够在单点故障后继续达成一致。</p>
+<p>三阶段提交协议的缺点是：引入了新的问题，如果某个参与者与协调者出现在不同的网络分区，那么该参与者会提交事务，有可能出现数据不一致的情况。</p>
+<hr>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://zhuanlan.zhihu.com/p/35298019" target="_blank" rel="noopener">漫话分布式系统共识协议: 2PC/3PC篇 - 知乎</a></p>
+<p><a href="https://www.amazon.cn/dp/B00RECRKPK" target="_blank" rel="noopener">《从Paxos到Zookeeper:分布式一致性原理与实践》 倪超【摘要 书评 试读】图书</a></p>
+
+    </div>
+    <br>
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#分布式的特点"><span class="toc-text">分布式的特点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#分布式系统常见问题"><span class="toc-text">分布式系统常见问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CAP-和-BASE-理论"><span class="toc-text">CAP 和 BASE 理论</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CAP"><span class="toc-text">CAP</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BASE"><span class="toc-text">BASE</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2PC-与-3PC"><span class="toc-text">2PC 与 3PC</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2PC"><span class="toc-text">2PC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3PC"><span class="toc-text">3PC</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-text">参考</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-qcode.jpg" height="200" width="200" alt="" style="margin: auto; display: block;" />
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">关注“豆菽技术”公众号</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/Monty-Hall-problem.html" rel="next" title="三门问题">
+          三门问题
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/lock-of-synchronized.html" rel="prev" title="Java 中的偏向锁、轻量级锁和重量级锁">
+            Java 中的偏向锁、轻量级锁和重量级锁
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+  <section class="disqus-comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+  </section>
+
+  <script>
+    var disqus_shortname = 'coderbean';
+    
+    var disqus_url = 'https://jacobchang.cn/2PC-and-3PC.html';
+    
+    (function(){
+      var dsq = document.createElement('script');
+      dsq.type = 'text/javascript';
+      dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+
+  <script id="dsq-count-scr" src="//coderbean.disqus.com/count.js" async></script>
+
+
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://jacobchang.cn/">首页</a> |
+        <a class="bottom-item" href="https://jacobchang.cn/" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://zhangbo.site/" target="_blank">备份站点</a> |
+        <a class="bottom-item" href="https://github.com/coderbean" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/coderbean/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("menu");
+      if (logo) {
+        logo.onclick = function(event) {
+          // returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+  
+<!-- for theme: default is false -->
+<!-- for page: default is true -->
+<!-- 图片查看器实例配置 -->
+<script type="text/javascript">
+    //默认设置， 可以根据个人需求和喜好进行配置
+    //详细参考官方说明
+    Viewer.setDefaults({
+        //设置初始缩放 default: 1
+        zoomRatio: [0.5],
+        // 过渡动画
+        transition:true,
+        // 显示工具条
+        toolbar: false,
+    });
+    //获得content中所有的图片， 不同主题可能有所不同
+    //为了和其他的图片区别开来 所以在markdown中插入图片的时候使用独特的记号
+    //为了一次性得到所有的图片我这里采用的是class = 'article-image'
+    var article = document.querySelector('.post-content');
+    if(article!=null) {
+        var imageList = article.getElementsByTagName('img');
+        //将获取到的HTMLCollections转化成Array
+        var imageArray = new Array();
+        Array.prototype.forEach.call(imageList, element => {
+            imageArray.push(element);
+        });
+        //设置每个图片成为图片组
+        Array.prototype.forEach.call(imageList, element => {
+            var viewer1 = new Viewer(element);
+            viewer1.images = imageArray;
+            viewer1.length = imageArray.length;
+        });
+    }
+
+    
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>

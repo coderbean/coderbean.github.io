@@ -1,0 +1,396 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hans">
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
+  <link rel="icon" sizes="any" mask href="/images/favicon.ico" /> 
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+  
+
+  <!-- viewjs support -->
+  
+    <!-- for theme: default is false -->
+    <!-- for page: default is true -->
+    <link  href="css/viewer.min.css" rel="stylesheet" >
+    <script src="js/viewer.min.js" type="text/javascript" charset="utf-8"></script>
+  
+  
+  
+    <meta name="keywords" content="阿里,蚂蚁金服,面经," />
+  
+
+  
+    <meta name="description" content="分享 Java 技术，做有趣的程序员" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.png">
+  <title>[面经] 如何拿下阿里/蚂蚁 offer [ 黄小豆的博客 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+</head>
+
+
+<body>
+  <div class="nav-container">
+    <nav id="menu" class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="/images/logo.png">
+    <span class="title">黄小豆的博客</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives/" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags/" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/about/" class="pure-menu-link">关于</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/atom.xml" class="pure-menu-link">订阅</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        [面经] 如何拿下阿里/蚂蚁 offer
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2019-08-24T05:13:56.000Z">
+        2019-08-24
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/蚂蚁金服/">蚂蚁金服</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/阿里/">阿里</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/面经/">面经</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </header>
+
+    <div class="post-content">
+      <p>总结一下我的阿里面试，做一个记录吧。分享给需要的人。</p>
+<a id="more"></a>
+<p><img src="../media/AugustBears_ZH-CN8159736622_1920x1080.jpg" alt="AugustBears_ZH-CN8159736622_1920x1080"></p>
+<h3 id="整体时间流程"><a href="#整体时间流程" class="headerlink" title="整体时间流程"></a>整体时间流程</h3><ul>
+<li>8月12日 14:00 通过猎头投递简历 </li>
+<li>8月13日 20:01、20:11 电话没有接到，是初面电话。 </li>
+<li>8月14日 21:10  接到初面的电话面试，面试内容多为基础内容，还有做过的项目。明确告知我初面过了，会有后续的面试 </li>
+<li>8月15日 20点左右，接到了 HR 的联系电话，约定二面现场面试时间 </li>
+<li>8月19日 15:30 ，在钱江浙商创投大厦进行面试，面试官 P9，全程讲项目，画各种图，最后考了一点技术问题。 </li>
+<li>8月22日 15:00 ，在 Z 空间三面，项目主管和 HR 我们三个人在一个小屋子里面试，主要是相互了解，不涉及技术。 </li>
+<li>8月24日 19:00，口头 offer，沟通薪资和职级 </li>
+<li>目前等待体检通知、进行背调</li>
+</ul>
+<h3 id="一面"><a href="#一面" class="headerlink" title="一面"></a>一面</h3><p>一面主要考察了基础知识，同时对于原来公司负责的服务也进行了考察。我统计了一篇基础知识的笔记，在我的公众号做分享。</p>
+<h3 id="二面"><a href="#二面" class="headerlink" title="二面"></a>二面</h3><p>二面则是基本上都是项目的介绍，面试官让我讲我负责的项目。就这样一个一个的讲，讲得我口干舌燥。</p>
+<p>这里我感觉要突出你项目的亮点，你用了什么方式，解决的什么问题，用到了什么技术。由于这次面试主要是项目所以，没有太多可以具体的可以分享。如果能在面试之前过一遍自己的项目，然后准备一些技术难点或是隐藏比较深的问题的解决思路。</p>
+<p>还有就是需要有一定的设计能力，当你自己提出了一个问题之后会问你是如何解决的这个问题，然后如果是现在的你会如何解决，有没有更好的方案，目的就是找出你的极限。</p>
+<h3 id="三面（包含HR面）"><a href="#三面（包含HR面）" class="headerlink" title="三面（包含HR面）"></a>三面（包含HR面）</h3><p>三面是主管和HR一起进行面试的，主管应该就是我以后的汇报主管。问的问题主要包含历史绩效、在原来公司的职级，为什么要换工作、希望在工作中负责什么部分、为什么没有考研、蚂蚁这边的加班是否能够接受、有么有遇到什么挫折。我看来主要是看我这个候选人的性格、为人是否符合公司的价值观吧。这个阶段的 HR 的问题基本上都是类似的，比起前面的技术面试更加有套路。</p>
+<h3 id="完整版资料"><a href="#完整版资料" class="headerlink" title="完整版资料"></a>完整版资料</h3><p><img src="../media/image-20190824164526602.png" alt="image-20190824164526602"></p>
+<p>完整版基础知识资料请关注我的个人公众号，回复 “<strong>蚂蚁面经</strong>“ 获取 HTML 版本。</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/uPic/2019-08-24-扫码_搜索联合传播样式-标准色版.png" alt=""></p>
+
+    </div>
+    <br>
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#整体时间流程"><span class="toc-text">整体时间流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#一面"><span class="toc-text">一面</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#二面"><span class="toc-text">二面</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#三面（包含HR面）"><span class="toc-text">三面（包含HR面）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#完整版资料"><span class="toc-text">完整版资料</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-qcode.jpg" height="200" width="200" alt="" style="margin: auto; display: block;" />
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">关注“豆菽技术”公众号</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/solve-dp-problems.html" rel="next" title="如何解决动态规划问题">
+          如何解决动态规划问题
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+      </div>
+    </div>
+  
+
+  <section class="disqus-comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+  </section>
+
+  <script>
+    var disqus_shortname = 'coderbean';
+    
+    var disqus_url = 'https://jacobchang.cn/how-get-antfin-offer.html';
+    
+    (function(){
+      var dsq = document.createElement('script');
+      dsq.type = 'text/javascript';
+      dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+
+  <script id="dsq-count-scr" src="//coderbean.disqus.com/count.js" async></script>
+
+
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://jacobchang.cn/">首页</a> |
+        <a class="bottom-item" href="https://jacobchang.cn/" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://zhangbo.site/" target="_blank">备份站点</a> |
+        <a class="bottom-item" href="https://github.com/coderbean" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/coderbean/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("menu");
+      if (logo) {
+        logo.onclick = function(event) {
+          // returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+  
+<!-- for theme: default is false -->
+<!-- for page: default is true -->
+<!-- 图片查看器实例配置 -->
+<script type="text/javascript">
+    //默认设置， 可以根据个人需求和喜好进行配置
+    //详细参考官方说明
+    Viewer.setDefaults({
+        //设置初始缩放 default: 1
+        zoomRatio: [0.5],
+        // 过渡动画
+        transition:true,
+        // 显示工具条
+        toolbar: false,
+    });
+    //获得content中所有的图片， 不同主题可能有所不同
+    //为了和其他的图片区别开来 所以在markdown中插入图片的时候使用独特的记号
+    //为了一次性得到所有的图片我这里采用的是class = 'article-image'
+    var article = document.querySelector('.post-content');
+    if(article!=null) {
+        var imageList = article.getElementsByTagName('img');
+        //将获取到的HTMLCollections转化成Array
+        var imageArray = new Array();
+        Array.prototype.forEach.call(imageList, element => {
+            imageArray.push(element);
+        });
+        //设置每个图片成为图片组
+        Array.prototype.forEach.call(imageList, element => {
+            var viewer1 = new Viewer(element);
+            viewer1.images = imageArray;
+            viewer1.length = imageArray.length;
+        });
+    }
+
+    
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>
