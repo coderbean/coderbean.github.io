@@ -104,6 +104,21 @@ footer .bottom-item {
 footer .bottom-item:hover {
   color: #2196F3;
 }
+
+footer .bottom-item-hide {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+footer .bottom-item-hide:hover {
+  color: #2196F3;
+}
+
+@media (max-width: 800px) {
+  .bottom-item-hide {
+    display: none!important;
+  }
+}
+
 .clearfix:before,
 .clearfix:after {
   content: " ";
@@ -780,11 +795,6 @@ body {
 }
 @media (max-width: 300px) {
   .disqus-comments {
-    display: none!important;
-  }
-}
-@media (max-width: 800px) {
-  .text-center {
     display: none!important;
   }
 }

@@ -80,6 +80,26 @@
     
     
   <url>
+    <loc>https://jacobchang.cn/solve-dp-problems.html</loc>
+    <lastmod>2020-01-02T09:28:21.960Z</lastmod>
+    <data>
+        <display>
+        <title>如何解决动态规划问题</title>
+        <pubTime>2019-07-29T15:46:19.000Z</pubTime>
+        
+        <tag>算法</tag>
+         
+         
+           
+             
+              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>https://jacobchang.cn/idempotence-design.html</loc>
     <lastmod>2020-01-02T09:28:21.960Z</lastmod>
     <data>
@@ -93,30 +113,6 @@
            
              
               <breadCrumb title="设计" url="https://jacobchang.cn/categories/%E8%AE%BE%E8%AE%A1/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://jacobchang.cn/meaning-of-retained-size.html</loc>
-    <lastmod>2020-01-02T09:28:21.960Z</lastmod>
-    <data>
-        <display>
-        <title>理解VisualVM中的保留大小(Retained Size)</title>
-        <pubTime>2018-08-08T08:30:53.000Z</pubTime>
-        
-        <tag>Java</tag>
-         
-        <tag>JVM</tag>
-         
-        <tag>tech</tag>
-         
-         
-           
-             
-              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
           
         </display>
     </data>
@@ -144,14 +140,18 @@
 
     
   <url>
-    <loc>https://jacobchang.cn/solve-dp-problems.html</loc>
+    <loc>https://jacobchang.cn/meaning-of-retained-size.html</loc>
     <lastmod>2020-01-02T09:28:21.960Z</lastmod>
     <data>
         <display>
-        <title>如何解决动态规划问题</title>
-        <pubTime>2019-07-29T15:46:19.000Z</pubTime>
+        <title>理解VisualVM中的保留大小(Retained Size)</title>
+        <pubTime>2018-08-08T08:30:53.000Z</pubTime>
         
-        <tag>算法</tag>
+        <tag>Java</tag>
+         
+        <tag>JVM</tag>
+         
+        <tag>tech</tag>
          
          
            
@@ -190,28 +190,6 @@
 
     
   <url>
-    <loc>https://jacobchang.cn/how-to-use-java-se-create-simple-httpserver.html</loc>
-    <lastmod>2020-01-02T09:28:21.959Z</lastmod>
-    <data>
-        <display>
-        <title>利用 JavaSE 创建简单 HTTP Server</title>
-        <pubTime>2019-01-24T03:27:57.000Z</pubTime>
-        
-        <tag>Java</tag>
-         
-        <tag>tech</tag>
-         
-         
-           
-             
-              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>https://jacobchang.cn/create-right-singleton.html</loc>
     <lastmod>2020-01-02T09:28:21.959Z</lastmod>
     <data>
@@ -234,16 +212,16 @@
 
     
   <url>
-    <loc>https://jacobchang.cn/Monty-Hall-problem.html</loc>
-    <lastmod>2020-01-02T09:28:21.958Z</lastmod>
+    <loc>https://jacobchang.cn/how-to-use-java-se-create-simple-httpserver.html</loc>
+    <lastmod>2020-01-02T09:28:21.959Z</lastmod>
     <data>
         <display>
-        <title>三门问题</title>
-        <pubTime>2019-06-19T05:13:46.000Z</pubTime>
+        <title>利用 JavaSE 创建简单 HTTP Server</title>
+        <pubTime>2019-01-24T03:27:57.000Z</pubTime>
         
-        <tag>算法</tag>
+        <tag>Java</tag>
          
-        <tag>概率论</tag>
+        <tag>tech</tag>
          
          
            
@@ -269,6 +247,28 @@
            
              
               <breadCrumb title="翻译" url="https://jacobchang.cn/categories/%E7%BF%BB%E8%AF%91/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://jacobchang.cn/Monty-Hall-problem.html</loc>
+    <lastmod>2020-01-02T09:28:21.958Z</lastmod>
+    <data>
+        <display>
+        <title>三门问题</title>
+        <pubTime>2019-06-19T05:13:46.000Z</pubTime>
+        
+        <tag>算法</tag>
+         
+        <tag>概率论</tag>
+         
+         
+           
+             
+              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
           
         </display>
     </data>
