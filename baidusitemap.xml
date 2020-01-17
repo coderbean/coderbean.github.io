@@ -3,6 +3,25 @@
 
 
     
+  <url>
+    <loc>https://jacobchang.cn/ConcurrentModificationException.html</loc>
+    <lastmod>2020-01-17T02:14:55.007Z</lastmod>
+    <data>
+        <display>
+        <title>聊聊 ConcurrentModificationException</title>
+        <pubTime>2019-06-03T12:40:32.000Z</pubTime>
+        
+        <tag>Java</tag>
+         
+        <tag>tech</tag>
+         
+         
+           
+        </display>
+    </data>
+    </url>
+
+    
     
     
     
@@ -30,25 +49,6 @@
              
               <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
           
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://jacobchang.cn/ConcurrentModificationException.html</loc>
-    <lastmod>2020-01-02T09:28:21.961Z</lastmod>
-    <data>
-        <display>
-        <title>聊聊 ConcurrentModificationException</title>
-        <pubTime>2019-06-03T12:40:32.000Z</pubTime>
-        
-        <tag>Java</tag>
-         
-        <tag>tech</tag>
-         
-         
-           
         </display>
     </data>
     </url>
@@ -234,26 +234,6 @@
 
     
   <url>
-    <loc>https://jacobchang.cn/curses-programming-with-python.html</loc>
-    <lastmod>2020-01-02T09:28:21.958Z</lastmod>
-    <data>
-        <display>
-        <title>【译】Python Curses 编程</title>
-        <pubTime>2018-04-18T23:58:58.000Z</pubTime>
-        
-        <tag>translate</tag>
-         
-         
-           
-             
-              <breadCrumb title="翻译" url="https://jacobchang.cn/categories/%E7%BF%BB%E8%AF%91/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>https://jacobchang.cn/Monty-Hall-problem.html</loc>
     <lastmod>2020-01-02T09:28:21.958Z</lastmod>
     <data>
@@ -269,6 +249,26 @@
            
              
               <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://jacobchang.cn/curses-programming-with-python.html</loc>
+    <lastmod>2020-01-02T09:28:21.958Z</lastmod>
+    <data>
+        <display>
+        <title>【译】Python Curses 编程</title>
+        <pubTime>2018-04-18T23:58:58.000Z</pubTime>
+        
+        <tag>translate</tag>
+         
+         
+           
+             
+              <breadCrumb title="翻译" url="https://jacobchang.cn/categories/%E7%BF%BB%E8%AF%91/"/>
           
         </display>
     </data>

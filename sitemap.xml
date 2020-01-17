@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://jacobchang.cn/ConcurrentModificationException.html</loc>
+    
+    <lastmod>2020-01-17T02:14:55.007Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://jacobchang.cn/tags/index.html</loc>
     
     <lastmod>2020-01-02T09:28:22.001Z</lastmod>
@@ -58,13 +65,6 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/categories/index.html</loc>
-    
-    <lastmod>2020-01-02T09:28:21.962Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://jacobchang.cn/comments/index.html</loc>
     
     <lastmod>2020-01-02T09:28:21.962Z</lastmod>
@@ -72,14 +72,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/record-of-deadlock-analytics.html</loc>
+    <loc>https://jacobchang.cn/categories/index.html</loc>
     
-    <lastmod>2020-01-02T09:28:21.961Z</lastmod>
+    <lastmod>2020-01-02T09:28:21.962Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/ConcurrentModificationException.html</loc>
+    <loc>https://jacobchang.cn/record-of-deadlock-analytics.html</loc>
     
     <lastmod>2020-01-02T09:28:21.961Z</lastmod>
     
@@ -149,14 +149,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/curses-programming-with-python.html</loc>
+    <loc>https://jacobchang.cn/Monty-Hall-problem.html</loc>
     
     <lastmod>2020-01-02T09:28:21.958Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/Monty-Hall-problem.html</loc>
+    <loc>https://jacobchang.cn/curses-programming-with-python.html</loc>
     
     <lastmod>2020-01-02T09:28:21.958Z</lastmod>
     
