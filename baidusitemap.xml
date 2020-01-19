@@ -100,19 +100,23 @@
 
     
   <url>
-    <loc>https://jacobchang.cn/idempotence-design.html</loc>
+    <loc>https://jacobchang.cn/meaning-of-retained-size.html</loc>
     <lastmod>2020-01-02T09:28:21.960Z</lastmod>
     <data>
         <display>
-        <title>幂等设计</title>
-        <pubTime>2018-12-18T03:38:29.000Z</pubTime>
+        <title>理解VisualVM中的保留大小(Retained Size)</title>
+        <pubTime>2018-08-08T08:30:53.000Z</pubTime>
         
         <tag>Java</tag>
+         
+        <tag>JVM</tag>
+         
+        <tag>tech</tag>
          
          
            
              
-              <breadCrumb title="设计" url="https://jacobchang.cn/categories/%E8%AE%BE%E8%AE%A1/"/>
+              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
           
         </display>
     </data>
@@ -140,16 +144,34 @@
 
     
   <url>
-    <loc>https://jacobchang.cn/meaning-of-retained-size.html</loc>
+    <loc>https://jacobchang.cn/idempotence-design.html</loc>
     <lastmod>2020-01-02T09:28:21.960Z</lastmod>
     <data>
         <display>
-        <title>理解VisualVM中的保留大小(Retained Size)</title>
-        <pubTime>2018-08-08T08:30:53.000Z</pubTime>
+        <title>幂等设计</title>
+        <pubTime>2018-12-18T03:38:29.000Z</pubTime>
         
         <tag>Java</tag>
          
-        <tag>JVM</tag>
+         
+           
+             
+              <breadCrumb title="设计" url="https://jacobchang.cn/categories/%E8%AE%BE%E8%AE%A1/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://jacobchang.cn/create-right-singleton.html</loc>
+    <lastmod>2020-01-02T09:28:21.959Z</lastmod>
+    <data>
+        <display>
+        <title>如何构建一个正确的单例</title>
+        <pubTime>2019-05-30T15:26:28.000Z</pubTime>
+        
+        <tag>Java</tag>
          
         <tag>tech</tag>
          
@@ -170,28 +192,6 @@
         <display>
         <title>利用 JavaSE 创建简单 HTTP Server</title>
         <pubTime>2019-01-24T03:27:57.000Z</pubTime>
-        
-        <tag>Java</tag>
-         
-        <tag>tech</tag>
-         
-         
-           
-             
-              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://jacobchang.cn/create-right-singleton.html</loc>
-    <lastmod>2020-01-02T09:28:21.959Z</lastmod>
-    <data>
-        <display>
-        <title>如何构建一个正确的单例</title>
-        <pubTime>2019-05-30T15:26:28.000Z</pubTime>
         
         <tag>Java</tag>
          
@@ -234,6 +234,26 @@
 
     
   <url>
+    <loc>https://jacobchang.cn/curses-programming-with-python.html</loc>
+    <lastmod>2020-01-02T09:28:21.958Z</lastmod>
+    <data>
+        <display>
+        <title>【译】Python Curses 编程</title>
+        <pubTime>2018-04-18T23:58:58.000Z</pubTime>
+        
+        <tag>translate</tag>
+         
+         
+           
+             
+              <breadCrumb title="翻译" url="https://jacobchang.cn/categories/%E7%BF%BB%E8%AF%91/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>https://jacobchang.cn/Monty-Hall-problem.html</loc>
     <lastmod>2020-01-02T09:28:21.958Z</lastmod>
     <data>
@@ -256,19 +276,23 @@
 
     
   <url>
-    <loc>https://jacobchang.cn/curses-programming-with-python.html</loc>
-    <lastmod>2020-01-02T09:28:21.958Z</lastmod>
+    <loc>https://jacobchang.cn/preparation-and-init-of-classloader.html</loc>
+    <lastmod>2020-01-02T09:28:21.957Z</lastmod>
     <data>
         <display>
-        <title>【译】Python Curses 编程</title>
-        <pubTime>2018-04-18T23:58:58.000Z</pubTime>
+        <title>Java类加载器的准备和初始化</title>
+        <pubTime>2019-03-25T11:42:05.000Z</pubTime>
         
-        <tag>translate</tag>
+        <tag>Java</tag>
+         
+        <tag>JVM</tag>
+         
+        <tag>tech</tag>
          
          
            
              
-              <breadCrumb title="翻译" url="https://jacobchang.cn/categories/%E7%BF%BB%E8%AF%91/"/>
+              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
           
         </display>
     </data>
@@ -284,30 +308,6 @@
         <pubTime>2019-02-28T08:08:53.000Z</pubTime>
         
         <tag>Java</tag>
-         
-        <tag>tech</tag>
-         
-         
-           
-             
-              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://jacobchang.cn/preparation-and-init-of-classloader.html</loc>
-    <lastmod>2020-01-02T09:28:21.957Z</lastmod>
-    <data>
-        <display>
-        <title>Java类加载器的准备和初始化</title>
-        <pubTime>2019-03-25T11:42:05.000Z</pubTime>
-        
-        <tag>Java</tag>
-         
-        <tag>JVM</tag>
          
         <tag>tech</tag>
          
