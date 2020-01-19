@@ -120,30 +120,6 @@
 
     
   <url>
-    <loc>https://jacobchang.cn/meaning-of-retained-size.html</loc>
-    <lastmod>2020-01-02T09:28:21.960Z</lastmod>
-    <data>
-        <display>
-        <title>理解VisualVM中的保留大小(Retained Size)</title>
-        <pubTime>2018-08-08T08:30:53.000Z</pubTime>
-        
-        <tag>Java</tag>
-         
-        <tag>JVM</tag>
-         
-        <tag>tech</tag>
-         
-         
-           
-             
-              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>https://jacobchang.cn/be-yourself.html</loc>
     <lastmod>2020-01-02T09:28:21.960Z</lastmod>
     <data>
@@ -164,14 +140,16 @@
 
     
   <url>
-    <loc>https://jacobchang.cn/how-to-use-java-se-create-simple-httpserver.html</loc>
-    <lastmod>2020-01-02T09:28:21.959Z</lastmod>
+    <loc>https://jacobchang.cn/meaning-of-retained-size.html</loc>
+    <lastmod>2020-01-02T09:28:21.960Z</lastmod>
     <data>
         <display>
-        <title>利用 JavaSE 创建简单 HTTP Server</title>
-        <pubTime>2019-01-24T03:27:57.000Z</pubTime>
+        <title>理解VisualVM中的保留大小(Retained Size)</title>
+        <pubTime>2018-08-08T08:30:53.000Z</pubTime>
         
         <tag>Java</tag>
+         
+        <tag>JVM</tag>
          
         <tag>tech</tag>
          
@@ -200,6 +178,28 @@
         <tag>CAP</tag>
          
         <tag>BASE</tag>
+         
+         
+           
+             
+              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://jacobchang.cn/how-to-use-java-se-create-simple-httpserver.html</loc>
+    <lastmod>2020-01-02T09:28:21.959Z</lastmod>
+    <data>
+        <display>
+        <title>利用 JavaSE 创建简单 HTTP Server</title>
+        <pubTime>2019-01-24T03:27:57.000Z</pubTime>
+        
+        <tag>Java</tag>
+         
+        <tag>tech</tag>
          
          
            
