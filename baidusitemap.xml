@@ -164,32 +164,6 @@
 
     
   <url>
-    <loc>https://jacobchang.cn/2PC-and-3PC.html</loc>
-    <lastmod>2020-01-02T09:28:21.959Z</lastmod>
-    <data>
-        <display>
-        <title>分布式一致性协议学习笔记：2PC 和 3PC</title>
-        <pubTime>2019-07-12T15:24:17.000Z</pubTime>
-        
-        <tag>分布式</tag>
-         
-        <tag>一致性协议</tag>
-         
-        <tag>CAP</tag>
-         
-        <tag>BASE</tag>
-         
-         
-           
-             
-              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>https://jacobchang.cn/how-to-use-java-se-create-simple-httpserver.html</loc>
     <lastmod>2020-01-02T09:28:21.959Z</lastmod>
     <data>
@@ -222,6 +196,32 @@
         <tag>Java</tag>
          
         <tag>tech</tag>
+         
+         
+           
+             
+              <breadCrumb title="技术" url="https://jacobchang.cn/categories/%E6%8A%80%E6%9C%AF/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://jacobchang.cn/2PC-and-3PC.html</loc>
+    <lastmod>2020-01-02T09:28:21.959Z</lastmod>
+    <data>
+        <display>
+        <title>分布式一致性协议学习笔记：2PC 和 3PC</title>
+        <pubTime>2019-07-12T15:24:17.000Z</pubTime>
+        
+        <tag>分布式</tag>
+         
+        <tag>一致性协议</tag>
+         
+        <tag>CAP</tag>
+         
+        <tag>BASE</tag>
          
          
            
@@ -276,16 +276,14 @@
 
     
   <url>
-    <loc>https://jacobchang.cn/preparation-and-init-of-classloader.html</loc>
+    <loc>https://jacobchang.cn/transactional-of-spring.html</loc>
     <lastmod>2020-01-02T09:28:21.957Z</lastmod>
     <data>
         <display>
-        <title>Java类加载器的准备和初始化</title>
-        <pubTime>2019-03-25T11:42:05.000Z</pubTime>
+        <title>Spring 中 Transactional 注解原理</title>
+        <pubTime>2019-02-28T08:08:53.000Z</pubTime>
         
         <tag>Java</tag>
-         
-        <tag>JVM</tag>
          
         <tag>tech</tag>
          
@@ -300,14 +298,16 @@
 
     
   <url>
-    <loc>https://jacobchang.cn/transactional-of-spring.html</loc>
+    <loc>https://jacobchang.cn/preparation-and-init-of-classloader.html</loc>
     <lastmod>2020-01-02T09:28:21.957Z</lastmod>
     <data>
         <display>
-        <title>Spring 中 Transactional 注解原理</title>
-        <pubTime>2019-02-28T08:08:53.000Z</pubTime>
+        <title>Java类加载器的准备和初始化</title>
+        <pubTime>2019-03-25T11:42:05.000Z</pubTime>
         
         <tag>Java</tag>
+         
+        <tag>JVM</tag>
          
         <tag>tech</tag>
          

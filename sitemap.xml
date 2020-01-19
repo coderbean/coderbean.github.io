@@ -65,14 +65,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/categories/index.html</loc>
+    <loc>https://jacobchang.cn/comments/index.html</loc>
     
     <lastmod>2020-01-02T09:28:21.962Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/comments/index.html</loc>
+    <loc>https://jacobchang.cn/categories/index.html</loc>
     
     <lastmod>2020-01-02T09:28:21.962Z</lastmod>
     
@@ -128,13 +128,6 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/2PC-and-3PC.html</loc>
-    
-    <lastmod>2020-01-02T09:28:21.959Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://jacobchang.cn/how-to-use-java-se-create-simple-httpserver.html</loc>
     
     <lastmod>2020-01-02T09:28:21.959Z</lastmod>
@@ -143,6 +136,13 @@
   
   <url>
     <loc>https://jacobchang.cn/create-right-singleton.html</loc>
+    
+    <lastmod>2020-01-02T09:28:21.959Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jacobchang.cn/2PC-and-3PC.html</loc>
     
     <lastmod>2020-01-02T09:28:21.959Z</lastmod>
     
@@ -163,14 +163,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/preparation-and-init-of-classloader.html</loc>
+    <loc>https://jacobchang.cn/transactional-of-spring.html</loc>
     
     <lastmod>2020-01-02T09:28:21.957Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/transactional-of-spring.html</loc>
+    <loc>https://jacobchang.cn/preparation-and-init-of-classloader.html</loc>
     
     <lastmod>2020-01-02T09:28:21.957Z</lastmod>
     
