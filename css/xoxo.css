@@ -789,9 +789,9 @@ body {
 .disqus-comments {
   background-color: #fff;
   display: block;
+  max-width: 850px;
   margin: 0 auto;
-  width: 850px;
-  padding: 0 15px;
+  padding: 0 35px;
 }
 @media (max-width: 300px) {
   .disqus-comments {
