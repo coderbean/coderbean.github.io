@@ -16,14 +16,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/recommend/index.html</loc>
+    <loc>https://jacobchang.cn/resume/index.html</loc>
     
     <lastmod>2020-01-02T09:28:22.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/resume/index.html</loc>
+    <loc>https://jacobchang.cn/recommend/index.html</loc>
     
     <lastmod>2020-01-02T09:28:22.000Z</lastmod>
     
@@ -51,13 +51,6 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/alipay.html</loc>
-    
-    <lastmod>2020-01-02T09:28:21.962Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://jacobchang.cn/baidu_verify_ALK0STR65j.html</loc>
     
     <lastmod>2020-01-02T09:28:21.962Z</lastmod>
@@ -65,7 +58,7 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/comments/index.html</loc>
+    <loc>https://jacobchang.cn/alipay.html</loc>
     
     <lastmod>2020-01-02T09:28:21.962Z</lastmod>
     
@@ -73,6 +66,13 @@
   
   <url>
     <loc>https://jacobchang.cn/categories/index.html</loc>
+    
+    <lastmod>2020-01-02T09:28:21.962Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jacobchang.cn/comments/index.html</loc>
     
     <lastmod>2020-01-02T09:28:21.962Z</lastmod>
     
@@ -114,14 +114,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/be-yourself.html</loc>
+    <loc>https://jacobchang.cn/meaning-of-retained-size.html</loc>
     
     <lastmod>2020-01-02T09:28:21.960Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/meaning-of-retained-size.html</loc>
+    <loc>https://jacobchang.cn/be-yourself.html</loc>
     
     <lastmod>2020-01-02T09:28:21.960Z</lastmod>
     
@@ -149,13 +149,6 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/Monty-Hall-problem.html</loc>
-    
-    <lastmod>2020-01-02T09:28:21.958Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://jacobchang.cn/curses-programming-with-python.html</loc>
     
     <lastmod>2020-01-02T09:28:21.958Z</lastmod>
@@ -163,14 +156,21 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/transactional-of-spring.html</loc>
+    <loc>https://jacobchang.cn/Monty-Hall-problem.html</loc>
+    
+    <lastmod>2020-01-02T09:28:21.958Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jacobchang.cn/preparation-and-init-of-classloader.html</loc>
     
     <lastmod>2020-01-02T09:28:21.957Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/preparation-and-init-of-classloader.html</loc>
+    <loc>https://jacobchang.cn/transactional-of-spring.html</loc>
     
     <lastmod>2020-01-02T09:28:21.957Z</lastmod>
     
@@ -198,14 +198,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/tools-of-jvm.html</loc>
+    <loc>https://jacobchang.cn/gc-algorithms-and-garbage-collector.html</loc>
     
     <lastmod>2020-01-02T09:28:21.954Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/gc-algorithms-and-garbage-collector.html</loc>
+    <loc>https://jacobchang.cn/tools-of-jvm.html</loc>
     
     <lastmod>2020-01-02T09:28:21.954Z</lastmod>
     
@@ -219,14 +219,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/experiment-on-jvm.html</loc>
+    <loc>https://jacobchang.cn/theme-and-plugin-of-atom.html</loc>
     
     <lastmod>2020-01-02T09:28:21.952Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/theme-and-plugin-of-atom.html</loc>
+    <loc>https://jacobchang.cn/experiment-on-jvm.html</loc>
     
     <lastmod>2020-01-02T09:28:21.952Z</lastmod>
     
