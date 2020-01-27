@@ -1120,7 +1120,7 @@ code {
 	stroke: #1f2029;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1024) {
   .progress-wrap.active-progress {
     display: none!important;
   }
