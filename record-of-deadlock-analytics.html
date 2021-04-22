@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
+  <link rel="icon" sizes="any" mask href="/images/favicon.ico" /> 
+  
+  
+
+  <!-- viewjs support -->
+  
+    <!-- for theme: default is false -->
+    <!-- for page: default is true -->
+    <link  href="css/viewer.min.css" rel="stylesheet" >
+    <script src="js/viewer.min.js" type="text/javascript" charset="utf-8"></script>
+  
+  
+  
+    <meta name="keywords" content="tech,MySQL," />
+  
+
+  
+    <meta name="description" content="分享 Java 技术，做有趣的程序员" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.png">
+  <title>线上死锁分析解决纪实 [ 黄小豆的博客 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav id="menu" class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="/images/logo.png">
+    <span class="title">黄小豆的博客</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives/" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags/" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/about/" class="pure-menu-link">关于</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/atom.xml" class="pure-menu-link">订阅</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        线上死锁分析解决纪实
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2019-05-17T08:30:53.000Z">
+          2019-05-17
+        </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+        <span class="post-tags">
+          <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MySQL/" rel="tag">MySQL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tech/" rel="tag">tech</a></li></ul>
+        </span>
+      </span>
+      
+     
+    </header>
+
+    <div class="post-content">
+      <p>服务发生死锁，死锁检测时间较长，31s后死锁检测出来事务才得以回滚，期间不断有相同请求进来，造成死锁越来越复杂，并且服务端线程池中的所有线程都在等待锁，最后造成服务端线程池无空闲线程，拒绝服务。</p>
+<p><strong>注意：单条 SQL 也是一个事务，也会和其他事务发生死锁。</strong></p>
+<span id="more"></span>
+<h1 id="原因分析"><a href="#原因分析" class="headerlink" title="原因分析"></a>原因分析</h1><p>首先奉上 InnoDB 日志 和 DDL</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `campaignmockqueue` (</span><br><span class="line">  `id` <span class="type">int</span>(<span class="number">10</span>) unsigned <span class="keyword">NOT</span> <span class="keyword">NULL</span> AUTO_INCREMENT,</span><br><span class="line">  `campaignid` <span class="type">int</span>(<span class="number">10</span>) unsigned <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  `addtime` <span class="type">int</span>(<span class="number">10</span>) unsigned <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  <span class="keyword">PRIMARY</span> KEY (`id`),</span><br><span class="line">  KEY `idx_campid` (`campaignid`),</span><br><span class="line">  KEY `addtime` (`addtime`)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB AUTO_INCREMENT<span class="operator">=</span><span class="number">1065620134</span> <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="comment">------------------------</span></span><br><span class="line">LATEST DETECTED DEADLOCK</span><br><span class="line"><span class="comment">------------------------</span></span><br><span class="line"><span class="number">2019</span><span class="number">-05</span><span class="number">-16</span> <span class="number">15</span>:<span class="number">38</span>:<span class="number">17</span> <span class="number">0x7f121830f700</span></span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> (<span class="number">1</span>) TRANSACTION:</span><br><span class="line">TRANSACTION <span class="number">161027737922</span>, ACTIVE <span class="number">0</span> sec fetching <span class="keyword">rows</span></span><br><span class="line">mysql tables <span class="keyword">in</span> use <span class="number">1</span>, locked <span class="number">1</span></span><br><span class="line">LOCK WAIT <span class="number">88</span> lock struct(s), heap size <span class="number">24784</span>, <span class="number">1412</span> <span class="type">row</span> lock(s), undo log entries <span class="number">2</span></span><br><span class="line">MySQL thread id <span class="number">42610991</span>, OS thread handle <span class="number">139701841643264</span>, query id <span class="number">40446554160</span> <span class="number">10.7</span><span class="number">.23</span><span class="number">.224</span> promotio_e0a1 updating</span><br><span class="line"><span class="comment">/*id:6d7cc9a7*/</span><span class="keyword">DELETE</span> <span class="keyword">FROM</span> `campaignmockqueue` <span class="keyword">WHERE</span> `campaignid`<span class="operator">=</span><span class="number">52327710</span> <span class="keyword">and</span> `addtime` <span class="operator">&lt;=</span> <span class="number">1557992297</span></span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> (<span class="number">1</span>) WAITING <span class="keyword">FOR</span> THIS LOCK <span class="keyword">TO</span> BE GRANTED:</span><br><span class="line">RECORD LOCKS space id <span class="number">1975</span> page <span class="keyword">no</span> <span class="number">5280</span> n bits <span class="number">1272</span> index idx_campid <span class="keyword">of</span> <span class="keyword">table</span> `promotion`.`campaignmockqueue` trx id <span class="number">161027737922</span> lock_mode X waiting</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> (<span class="number">2</span>) TRANSACTION:</span><br><span class="line">TRANSACTION <span class="number">161027729748</span>, ACTIVE <span class="number">31</span> sec inserting</span><br><span class="line">mysql tables <span class="keyword">in</span> use <span class="number">1</span>, locked <span class="number">1</span></span><br><span class="line"><span class="number">7</span> lock struct(s), heap size <span class="number">1136</span>, <span class="number">7</span> <span class="type">row</span> lock(s), undo log entries <span class="number">14</span></span><br><span class="line">MySQL thread id <span class="number">42610752</span>, OS thread handle <span class="number">139715692001024</span>, query id <span class="number">40446554260</span> <span class="number">10.43</span><span class="number">.174</span><span class="number">.209</span> promotio_e0a1 update</span><br><span class="line"><span class="comment">/*id:dfdc4b66*/</span><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `campaignmockqueue`(</span><br><span class="line">           `campaignid`, `addtime`</span><br><span class="line">        )</span><br><span class="line">        <span class="keyword">VALUES</span></span><br><span class="line">          </span><br><span class="line">            (<span class="number">52327709</span>, <span class="number">1557992297</span>)</span><br><span class="line">         , </span><br><span class="line">            (<span class="number">52327709</span>, <span class="number">1559383140</span>)</span><br><span class="line">         , </span><br><span class="line">            (<span class="number">52327709</span>, <span class="number">1557992296</span>)</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> (<span class="number">2</span>) HOLDS THE LOCK(S):</span><br><span class="line">RECORD LOCKS space id <span class="number">1975</span> page <span class="keyword">no</span> <span class="number">5280</span> n bits <span class="number">1272</span> index idx_campid <span class="keyword">of</span> <span class="keyword">table</span> `promotion`.`campaignmockqueue` trx id <span class="number">161027729748</span> lock_mode X locks rec but <span class="keyword">not</span> gap</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> (<span class="number">2</span>) WAITING <span class="keyword">FOR</span> THIS LOCK <span class="keyword">TO</span> BE GRANTED:</span><br><span class="line">RECORD LOCKS space id <span class="number">1975</span> page <span class="keyword">no</span> <span class="number">5271</span> n bits <span class="number">1272</span> index idx_campid <span class="keyword">of</span> <span class="keyword">table</span> `promotion`.`campaignmockqueue` trx id <span class="number">161027729748</span> lock_mode X locks gap before rec <span class="keyword">insert</span> intention waiting</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> WE ROLL BACK TRANSACTION (<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+<p>如果看不懂日志，可以参考 <a target="_blank" rel="noopener" href="https://blog.csdn.net/sun_ashe/article/details/88381576">这个文章</a></p>
+<p>我们先来看看 <strong>事务1</strong> 和<strong>事务2</strong> 分别持有什么锁，又在等待什么锁。由于日志是在事务 1 的角度来打印的，所以我们只能看到事务 2 持有 <code>lock_mode X locks rec but not gap</code> 锁，在等待 <code>lock_mode X locks gap before rec insert intention</code> 锁。</p>
+<blockquote>
+<p><code>lock_mode X locks rec but not gap</code> 就是写记录锁，只锁了单条记录。</p>
+<p> <code>lock_mode X locks gap before rec insert intention</code>  就是一个插入意向锁，目标是在对应的间隙上（不包括记录本身）加锁。</p>
+</blockquote>
+<p>通过事务 2 的锁信息我们可以推测出事务 1 的锁持有信息，因此就有了下面的图。</p>
+<p>事务 1 当前拥有的应该是间隙 A 和 记录X 组成的 nexy-key 锁 ，现在正在等待的是间隙 b 的锁。</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">DELETE</span> <span class="keyword">FROM</span> `campaignmockqueue` <span class="keyword">WHERE</span> `campaignid`<span class="operator">=</span><span class="number">52327710</span> <span class="keyword">and</span> `addtime` <span class="operator">&lt;=</span> <span class="number">1557992297</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/20190517142816.png" alt=""></p>
+<p>事务 2 当前拥有的应该是 记录 Y 的 X锁， 间隙 D 的插入意向锁， 间隙 C 的插入意向锁 ，现在正在等待的是间隙 e 的 间隙插入意向锁（也有可能是 记录 Y 的 record lock）。</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `campaignmockqueue`(`campaignid`, `addtime` )<span class="keyword">VALUES</span> (<span class="number">52327709</span>, <span class="number">1557992297</span>) , (<span class="number">52327709</span>, <span class="number">1559383140</span>), (<span class="number">52327709</span>, <span class="number">1557992296</span>)</span><br></pre></td></tr></table></figure>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/20190516203451.png" alt=""></p>
+<p> 由于 next-key 锁 和 插入意向锁互斥，所以事务 1 在等待事务 2 释放 C, Y, D；事务 2 在等待事务 1 释放 A。 这样看来正好符合 InnoDB 中的 log。</p>
+<h1 id="模拟流程"><a href="#模拟流程" class="headerlink" title="模拟流程"></a>模拟流程</h1><p>个人认为 由于 next-key 锁和 Gap 锁不是一种锁，因此必然存在时间差，这种时间差在并发量很大的情况下才会凸显出来。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">事务1</th>
+<th>事务2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"></td>
+<td>INSERT INTO <code>campaignmockqueue</code> 记录 Y</td>
+</tr>
+<tr>
+<td style="text-align:left">DELETE FROM <code>campaignmockqueue</code> 获取了 A 的间隙锁还没获取 next-key  锁</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td>INSERT INTO <code>campaignmockqueue</code>(<code>campaignid</code>, <code>addtime</code> )VALUES (52327709, 1557992297) , (52327709, 1559383140), (52327709, 1557992296) （阻塞）</td>
+</tr>
+<tr>
+<td style="text-align:left">DELETE FROM <code>campaignmockqueue</code> 获取 next-key  锁 （阻塞）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h1 id="验证猜想"><a href="#验证猜想" class="headerlink" title="验证猜想"></a>验证猜想</h1><p>上面的情况仅仅是推测，如果我们能拿到 INSERT 语句角度的死锁日志就好了。搜寻了一下 InnoDB 日志，得到了下面的日志，通过交叉分析，可以验证了我们的猜想。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">------------------------</span><br><span class="line">LATEST DETECTED DEADLOCK</span><br><span class="line">------------------------</span><br><span class="line">2019-05-16 03:02:36 0x7f11eebd8700</span><br><span class="line">*** (1) TRANSACTION:</span><br><span class="line">TRANSACTION 161022641521, ACTIVE 0 sec inserting</span><br><span class="line">mysql tables in use 1, locked 1</span><br><span class="line">LOCK WAIT 5 lock struct(s), heap size 1136, 3 row lock(s), undo log entries 2</span><br><span class="line">MySQL thread id 42518313, OS thread handle 139715027216128, query id 40270385508 10.7.224.35 promotio_e0a1 update</span><br><span class="line">&#x2F;*id:dfdc4b66*&#x2F;INSERT INTO &#96;campaignmockqueue&#96;(</span><br><span class="line">&#96;campaignid&#96;, &#96;addtime&#96;</span><br><span class="line">)</span><br><span class="line">VALUES</span><br><span class="line"></span><br><span class="line">(52247612, 1557946956)</span><br><span class="line">, </span><br><span class="line">(52247612, 1557936000)</span><br><span class="line">, </span><br><span class="line">(52247612, 1558022399)</span><br><span class="line">*** (1) WAITING FOR THIS LOCK TO BE GRANTED:</span><br><span class="line">RECORD LOCKS space id 1975 page no 4904 n bits 1264 index addtime of table &#96;promotion&#96;.&#96;campaignmockqueue&#96; trx id 161022641521 lock_mode X locks gap before rec insert intention waiting</span><br><span class="line">*** (2) TRANSACTION:</span><br><span class="line">TRANSACTION 161022641523, ACTIVE 0 sec fetching rows</span><br><span class="line">mysql tables in use 1, locked 1</span><br><span class="line">4 lock struct(s), heap size 1136, 3 row lock(s), undo log entries 1</span><br><span class="line">MySQL thread id 42543917, OS thread handle 139714996569856, query id 40270385509 10.7.23.224 promotio_e0a1 updating</span><br><span class="line">&#x2F;*id:6d7cc9a7*&#x2F;DELETE FROM &#96;campaignmockqueue&#96; WHERE &#96;campaignid&#96;&#x3D;52247612 and &#96;addtime&#96; &lt;&#x3D; 1557946956</span><br><span class="line">*** (2) HOLDS THE LOCK(S):</span><br><span class="line">RECORD LOCKS space id 1975 page no 4904 n bits 1264 index addtime of table &#96;promotion&#96;.&#96;campaignmockqueue&#96; trx id 161022641523 lock_mode X</span><br><span class="line">*** (2) WAITING FOR THIS LOCK TO BE GRANTED:</span><br><span class="line">RECORD LOCKS space id 1975 page no 4904 n bits 1264 index addtime of table &#96;promotion&#96;.&#96;campaignmockqueue&#96; trx id 161022641523 lock_mode X waiting</span><br><span class="line">*** WE ROLL BACK TRANSACTION (2)</span><br></pre></td></tr></table></figure>
+<h1 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h1><p>DELETE FROM <code>campaignmockqueue</code> 不使用 <code>idx_campid</code> 这个索引加锁，而使用唯一主键来做操作，和 insert 操作使用不同的索引，来避免这个问题。</p>
+<h1 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h1><ol>
+<li><a target="_blank" rel="noopener" href="http://hedengcheng.com/?p=771#_Toc374698311">何登成的技术博客 » MySQL 加锁处理分析</a></li>
+<li><a target="_blank" rel="noopener" href="https://my.oschina.net/hebaodan/blog/1835966">mysql并发insert死锁问题——gap、插入意向锁冲突 - hebaodan的博客 - OSCHINA</a></li>
+<li><a href="https://jacobchang.cn/lock-of-mysql.html#%E8%AF%BB%E5%86%99%E6%84%8F%E5%90%91%E9%94%81">MySQL 中的锁 [ 黄小豆的博客 ]</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.aneasystone.com/archives/2018/06/insert-locks-via-mysql-source-code.html">读 MySQL 源码再看 INSERT 加锁流程 - aneasystone’s blog</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/sun_ashe/article/details/88381576">Innodb死锁日志分段解读-如何阅读死锁日志 - 奎因&amp;华洛 - CSDN博客</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.fordba.com/lock-analyse-of-delete.html">MySQL DELETE 删除语句加锁分析 | | For DBA</a></li>
+</ol>
+
+    </div>
+    <br>
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8E%9F%E5%9B%A0%E5%88%86%E6%9E%90"><span class="toc-text">原因分析</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A8%A1%E6%8B%9F%E6%B5%81%E7%A8%8B"><span class="toc-text">模拟流程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%AA%8C%E8%AF%81%E7%8C%9C%E6%83%B3"><span class="toc-text">验证猜想</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-text">解决方案</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="toc-text">参考文档</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-qcode.jpg" height="200" width="200" alt="" style="margin: auto; display: block;" />
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">关注“豆菽技术”公众号</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/best-practices-of-aria2.html" rel="next" title="Aria2 GUI最佳实践">
+          Aria2 GUI最佳实践
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/create-right-singleton.html" rel="prev" title="如何构建一个正确的单例">
+            如何构建一个正确的单例
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+  <section class="disqus-comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+  </section>
+
+  <script>
+    var disqus_shortname = 'coderbean';
+    
+    var disqus_url = 'https://jacobchang.cn/record-of-deadlock-analytics.html';
+    
+    (function(){
+      var dsq = document.createElement('script');
+      dsq.type = 'text/javascript';
+      dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+
+  <script id="dsq-count-scr" src="//coderbean.disqus.com/count.js" async></script>
+
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item-hide" href="https://jacobchang.cn/" target="_blank">主站</a>
+        <a class="bottom-item-hide">·</a>
+        <a class="bottom-item-hide" href="https://zhangbo.site/" target="_blank">备份站点</a>
+        <a class="bottom-item-hide">·</a>
+        <a class="bottom-item-hide" href="https://github.com/coderbean" target="_blank">GitHub</a>
+        <a class="bottom-item-hide">·</a>
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a>
+        <a class="bottom-item">·</a>
+        <a class="bottom-item" href="https://github.com/coderbean/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+    <div id="bottom-inner">
+        <a class="bottom-item-hide" target="_blank" rel="noopener" href="http://beian.miit.gov.cn">备案号：京ICP备18044354号-1</a> 
+        <a class="bottom-item-hide">·</a>
+        <a id="copyright" class="bottom-item"></a>
+    </div>
+</footer>
+
+<script language="javascript" type="text/javascript">
+    var df = new Date();
+    var year = df.getFullYear();
+    document.getElementById("copyright").innerHTML = "Copyright © 2017 – " + year + " 黄小豆";
+</script>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("menu");
+      if (logo) {
+        logo.onclick = function(event) {
+          // returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+  <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+                  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+              m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-155080039-1', 'auto');
+      ga('send', 'pageview');
+  </script>
+
+
+  
+<link rel='stylesheet' href='https://s3-us-west-2.amazonaws.com/s.cdpn.io/1462889/unicons.css'>
+
+<div class="progress-wrap">
+    <svg class="progress-circle svg-content" width="100%" height="100%" viewBox="-1 -1 102 102">
+        <path d="M50,1 a49,49 0 0,1 0,98 a49,49 0 0,1 0,-98" />
+    </svg>
+</div>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js'></script>
+<script>
+
+    (function ($) {
+        "use strict";
+        $(document).ready(function () {
+            "use strict";
+
+            //Scroll back to top
+
+            var progressPath = document.querySelector('.progress-wrap path');
+            var pathLength = progressPath.getTotalLength();
+            progressPath.style.transition = progressPath.style.WebkitTransition = 'none';
+            progressPath.style.strokeDasharray = pathLength + ' ' + pathLength;
+            progressPath.style.strokeDashoffset = pathLength;
+            progressPath.getBoundingClientRect();
+            progressPath.style.transition = progressPath.style.WebkitTransition = 'stroke-dashoffset 10ms linear';
+            var updateProgress = function () {
+                var scroll = $(window).scrollTop();
+                var height = $(document).height() - $(window).height();
+                var progress = pathLength - (scroll * pathLength / height);
+                progressPath.style.strokeDashoffset = progress;
+            }
+            updateProgress();
+            $(window).scroll(updateProgress);
+            var offset = 50;
+            var duration = 550;
+            jQuery(window).on('scroll', function () {
+                if (jQuery(this).scrollTop() > offset) {
+                    jQuery('.progress-wrap').addClass('active-progress');
+                } else {
+                    jQuery('.progress-wrap').removeClass('active-progress');
+                }
+            });
+            jQuery('.progress-wrap').on('click', function (event) {
+                event.preventDefault();
+                jQuery('html, body').animate({ scrollTop: 0 }, duration);
+                return false;
+            })
+
+
+        });
+
+    })(jQuery);
+</script>
+
+  
+<!-- for theme: default is false -->
+<!-- for page: default is true -->
+<!-- 图片查看器实例配置 -->
+<script type="text/javascript">
+    //默认设置， 可以根据个人需求和喜好进行配置
+    //详细参考官方说明
+    Viewer.setDefaults({
+        //设置初始缩放 default: 1
+        zoomRatio: [0.5],
+        // 过渡动画
+        transition:true,
+        // 显示工具条
+        toolbar: false,
+    });
+    //获得content中所有的图片， 不同主题可能有所不同
+    //为了和其他的图片区别开来 所以在markdown中插入图片的时候使用独特的记号
+    //为了一次性得到所有的图片我这里采用的是class = 'article-image'
+    var article = document.querySelector('.post-content');
+    if(article!=null) {
+        var imageList = article.getElementsByTagName('img');
+        //将获取到的HTMLCollections转化成Array
+        var imageArray = new Array();
+        Array.prototype.forEach.call(imageList, element => {
+            imageArray.push(element);
+        });
+        //设置每个图片成为图片组
+        Array.prototype.forEach.call(imageList, element => {
+            var viewer1 = new Viewer(element);
+            viewer1.images = imageArray;
+            viewer1.length = imageArray.length;
+        });
+    }
+
+    
+</script>
+
+  
+  <! -- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+                processEscapes: true
+                    
+}
+  
+        });
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+tex2jax: {
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+                  
+}
+    
+        });
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Queue(function() {
+            var all = MathJax.Hub.getAllJax(), i;
+            for(i=0; i < all.length; i += 1) {
+                            all[i].SourceElement().parentNode.className += ' has-jax';
+                                    
+            }
+                
+        });
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+</script>
+
+  
+</body>
+
+</html>
