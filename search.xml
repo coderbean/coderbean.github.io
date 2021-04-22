@@ -467,153 +467,6 @@
       </tags>
   </entry>
   <entry>
-    <title>分布式一致性协议学习笔记：2PC 和 3PC</title>
-    <url>/2PC-and-3PC.html</url>
-    <content><![CDATA[<p>了解分布式一致性的一些概念和理论，介绍简单常用的分布式一致性协议。主要介绍二阶段提交和三阶段提交的基本流程，并相互比较。</p>
-<span id="more"></span>
-<p><img src="../media/Transfagarasan_ZH-CN5760731327_1920x1080.jpg" alt="Transfagarasan_ZH-CN5760731327_1920x1080"></p>
-<h2 id="分布式的特点"><a href="#分布式的特点" class="headerlink" title="分布式的特点"></a>分布式的特点</h2><ol>
-<li>分布性：系统中的机器随意分布。</li>
-<li>对等性：组成分布式系统的所有节点都是对等的。</li>
-<li>并发性：需要协调并发操作一些共享资源。</li>
-<li>缺乏全局时钟：在分布式系统中，很难定义两件事情谁先谁后。</li>
-<li>故障总是会发生：任何在设计阶段考虑到的异常情况，一定会在系统实际运行中发生。</li>
-</ol>
-<h2 id="分布式系统常见问题"><a href="#分布式系统常见问题" class="headerlink" title="分布式系统常见问题"></a>分布式系统常见问题</h2><ol>
-<li>通讯异常：单机内存访问往往延时在纳秒数量级（通常是 10ns 左右）；网络则在 0.1～1ms，消息丢失和消息延迟变得非常普遍</li>
-<li>网络分区：俗称”脑裂”，部分节点和整个分布式系统失去联系，自己单独组成了一个小集群。</li>
-<li>三态：成功、失败和超时。无法预测超时的请求是否到达了接收方，还是在接收方返回的时候丢失了。</li>
-</ol>
-<h2 id="CAP-和-BASE-理论"><a href="#CAP-和-BASE-理论" class="headerlink" title="CAP 和 BASE 理论"></a>CAP 和 BASE 理论</h2><p>通常可以把一系列的分布式的操作序列称之为子事务。分布式事务也可以被定义为一种嵌套型事物。分布式系统不可能像单机系统那样可以严格满足 ACID 特性，所以要有不同的取舍，因此有了 CAP 和 BASE 理论。</p>
-<h3 id="CAP"><a href="#CAP" class="headerlink" title="CAP"></a>CAP</h3><p>一个分布式系统不可能同时满足<strong>一致性（C：Consistency）</strong>、<strong>可用性（A：Availability）</strong>和<strong>分区容错性（P：Partition tolerance）</strong>这三个基本需求。</p>
-<p><strong>一致性：</strong> 在分布式环境中，一致性是指数据在多个副本之间是否能够保持一致的特性。数据在发生变化的时候，需要保证发生变化之后，所有的副本都能保持一致。</p>
-<p><strong>可用性：</strong>系统提供的服务必须一直处于可运送的状态，对于每一个请求总是能够在有限的时间内返回结果。</p>
-<p><strong>分区容错性：</strong> 分布式系统在遇到任何网络分区故障的时候，仍然需要保证对外提供满足一致性和可用性的服务。</p>
-<p><img src="https://www.wangbase.com/blogimg/asset/201807/bg2018071607.jpg" alt="CAP 定理示意图"></p>
-<p>对于 CAP 的取舍：放弃 P 的通用做法是将所有的数据都放到一个节点，这样可以避免网络分区带来的问题，但是值得注意的是，<strong>放弃了 P 也就等于放弃了系统的扩展性</strong>；放弃 A ：当系统发生故障的时候，允许系统短时间内不可用，需要等待系统恢复后方可继续提供服务； 放弃 C：<strong>放弃 C 并不是说放弃最终一致性</strong>，而是说放弃强一致性，保证系统在某段时间之后能够达到最终一致性。</p>
-<p>对于一个分布式系统而言，不同节点之间必然存在网络通讯，因此网络分区问题是不可避免的。同时分布式系统的扩展特性也是无法舍弃的。<strong>因此系统的设计和架构一般都考虑如何权衡 A 和 C。</strong></p>
-<h3 id="BASE"><a href="#BASE" class="headerlink" title="BASE"></a>BASE</h3><p>BASE 是 Basically Available（基本可用）、Soft status（软状态）和 Eventually consistent（最终一致性）三个短语的缩写。</p>
-<p><strong>基本可用：</strong>在系统出现故障的时候，允许损失部分可用性。比如响应时间上的损失和功能上的损失。</p>
-<p><strong>软状态：</strong> 也称为弱状态，表示允许系统中的数据存在中间状态，即允许不同的数据副本之间数据同步存在延迟。</p>
-<p><strong>最终一致性：</strong> 经过一段时间的同步之后，系统最终能够达到一个数据一致的状态。</p>
-<blockquote>
-<p>最终一致性的一些变种：</p>
-<ol>
-<li>因果一致性：进程 A 更新数据后通知了进程 B，进程 B 必须对修改后的数据可见。</li>
-<li>读己之所写：进程 A 对数据做的更改，自己总是能够获得最新的值。</li>
-<li>会话一致性：在单个会话中，进程 A 总是能够看到最新的值。</li>
-<li>单调读一致性：在系统中读出数据项 Y 的值 y 后，后面的读取中不允许返回比 y 更旧的值。</li>
-<li>单调写一致性：系统需要保证来自同一个进程的写操作被顺序的执行。</li>
-</ol>
-</blockquote>
-<h2 id="2PC-与-3PC"><a href="#2PC-与-3PC" class="headerlink" title="2PC 与 3PC"></a>2PC 与 3PC</h2><p>2PC 和 3PC 就是用来保证 CAP 中的 C 或者 BASE 里面的 E 的协议。</p>
-<p>当一个事务需要跨越多个分布式节点的时候，需要引入一个成为<strong>“协调者”（Coordinator）</strong>的组件来统一调度所有分布式节点的执行逻辑，这些被调度的分布式节点则被称为<strong>“参与者”（Participant）</strong>。协调者负责调度参与者的行为，并最终决定这些参与者是否真的需要把事务进行真正的提交。由此，衍生出二阶段提交和三阶段提交两种协议。</p>
-<h3 id="2PC"><a href="#2PC" class="headerlink" title="2PC"></a>2PC</h3><p>两阶段提交主要包含<strong>投票（Propose）</strong>和<strong>执行（Commit）</strong>两个阶段。</p>
-<p>在 Propose 阶段，协调者向所有参与者（voter）发送事务内容，询问是否可以执行事务提交操作，并等待参与者的响应。各个参与者为该事务预留资源，保证在下一个阶段能够提交事务，如果资源可以获取反馈给协调者 agree 响应，反之返回 disagree 响应。</p>
-<p><img src="../media/v2-e2f7149a81d9ad3aa46589e25503d688_r.jpg" alt="事务提交流程"></p>
-<p><strong>事务提交：</strong>如果在 Propose 阶段，所有参与者都返回的是 agree 信号，那么协调者会发送提交事务的请求；所有参与者收到事务提交请求后会正式执行事务提交操作并释放事务执行期间占用的资源，执行完成后将事务执行结果反馈给协调者；协调者收到所有参与者的反馈信息后，事务执行完毕。</p>
-<p><img src="../media/v2-d40abfa365ed84e84e264ba13900f64b_hd.jpg" alt="事务中断流程"></p>
-<p><strong>事务中断：</strong> 如果在 Propose 阶段有参与者返回 disagree 或者有的节点超时未返回，没有投票达成一致，那么协调者会向所有参与者发送回滚请求；参与者收到回滚请求之后会释放掉在 Propose 阶段占用的资源，然后反馈信号给协调者；协调者收到反馈消息之后，完成事务终端。</p>
-<hr>
-<p>二阶段提交协议的优点是：原理简单，实现方便。</p>
-<p>二阶段提交协议的缺点是：</p>
-<ol>
-<li>同步阻塞：2PC 协议的各个阶段都是同步阻塞的，任何节点故障都有会导致事务提交失败。</li>
-<li>单点问题：一旦协调者出现问题，将无法提交事务。如果协调者在收到参与者的 Propose 确认之后，发送 Commit 信号之前发生故障，那么所有参与者占用的资源将无法得到释放。</li>
-<li>数据不一致：如果在 Commit 阶段部分参与者发生了故障，导致事务无法提交，但是正常的参与者提交了事务。导致数据不一致。</li>
-</ol>
-<blockquote>
-<p>假设coordinator和voter3都在Commit这个阶段crash了, 而voter1和voter2没有收到commit消息. 这时候voter1和voter2就陷入了一个困境. 因为他们并不能判断现在是两个场景中的哪一种: </p>
-<ol>
-<li>上轮全票通过然后 voter3 第一个收到了 commit 的消息并在 commit 操作之后 crash 了。</li>
-<li>上轮 voter3 反对所以干脆没有通过。</li>
-</ol>
-<p><img src="../media/v2-a9e4ef8b9082ffdf76bc426e61ba3ed2_hd.jpg" alt="coordinator和voter3 crash, voter{1,2}无法判断当前状态而卡死"></p>
-</blockquote>
-<hr>
-<h3 id="3PC"><a href="#3PC" class="headerlink" title="3PC"></a>3PC</h3><p>三阶段提交是在二阶段提交的基础上进行的改进，将二阶段提交的 Propose Phase 一分为二，形成了 CanCommit、PreCommit 和 doCommit 三个阶段。</p>
-<p><img src="../media/v2-28c17c86e689007015a4853f0d0c4a89_hd-3021775.jpg" alt="3PC, coordinator提议通过, voter{1,2,3}达成新的共识"></p>
-<p><strong>CanCommit：</strong>协调者向所有参与者询问是否可以执行事务提交操作；各参与者想协调者反馈是否可以提交事务。</p>
-<p><strong>PreCommit：</strong> </p>
-<ul>
-<li>如果所有参与者反馈的都是 agree， 那么就会执行事务预提交。协调者发送 PreCommit 请求，参与者收到请求之后进行资源的分配工作，最后将资源分配结果反馈这协调者。等待后面的  commit 命令或者 abort 命令。</li>
-<li>如果任意一个参与者返回了 disagree，或者在协调者等待超时之后。协调者将会向所有参与者节点发送 abort 请求。</li>
-</ul>
-<p><strong>doCommit：</strong> </p>
-<ul>
-<li>如果上面 PreCommit 全部成功，即协调者收到了全部参与者的成功反馈，那么协调者将会发送 doCommit 请求；参与者接收到 doCommit 会正式提交事务然后释放事务执行期间占用的资源，反馈事务提交结果给协调者；协调者收到参与者反馈的消息后，完成事务。</li>
-<li>如果上面的 PreCommit 有部分失败反馈，或者是等待超时就会中断事务。协调者会向所有参与者节点发送 abort 请求；参与者收到 abort 请求后执行回滚操作，并反馈给协调者；协调者收到反馈消息后，完成事务的中断。</li>
-</ul>
-<p>需要注意的是，在 doCommit 阶段，可能出现下面的两种故障：</p>
-<ul>
-<li>协调者出现问题</li>
-<li>协调者和参与者之间网络故障</li>
-</ul>
-<p>无论出现上面那种情况，都会造成从黁税额无法及时收到来自协调者的 doCommit 请求或者是 abort 请求，针对这种情况，参与者会在等待超时之后，继续事务的提交操作。</p>
-<hr>
-<p>三阶段提交协议的优点是：相比于 2PC 能够在单点故障后继续达成一致。</p>
-<p>三阶段提交协议的缺点是：引入了新的问题，如果某个参与者与协调者出现在不同的网络分区，那么该参与者会提交事务，有可能出现数据不一致的情况。</p>
-<hr>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://zhuanlan.zhihu.com/p/35298019">漫话分布式系统共识协议: 2PC/3PC篇 - 知乎</a></p>
-<p><a href="https://www.amazon.cn/dp/B00RECRKPK">《从Paxos到Zookeeper:分布式一致性原理与实践》 倪超【摘要 书评 试读】图书</a></p>
-]]></content>
-      <categories>
-        <category>技术</category>
-      </categories>
-      <tags>
-        <tag>分布式</tag>
-        <tag>一致性协议</tag>
-        <tag>CAP</tag>
-        <tag>BASE</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>如何构建一个正确的单例</title>
-    <url>/create-right-singleton.html</url>
-    <content><![CDATA[<p>单例模式是设计模式里面最常见的，也是在面试过程中面试官最容易考到的，通过单例模式还可以引申到其他的一些并发问题。今天我们来聊聊如何正确的构建一个单例。</p>
-<span id="more"></span>
-<p><img src="../media/dragonboat_ZH-CN0697680986_1920x1080.jpg" alt="dragonboat_ZH-CN0697680986_1920x1080"></p>
-<p>首先我们来写一个最简单的单例，该单例只能使用在单线程的情况下。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UnsafeLazyInitialization</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> Resource resource;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Resource <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (resource == <span class="keyword">null</span>) &#123;</span><br><span class="line">      resource = <span class="keyword">new</span> Resource(); <span class="comment">// 多线程情况下是不安全的发布</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> resource;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>我们来分析一下这个单例如果放到多线程模式下会有什么问题，如果线程 A 和 B 同时到达 <code>if (resource == null)</code> 的时候（或者是由于可见性的原因，线程 B 没有看到线程 A 已经对引用赋值了），此时判断逻辑都为 <code>true</code>  于是就会创建 <code>Resource</code> 对象，两个线程创建了两个对象（如果有多个线程，可能会创建更多的对象），不符合单例的要求。相对这个问题而言，这里还隐藏了更危险的问题，由于指令的重排序的原因，可能导致一些线程能够获取这个单例，但是单例对象还在初始化，内部处于一个不确定的状态。</p>
-<h4 id="饿汉单例（静态类模式）"><a href="#饿汉单例（静态类模式）" class="headerlink" title="饿汉单例（静态类模式）"></a>饿汉单例（静态类模式）</h4><p>下面我们改进一下这个单例，让其变为一个线程安全的单例。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EagerInitialization</span> </span>&#123; <span class="comment">// 饿汉模式</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> Resource resource = <span class="keyword">new</span> Resource(); <span class="comment">// 通过类加载过程，提前加载单例，避免线程竞争</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Resource <span class="title">getResource</span><span class="params">()</span> </span>&#123; </span><br><span class="line">    <span class="keyword">return</span> resource;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>上面的代码如何做到的线程安全，是由于利用了静态初始化器。</p>
-<blockquote>
-<p>静态初始化器是由 JVM 再类的初始化阶段执行，即在类被加载后并且被线程使用之前。由于 JVM 将在初始化期间获得一个锁，并且每个线程都至少获取一次这个锁以确保这个累已经加载，因此在静态初始化期间，内存写入操作将自动对所有线程可见。</p>
-</blockquote>
-<h4 id="懒汉单例-（静态类模式）"><a href="#懒汉单例-（静态类模式）" class="headerlink" title="懒汉单例 （静态类模式）"></a>懒汉单例 （静态类模式）</h4><p>上面的模式展示了如何使用 Java 本身类加载的机制来保证单例的，使用同样的方式也可以构建一种懒汉模式的单例。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ResourceFactory</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ResourceHolder</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Resource resource = <span class="keyword">new</span> Resource();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Resource <span class="title">getResource</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> ResourceHolder.resource;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="双重检测锁-Double-Checked-Locking"><a href="#双重检测锁-Double-Checked-Locking" class="headerlink" title="双重检测锁 Double Checked Locking"></a>双重检测锁 Double Checked Locking</h4><p>在江湖上还传说着一种既高效又线程安全的单例写法：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 不要这么做</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DoubleCheckedLocking</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> Resource resource;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (resource == <span class="keyword">null</span>) &#123;</span><br><span class="line">      <span class="keyword">synchronized</span>(DoubleCheckedLocking.class) &#123;</span><br><span class="line">        <span class="keyword">if</span> (resource == <span class="keyword">null</span>) &#123;</span><br><span class="line">          resource = <span class="keyword">new</span> Resource();</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> resource;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>上面的 DCL 真正的问题在于在没有同步的情况下读取一个共享对象。可见性问题会造成有些线程可能看到失效的值，这个值可能是一个 <code>null</code> ，更加糟糕的情况下，这个值可能是一个不确定的值，因为该对象还没有初始化完成就发布了。</p>
-<p>上面的例子可以改写成以下代码，通过使用 <code>volatile</code> 来保证共享对象的可见性</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DoubleCheckedLocking</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> Resource resource;</span><br><span class="line">  .....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>然而，DCL 的这种使用方法已经被广泛地废弃了——促使该模式出现的驱动力（无竞争同步的执行速度很慢，以及 JVM 启动很慢）已经不复存在了，因此它不是一种高效的优化措施。延迟初始化能带来同样的优势，并且更容易理解。</p>
-</blockquote>
-<h4 id="枚举类模式实现枚举"><a href="#枚举类模式实现枚举" class="headerlink" title="枚举类模式实现枚举"></a>枚举类模式实现枚举</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MySingleton</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">enum</span> <span class="title">Singleton</span> <span class="keyword">implements</span> <span class="title">MySingleton</span> </span>&#123;</span><br><span class="line">  INSTANCE &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;complete singleton&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> MySingleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Singleton.INSTANCE;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>effective java 推荐使用枚举来做单例</p>
-<blockquote>
-<p>使用枚举实现单例的方法虽然还没有广泛采用，但是单元素的枚举类型已经成为实现Singleton的最佳方法。</p>
-</blockquote>
-<p>使用枚举来做单例的优势是：写法简单，单例线程安全由 JMM 提供、反序列化得到的对象也能保证是同一个。</p>
-<p>单例线程安全：如果反编译单例的代码之后，会发现是一些 static 的属性和代码块。</p>
-<p>反序列化的保障：</p>
-<blockquote>
-<p>Java的序列化机制针对枚举类型是特殊处理的。简单来讲，在序列化枚举类型时，只会存储枚举类的引用和枚举常量的名称。随后的反序列化的过程中，这些信息被用来在运行时环境中查找存在的枚举类型对象。</p>
-</blockquote>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>推荐使用枚举去实现单例模式！</p>
-]]></content>
-      <categories>
-        <category>技术</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>tech</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>如何解决动态规划问题</title>
     <url>/solve-dp-problems.html</url>
     <content><![CDATA[<p>曾经的我以为动态规划很神秘，很难理解。后来随着刷的动态规划相关的题越来越多，对于动态规划也就驾轻就熟了。我一开始来认识动态规划是通过概念来理解的，这对于我来说总是显得晦涩。我不是一个善于死记理论的人，反而是通过多刷题，回头再去看动态规划的使用情况则是有一种恍然大悟感。这样的获得想必也不会轻易忘记。刷题并不能让人变得聪明，但确实能够锻炼一个人的思维。</p>
@@ -665,6 +518,52 @@ f(n-1)+f(n-2),\quad x>2
       </categories>
       <tags>
         <tag>算法</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>如何构建一个正确的单例</title>
+    <url>/create-right-singleton.html</url>
+    <content><![CDATA[<p>单例模式是设计模式里面最常见的，也是在面试过程中面试官最容易考到的，通过单例模式还可以引申到其他的一些并发问题。今天我们来聊聊如何正确的构建一个单例。</p>
+<span id="more"></span>
+<p><img src="../media/dragonboat_ZH-CN0697680986_1920x1080.jpg" alt="dragonboat_ZH-CN0697680986_1920x1080"></p>
+<p>首先我们来写一个最简单的单例，该单例只能使用在单线程的情况下。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UnsafeLazyInitialization</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> Resource resource;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Resource <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (resource == <span class="keyword">null</span>) &#123;</span><br><span class="line">      resource = <span class="keyword">new</span> Resource(); <span class="comment">// 多线程情况下是不安全的发布</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> resource;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们来分析一下这个单例如果放到多线程模式下会有什么问题，如果线程 A 和 B 同时到达 <code>if (resource == null)</code> 的时候（或者是由于可见性的原因，线程 B 没有看到线程 A 已经对引用赋值了），此时判断逻辑都为 <code>true</code>  于是就会创建 <code>Resource</code> 对象，两个线程创建了两个对象（如果有多个线程，可能会创建更多的对象），不符合单例的要求。相对这个问题而言，这里还隐藏了更危险的问题，由于指令的重排序的原因，可能导致一些线程能够获取这个单例，但是单例对象还在初始化，内部处于一个不确定的状态。</p>
+<h4 id="饿汉单例（静态类模式）"><a href="#饿汉单例（静态类模式）" class="headerlink" title="饿汉单例（静态类模式）"></a>饿汉单例（静态类模式）</h4><p>下面我们改进一下这个单例，让其变为一个线程安全的单例。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EagerInitialization</span> </span>&#123; <span class="comment">// 饿汉模式</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> Resource resource = <span class="keyword">new</span> Resource(); <span class="comment">// 通过类加载过程，提前加载单例，避免线程竞争</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Resource <span class="title">getResource</span><span class="params">()</span> </span>&#123; </span><br><span class="line">    <span class="keyword">return</span> resource;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的代码如何做到的线程安全，是由于利用了静态初始化器。</p>
+<blockquote>
+<p>静态初始化器是由 JVM 再类的初始化阶段执行，即在类被加载后并且被线程使用之前。由于 JVM 将在初始化期间获得一个锁，并且每个线程都至少获取一次这个锁以确保这个累已经加载，因此在静态初始化期间，内存写入操作将自动对所有线程可见。</p>
+</blockquote>
+<h4 id="懒汉单例-（静态类模式）"><a href="#懒汉单例-（静态类模式）" class="headerlink" title="懒汉单例 （静态类模式）"></a>懒汉单例 （静态类模式）</h4><p>上面的模式展示了如何使用 Java 本身类加载的机制来保证单例的，使用同样的方式也可以构建一种懒汉模式的单例。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ResourceFactory</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ResourceHolder</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Resource resource = <span class="keyword">new</span> Resource();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Resource <span class="title">getResource</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> ResourceHolder.resource;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="双重检测锁-Double-Checked-Locking"><a href="#双重检测锁-Double-Checked-Locking" class="headerlink" title="双重检测锁 Double Checked Locking"></a>双重检测锁 Double Checked Locking</h4><p>在江湖上还传说着一种既高效又线程安全的单例写法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 不要这么做</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DoubleCheckedLocking</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> Resource resource;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (resource == <span class="keyword">null</span>) &#123;</span><br><span class="line">      <span class="keyword">synchronized</span>(DoubleCheckedLocking.class) &#123;</span><br><span class="line">        <span class="keyword">if</span> (resource == <span class="keyword">null</span>) &#123;</span><br><span class="line">          resource = <span class="keyword">new</span> Resource();</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> resource;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的 DCL 真正的问题在于在没有同步的情况下读取一个共享对象。可见性问题会造成有些线程可能看到失效的值，这个值可能是一个 <code>null</code> ，更加糟糕的情况下，这个值可能是一个不确定的值，因为该对象还没有初始化完成就发布了。</p>
+<p>上面的例子可以改写成以下代码，通过使用 <code>volatile</code> 来保证共享对象的可见性</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DoubleCheckedLocking</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> Resource resource;</span><br><span class="line">  .....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>然而，DCL 的这种使用方法已经被广泛地废弃了——促使该模式出现的驱动力（无竞争同步的执行速度很慢，以及 JVM 启动很慢）已经不复存在了，因此它不是一种高效的优化措施。延迟初始化能带来同样的优势，并且更容易理解。</p>
+</blockquote>
+<h4 id="枚举类模式实现枚举"><a href="#枚举类模式实现枚举" class="headerlink" title="枚举类模式实现枚举"></a>枚举类模式实现枚举</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MySingleton</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">enum</span> <span class="title">Singleton</span> <span class="keyword">implements</span> <span class="title">MySingleton</span> </span>&#123;</span><br><span class="line">  INSTANCE &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;complete singleton&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> MySingleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Singleton.INSTANCE;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>effective java 推荐使用枚举来做单例</p>
+<blockquote>
+<p>使用枚举实现单例的方法虽然还没有广泛采用，但是单元素的枚举类型已经成为实现Singleton的最佳方法。</p>
+</blockquote>
+<p>使用枚举来做单例的优势是：写法简单，单例线程安全由 JMM 提供、反序列化得到的对象也能保证是同一个。</p>
+<p>单例线程安全：如果反编译单例的代码之后，会发现是一些 static 的属性和代码块。</p>
+<p>反序列化的保障：</p>
+<blockquote>
+<p>Java的序列化机制针对枚举类型是特殊处理的。简单来讲，在序列化枚举类型时，只会存储枚举类的引用和枚举常量的名称。随后的反序列化的过程中，这些信息被用来在运行时环境中查找存在的枚举类型对象。</p>
+</blockquote>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>推荐使用枚举去实现单例模式！</p>
+]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>tech</tag>
       </tags>
   </entry>
   <entry>
@@ -855,6 +754,107 @@ f(n-1)+f(n-2),\quad x>2
       <tags>
         <tag>Java</tag>
         <tag>tech</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>分布式一致性协议学习笔记：2PC 和 3PC</title>
+    <url>/2PC-and-3PC.html</url>
+    <content><![CDATA[<p>了解分布式一致性的一些概念和理论，介绍简单常用的分布式一致性协议。主要介绍二阶段提交和三阶段提交的基本流程，并相互比较。</p>
+<span id="more"></span>
+<p><img src="../media/Transfagarasan_ZH-CN5760731327_1920x1080.jpg" alt="Transfagarasan_ZH-CN5760731327_1920x1080"></p>
+<h2 id="分布式的特点"><a href="#分布式的特点" class="headerlink" title="分布式的特点"></a>分布式的特点</h2><ol>
+<li>分布性：系统中的机器随意分布。</li>
+<li>对等性：组成分布式系统的所有节点都是对等的。</li>
+<li>并发性：需要协调并发操作一些共享资源。</li>
+<li>缺乏全局时钟：在分布式系统中，很难定义两件事情谁先谁后。</li>
+<li>故障总是会发生：任何在设计阶段考虑到的异常情况，一定会在系统实际运行中发生。</li>
+</ol>
+<h2 id="分布式系统常见问题"><a href="#分布式系统常见问题" class="headerlink" title="分布式系统常见问题"></a>分布式系统常见问题</h2><ol>
+<li>通讯异常：单机内存访问往往延时在纳秒数量级（通常是 10ns 左右）；网络则在 0.1～1ms，消息丢失和消息延迟变得非常普遍</li>
+<li>网络分区：俗称”脑裂”，部分节点和整个分布式系统失去联系，自己单独组成了一个小集群。</li>
+<li>三态：成功、失败和超时。无法预测超时的请求是否到达了接收方，还是在接收方返回的时候丢失了。</li>
+</ol>
+<h2 id="CAP-和-BASE-理论"><a href="#CAP-和-BASE-理论" class="headerlink" title="CAP 和 BASE 理论"></a>CAP 和 BASE 理论</h2><p>通常可以把一系列的分布式的操作序列称之为子事务。分布式事务也可以被定义为一种嵌套型事物。分布式系统不可能像单机系统那样可以严格满足 ACID 特性，所以要有不同的取舍，因此有了 CAP 和 BASE 理论。</p>
+<h3 id="CAP"><a href="#CAP" class="headerlink" title="CAP"></a>CAP</h3><p>一个分布式系统不可能同时满足<strong>一致性（C：Consistency）</strong>、<strong>可用性（A：Availability）</strong>和<strong>分区容错性（P：Partition tolerance）</strong>这三个基本需求。</p>
+<p><strong>一致性：</strong> 在分布式环境中，一致性是指数据在多个副本之间是否能够保持一致的特性。数据在发生变化的时候，需要保证发生变化之后，所有的副本都能保持一致。</p>
+<p><strong>可用性：</strong>系统提供的服务必须一直处于可运送的状态，对于每一个请求总是能够在有限的时间内返回结果。</p>
+<p><strong>分区容错性：</strong> 分布式系统在遇到任何网络分区故障的时候，仍然需要保证对外提供满足一致性和可用性的服务。</p>
+<p><img src="https://www.wangbase.com/blogimg/asset/201807/bg2018071607.jpg" alt="CAP 定理示意图"></p>
+<p>对于 CAP 的取舍：放弃 P 的通用做法是将所有的数据都放到一个节点，这样可以避免网络分区带来的问题，但是值得注意的是，<strong>放弃了 P 也就等于放弃了系统的扩展性</strong>；放弃 A ：当系统发生故障的时候，允许系统短时间内不可用，需要等待系统恢复后方可继续提供服务； 放弃 C：<strong>放弃 C 并不是说放弃最终一致性</strong>，而是说放弃强一致性，保证系统在某段时间之后能够达到最终一致性。</p>
+<p>对于一个分布式系统而言，不同节点之间必然存在网络通讯，因此网络分区问题是不可避免的。同时分布式系统的扩展特性也是无法舍弃的。<strong>因此系统的设计和架构一般都考虑如何权衡 A 和 C。</strong></p>
+<h3 id="BASE"><a href="#BASE" class="headerlink" title="BASE"></a>BASE</h3><p>BASE 是 Basically Available（基本可用）、Soft status（软状态）和 Eventually consistent（最终一致性）三个短语的缩写。</p>
+<p><strong>基本可用：</strong>在系统出现故障的时候，允许损失部分可用性。比如响应时间上的损失和功能上的损失。</p>
+<p><strong>软状态：</strong> 也称为弱状态，表示允许系统中的数据存在中间状态，即允许不同的数据副本之间数据同步存在延迟。</p>
+<p><strong>最终一致性：</strong> 经过一段时间的同步之后，系统最终能够达到一个数据一致的状态。</p>
+<blockquote>
+<p>最终一致性的一些变种：</p>
+<ol>
+<li>因果一致性：进程 A 更新数据后通知了进程 B，进程 B 必须对修改后的数据可见。</li>
+<li>读己之所写：进程 A 对数据做的更改，自己总是能够获得最新的值。</li>
+<li>会话一致性：在单个会话中，进程 A 总是能够看到最新的值。</li>
+<li>单调读一致性：在系统中读出数据项 Y 的值 y 后，后面的读取中不允许返回比 y 更旧的值。</li>
+<li>单调写一致性：系统需要保证来自同一个进程的写操作被顺序的执行。</li>
+</ol>
+</blockquote>
+<h2 id="2PC-与-3PC"><a href="#2PC-与-3PC" class="headerlink" title="2PC 与 3PC"></a>2PC 与 3PC</h2><p>2PC 和 3PC 就是用来保证 CAP 中的 C 或者 BASE 里面的 E 的协议。</p>
+<p>当一个事务需要跨越多个分布式节点的时候，需要引入一个成为<strong>“协调者”（Coordinator）</strong>的组件来统一调度所有分布式节点的执行逻辑，这些被调度的分布式节点则被称为<strong>“参与者”（Participant）</strong>。协调者负责调度参与者的行为，并最终决定这些参与者是否真的需要把事务进行真正的提交。由此，衍生出二阶段提交和三阶段提交两种协议。</p>
+<h3 id="2PC"><a href="#2PC" class="headerlink" title="2PC"></a>2PC</h3><p>两阶段提交主要包含<strong>投票（Propose）</strong>和<strong>执行（Commit）</strong>两个阶段。</p>
+<p>在 Propose 阶段，协调者向所有参与者（voter）发送事务内容，询问是否可以执行事务提交操作，并等待参与者的响应。各个参与者为该事务预留资源，保证在下一个阶段能够提交事务，如果资源可以获取反馈给协调者 agree 响应，反之返回 disagree 响应。</p>
+<p><img src="../media/v2-e2f7149a81d9ad3aa46589e25503d688_r.jpg" alt="事务提交流程"></p>
+<p><strong>事务提交：</strong>如果在 Propose 阶段，所有参与者都返回的是 agree 信号，那么协调者会发送提交事务的请求；所有参与者收到事务提交请求后会正式执行事务提交操作并释放事务执行期间占用的资源，执行完成后将事务执行结果反馈给协调者；协调者收到所有参与者的反馈信息后，事务执行完毕。</p>
+<p><img src="../media/v2-d40abfa365ed84e84e264ba13900f64b_hd.jpg" alt="事务中断流程"></p>
+<p><strong>事务中断：</strong> 如果在 Propose 阶段有参与者返回 disagree 或者有的节点超时未返回，没有投票达成一致，那么协调者会向所有参与者发送回滚请求；参与者收到回滚请求之后会释放掉在 Propose 阶段占用的资源，然后反馈信号给协调者；协调者收到反馈消息之后，完成事务终端。</p>
+<hr>
+<p>二阶段提交协议的优点是：原理简单，实现方便。</p>
+<p>二阶段提交协议的缺点是：</p>
+<ol>
+<li>同步阻塞：2PC 协议的各个阶段都是同步阻塞的，任何节点故障都有会导致事务提交失败。</li>
+<li>单点问题：一旦协调者出现问题，将无法提交事务。如果协调者在收到参与者的 Propose 确认之后，发送 Commit 信号之前发生故障，那么所有参与者占用的资源将无法得到释放。</li>
+<li>数据不一致：如果在 Commit 阶段部分参与者发生了故障，导致事务无法提交，但是正常的参与者提交了事务。导致数据不一致。</li>
+</ol>
+<blockquote>
+<p>假设coordinator和voter3都在Commit这个阶段crash了, 而voter1和voter2没有收到commit消息. 这时候voter1和voter2就陷入了一个困境. 因为他们并不能判断现在是两个场景中的哪一种: </p>
+<ol>
+<li>上轮全票通过然后 voter3 第一个收到了 commit 的消息并在 commit 操作之后 crash 了。</li>
+<li>上轮 voter3 反对所以干脆没有通过。</li>
+</ol>
+<p><img src="../media/v2-a9e4ef8b9082ffdf76bc426e61ba3ed2_hd.jpg" alt="coordinator和voter3 crash, voter{1,2}无法判断当前状态而卡死"></p>
+</blockquote>
+<hr>
+<h3 id="3PC"><a href="#3PC" class="headerlink" title="3PC"></a>3PC</h3><p>三阶段提交是在二阶段提交的基础上进行的改进，将二阶段提交的 Propose Phase 一分为二，形成了 CanCommit、PreCommit 和 doCommit 三个阶段。</p>
+<p><img src="../media/v2-28c17c86e689007015a4853f0d0c4a89_hd-3021775.jpg" alt="3PC, coordinator提议通过, voter{1,2,3}达成新的共识"></p>
+<p><strong>CanCommit：</strong>协调者向所有参与者询问是否可以执行事务提交操作；各参与者想协调者反馈是否可以提交事务。</p>
+<p><strong>PreCommit：</strong> </p>
+<ul>
+<li>如果所有参与者反馈的都是 agree， 那么就会执行事务预提交。协调者发送 PreCommit 请求，参与者收到请求之后进行资源的分配工作，最后将资源分配结果反馈这协调者。等待后面的  commit 命令或者 abort 命令。</li>
+<li>如果任意一个参与者返回了 disagree，或者在协调者等待超时之后。协调者将会向所有参与者节点发送 abort 请求。</li>
+</ul>
+<p><strong>doCommit：</strong> </p>
+<ul>
+<li>如果上面 PreCommit 全部成功，即协调者收到了全部参与者的成功反馈，那么协调者将会发送 doCommit 请求；参与者接收到 doCommit 会正式提交事务然后释放事务执行期间占用的资源，反馈事务提交结果给协调者；协调者收到参与者反馈的消息后，完成事务。</li>
+<li>如果上面的 PreCommit 有部分失败反馈，或者是等待超时就会中断事务。协调者会向所有参与者节点发送 abort 请求；参与者收到 abort 请求后执行回滚操作，并反馈给协调者；协调者收到反馈消息后，完成事务的中断。</li>
+</ul>
+<p>需要注意的是，在 doCommit 阶段，可能出现下面的两种故障：</p>
+<ul>
+<li>协调者出现问题</li>
+<li>协调者和参与者之间网络故障</li>
+</ul>
+<p>无论出现上面那种情况，都会造成从黁税额无法及时收到来自协调者的 doCommit 请求或者是 abort 请求，针对这种情况，参与者会在等待超时之后，继续事务的提交操作。</p>
+<hr>
+<p>三阶段提交协议的优点是：相比于 2PC 能够在单点故障后继续达成一致。</p>
+<p>三阶段提交协议的缺点是：引入了新的问题，如果某个参与者与协调者出现在不同的网络分区，那么该参与者会提交事务，有可能出现数据不一致的情况。</p>
+<hr>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://zhuanlan.zhihu.com/p/35298019">漫话分布式系统共识协议: 2PC/3PC篇 - 知乎</a></p>
+<p><a href="https://www.amazon.cn/dp/B00RECRKPK">《从Paxos到Zookeeper:分布式一致性原理与实践》 倪超【摘要 书评 试读】图书</a></p>
+]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>分布式</tag>
+        <tag>一致性协议</tag>
+        <tag>CAP</tag>
+        <tag>BASE</tag>
       </tags>
   </entry>
   <entry>
