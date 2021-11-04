@@ -13,15 +13,11 @@
     <lastmod>2020-01-02</lastmod>
   </url>
   <url>
-    <loc>https://jacobchang.cn/solve-dp-problems.html</loc>
-    <lastmod>2020-01-02</lastmod>
-  </url>
-  <url>
     <loc>https://jacobchang.cn/be-yourself.html</loc>
     <lastmod>2020-01-02</lastmod>
   </url>
   <url>
-    <loc>https://jacobchang.cn/idempotence-design.html</loc>
+    <loc>https://jacobchang.cn/solve-dp-problems.html</loc>
     <lastmod>2020-01-02</lastmod>
   </url>
   <url>
@@ -29,7 +25,11 @@
     <lastmod>2020-01-02</lastmod>
   </url>
   <url>
-    <loc>https://jacobchang.cn/2PC-and-3PC.html</loc>
+    <loc>https://jacobchang.cn/idempotence-design.html</loc>
+    <lastmod>2020-01-02</lastmod>
+  </url>
+  <url>
+    <loc>https://jacobchang.cn/how-to-use-java-se-create-simple-httpserver.html</loc>
     <lastmod>2020-01-02</lastmod>
   </url>
   <url>
@@ -37,7 +37,7 @@
     <lastmod>2020-01-02</lastmod>
   </url>
   <url>
-    <loc>https://jacobchang.cn/how-to-use-java-se-create-simple-httpserver.html</loc>
+    <loc>https://jacobchang.cn/2PC-and-3PC.html</loc>
     <lastmod>2020-01-02</lastmod>
   </url>
   <url>
@@ -49,11 +49,11 @@
     <lastmod>2020-01-02</lastmod>
   </url>
   <url>
-    <loc>https://jacobchang.cn/transactional-of-spring.html</loc>
+    <loc>https://jacobchang.cn/preparation-and-init-of-classloader.html</loc>
     <lastmod>2020-01-02</lastmod>
   </url>
   <url>
-    <loc>https://jacobchang.cn/preparation-and-init-of-classloader.html</loc>
+    <loc>https://jacobchang.cn/transactional-of-spring.html</loc>
     <lastmod>2020-01-02</lastmod>
   </url>
   <url>
