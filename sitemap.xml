@@ -72,14 +72,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/comments/index.html</loc>
+    <loc>https://jacobchang.cn/categories/index.html</loc>
     
     <lastmod>2020-01-02T09:28:21.962Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/categories/index.html</loc>
+    <loc>https://jacobchang.cn/comments/index.html</loc>
     
     <lastmod>2020-01-02T09:28:21.962Z</lastmod>
     
@@ -163,14 +163,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/transactional-of-spring.html</loc>
+    <loc>https://jacobchang.cn/preparation-and-init-of-classloader.html</loc>
     
     <lastmod>2020-01-02T09:28:21.957Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/preparation-and-init-of-classloader.html</loc>
+    <loc>https://jacobchang.cn/transactional-of-spring.html</loc>
     
     <lastmod>2020-01-02T09:28:21.957Z</lastmod>
     
@@ -198,14 +198,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/tools-of-jvm.html</loc>
+    <loc>https://jacobchang.cn/gc-algorithms-and-garbage-collector.html</loc>
     
     <lastmod>2020-01-02T09:28:21.954Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/gc-algorithms-and-garbage-collector.html</loc>
+    <loc>https://jacobchang.cn/tools-of-jvm.html</loc>
     
     <lastmod>2020-01-02T09:28:21.954Z</lastmod>
     
