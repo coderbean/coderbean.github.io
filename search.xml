@@ -47,6 +47,49 @@
       </tags>
   </entry>
   <entry>
+    <title>JVM 探究（一）：JVM内存模型概念模型</title>
+    <url>/jmm-of-jvm.html</url>
+    <content><![CDATA[<p>作为一个 Java 程序员，不了解 Java 内存模型就不能写出能够充分利用内存的代码。本文通过对 Java 内存模型的介绍，让读者能够了解 Java 的内存的分配情况，适合 Java 初学者或者对 JMM 不熟悉的同学。后面的博客会针对每个部分做更加深入的解释。<br><span id="more"></span></p>
+<h2 id="Java-内存模型"><a href="#Java-内存模型" class="headerlink" title="Java 内存模型"></a>Java 内存模型</h2><p>首先通过下图对于 Java 内存模型有一个整体的认识，然后针对不同的区域的作用和存储的内容做进一步的解释。</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnvc6jtby5j30r50l9wh2.jpg" alt="Java内存模型"></p>
+<h3 id="PC（程序计数器）"><a href="#PC（程序计数器）" class="headerlink" title="PC（程序计数器）"></a>PC（程序计数器）</h3><p>这里的 PC 不是 Personal Computer，而是 Program Counter Register，从名字就可以看出来，这是一个寄存器，用来存储需要执行的指令地址。</p>
+<blockquote>
+<p>程序计数器（Program Counter (PC)）是在电脑处理器中的一个寄存器，用来指示电脑下一步要运行的指令序列。—WikiPedia</p>
+</blockquote>
+<p>PC 和其他 JVM 内存区域最大的区别是：</p>
+<blockquote>
+<p><strong>“此内存区域是唯一一个在Java虚拟机规范中没有规定任何OutOfMemoryError情况的区域。</strong>”<br>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
+</blockquote>
+<p>像上面的图片一样，PC 是每个线程私有的，对于 Java 方法而言，PC 中存储的是正在执行的虚拟机字节码的内存地址；对于 Native 方法来说，PC 中的值为空（Undefined）。</p>
+<h3 id="Java-虚拟机栈和本地方法栈"><a href="#Java-虚拟机栈和本地方法栈" class="headerlink" title="Java 虚拟机栈和本地方法栈"></a>Java 虚拟机栈和本地方法栈</h3><h4 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h4><p>无论是在大学的 Java 编程课堂上，还是我们在学习过程编码过程，经常会出现 StackOverFlow，甚至目前最大的技术问答社区的名字也是 StackOverFlow。Java 语言中会产生栈溢出的就是这块内存区域，当你的程序中设置了超过 JVM 规定的递归深度的时候就会触发这个异常。类似 JMM 的其他内存区域，如果虚拟机栈在动态扩展的时候无法申请到足够的内存也会报OOM异常。</p>
+<p>Java 语言中每一个方法的执行都对应着一个栈帧（Stack Frame）的创建，栈帧中存储的是局部变量、方法出口等信息，因此对于一个方法的执行而言，所能够使用到的内存是在编译期间就能够完全确定的，在运行期间不会发生变化。在栈帧中，局部变量空间成为 Slot，除了 double 和 long 占有 2 个 slot 外，其他基本数据类型和对象引用都占用 1 个 slot 空间</p>
+<h4 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h4><p>本地方法栈和虚拟机栈最大的区别就是虚拟机栈是为执行 Java 字节码服务的，而本地方法栈是为了虚拟机使用到的 Native 方法服务的。除此之外，Java 虚拟机规范并没有针对本地方法栈的实现做具体规定。在 HotSpot 虚拟机中，本地方法栈和虚拟机栈是共用同一块内存的，不做具体区分。同样，本地方法栈也会产生 OOM 异常和 StackOverFlow 异常。</p>
+<h3 id="Java-堆"><a href="#Java-堆" class="headerlink" title="Java 堆"></a>Java 堆</h3><blockquote>
+<p>“The heap is the runtime data area from which memory for all class instances and arrays is allocated。” —Java虚拟机规范</p>
+</blockquote>
+<p>Java 虚拟机规范规定所有的实例对象和数组都应该分配到 Java 堆中。<br>说的通俗一点就是所有 new 出来的对象和数组都会放到该区域，由于现在的收集器都采用分代收集算法，所以在 Java 堆中又分了新生代和老年代，新生代有做了详细的区分。该区域的大小可以通过 JVM 参数 <code>-Xmx</code> 和 <code>-Xms</code> 来设置。</p>
+<h4 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h4><p>在 JDK1.4 中引入了 NIO，可以通过 Native 方法直接在堆外分配内存，然后通过在堆中存储的引用来对这块内存区域做操作。<strong>注意</strong> 这块区域并不会在 <code>-Xmx</code>和 <code>-Xms</code> 设置的大小之内，因此在设置 JVM 参数的时候要注意考虑这块内存区域，避免设置的内存区域总额大于物理内存</p>
+<h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3><p>Method Area 又叫 NonHeap，也是线程共有的内存区域，用来存：</p>
+<ul>
+<li>类信息</li>
+<li>常量</li>
+<li>静态变量</li>
+<li>字符串常量池</li>
+</ul>
+<p>在 JDK1.7 中已经将字符串常量池移出永久代，在 Java8 中更是之内取消了永久代，而是使用了元空间（MetaSpace）来存储这些信息，从而永久代的大小不需要再指定，只要不超出物理内存的限制就不会产生 OOM 异常</p>
+<h4 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h4><p>运行时常量池主要用来存储类的版本、字段、方法、接口等描述信息。常量池（Constant Pool Table）用来存储各种字面量和符号引用。String 的 <code>intern()</code> 方法就是在运行期间将对象放到常量池中的。此部分也会出现 OOM 异常。</p>
+<h2 id="JDK8-以及之后的模型"><a href="#JDK8-以及之后的模型" class="headerlink" title="JDK8 以及之后的模型"></a>JDK8 以及之后的模型</h2><p><img src="https://raw.githubusercontent.com/PicGoBed/PicBed/master/2019-07-26-NrXELZ.jpg" alt="pic"></p>
+]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>JVM</tag>
+        <tag>tech</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Aria2 GUI最佳实践</title>
     <url>/best-practices-of-aria2.html</url>
     <content><![CDATA[<p>目前用的爽的下载工具，通过搭配  Chrome 和 自己写的一些脚本达到不输迅雷的用户体验。</p>
@@ -126,49 +169,6 @@
       </tags>
   </entry>
   <entry>
-    <title>JVM 探究（一）：JVM内存模型概念模型</title>
-    <url>/jmm-of-jvm.html</url>
-    <content><![CDATA[<p>作为一个 Java 程序员，不了解 Java 内存模型就不能写出能够充分利用内存的代码。本文通过对 Java 内存模型的介绍，让读者能够了解 Java 的内存的分配情况，适合 Java 初学者或者对 JMM 不熟悉的同学。后面的博客会针对每个部分做更加深入的解释。<br><span id="more"></span></p>
-<h2 id="Java-内存模型"><a href="#Java-内存模型" class="headerlink" title="Java 内存模型"></a>Java 内存模型</h2><p>首先通过下图对于 Java 内存模型有一个整体的认识，然后针对不同的区域的作用和存储的内容做进一步的解释。</p>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnvc6jtby5j30r50l9wh2.jpg" alt="Java内存模型"></p>
-<h3 id="PC（程序计数器）"><a href="#PC（程序计数器）" class="headerlink" title="PC（程序计数器）"></a>PC（程序计数器）</h3><p>这里的 PC 不是 Personal Computer，而是 Program Counter Register，从名字就可以看出来，这是一个寄存器，用来存储需要执行的指令地址。</p>
-<blockquote>
-<p>程序计数器（Program Counter (PC)）是在电脑处理器中的一个寄存器，用来指示电脑下一步要运行的指令序列。—WikiPedia</p>
-</blockquote>
-<p>PC 和其他 JVM 内存区域最大的区别是：</p>
-<blockquote>
-<p><strong>“此内存区域是唯一一个在Java虚拟机规范中没有规定任何OutOfMemoryError情况的区域。</strong>”<br>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
-</blockquote>
-<p>像上面的图片一样，PC 是每个线程私有的，对于 Java 方法而言，PC 中存储的是正在执行的虚拟机字节码的内存地址；对于 Native 方法来说，PC 中的值为空（Undefined）。</p>
-<h3 id="Java-虚拟机栈和本地方法栈"><a href="#Java-虚拟机栈和本地方法栈" class="headerlink" title="Java 虚拟机栈和本地方法栈"></a>Java 虚拟机栈和本地方法栈</h3><h4 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h4><p>无论是在大学的 Java 编程课堂上，还是我们在学习过程编码过程，经常会出现 StackOverFlow，甚至目前最大的技术问答社区的名字也是 StackOverFlow。Java 语言中会产生栈溢出的就是这块内存区域，当你的程序中设置了超过 JVM 规定的递归深度的时候就会触发这个异常。类似 JMM 的其他内存区域，如果虚拟机栈在动态扩展的时候无法申请到足够的内存也会报OOM异常。</p>
-<p>Java 语言中每一个方法的执行都对应着一个栈帧（Stack Frame）的创建，栈帧中存储的是局部变量、方法出口等信息，因此对于一个方法的执行而言，所能够使用到的内存是在编译期间就能够完全确定的，在运行期间不会发生变化。在栈帧中，局部变量空间成为 Slot，除了 double 和 long 占有 2 个 slot 外，其他基本数据类型和对象引用都占用 1 个 slot 空间</p>
-<h4 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h4><p>本地方法栈和虚拟机栈最大的区别就是虚拟机栈是为执行 Java 字节码服务的，而本地方法栈是为了虚拟机使用到的 Native 方法服务的。除此之外，Java 虚拟机规范并没有针对本地方法栈的实现做具体规定。在 HotSpot 虚拟机中，本地方法栈和虚拟机栈是共用同一块内存的，不做具体区分。同样，本地方法栈也会产生 OOM 异常和 StackOverFlow 异常。</p>
-<h3 id="Java-堆"><a href="#Java-堆" class="headerlink" title="Java 堆"></a>Java 堆</h3><blockquote>
-<p>“The heap is the runtime data area from which memory for all class instances and arrays is allocated。” —Java虚拟机规范</p>
-</blockquote>
-<p>Java 虚拟机规范规定所有的实例对象和数组都应该分配到 Java 堆中。<br>说的通俗一点就是所有 new 出来的对象和数组都会放到该区域，由于现在的收集器都采用分代收集算法，所以在 Java 堆中又分了新生代和老年代，新生代有做了详细的区分。该区域的大小可以通过 JVM 参数 <code>-Xmx</code> 和 <code>-Xms</code> 来设置。</p>
-<h4 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h4><p>在 JDK1.4 中引入了 NIO，可以通过 Native 方法直接在堆外分配内存，然后通过在堆中存储的引用来对这块内存区域做操作。<strong>注意</strong> 这块区域并不会在 <code>-Xmx</code>和 <code>-Xms</code> 设置的大小之内，因此在设置 JVM 参数的时候要注意考虑这块内存区域，避免设置的内存区域总额大于物理内存</p>
-<h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3><p>Method Area 又叫 NonHeap，也是线程共有的内存区域，用来存：</p>
-<ul>
-<li>类信息</li>
-<li>常量</li>
-<li>静态变量</li>
-<li>字符串常量池</li>
-</ul>
-<p>在 JDK1.7 中已经将字符串常量池移出永久代，在 Java8 中更是之内取消了永久代，而是使用了元空间（MetaSpace）来存储这些信息，从而永久代的大小不需要再指定，只要不超出物理内存的限制就不会产生 OOM 异常</p>
-<h4 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h4><p>运行时常量池主要用来存储类的版本、字段、方法、接口等描述信息。常量池（Constant Pool Table）用来存储各种字面量和符号引用。String 的 <code>intern()</code> 方法就是在运行期间将对象放到常量池中的。此部分也会出现 OOM 异常。</p>
-<h2 id="JDK8-以及之后的模型"><a href="#JDK8-以及之后的模型" class="headerlink" title="JDK8 以及之后的模型"></a>JDK8 以及之后的模型</h2><p><img src="https://raw.githubusercontent.com/PicGoBed/PicBed/master/2019-07-26-NrXELZ.jpg" alt="pic"></p>
-]]></content>
-      <categories>
-        <category>技术</category>
-      </categories>
-      <tags>
-        <tag>JVM</tag>
-        <tag>tech</tag>
-        <tag>Java</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Java 中的偏向锁、轻量级锁和重量级锁</title>
     <url>/lock-of-synchronized.html</url>
     <content><![CDATA[<p>今天我们来聊聊 Synchronized 里面的各种锁：偏向锁、轻量级锁、重量级锁，以及三个锁之间是如何进行锁膨胀的。</p>
@@ -243,45 +243,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Java压缩流GZIPStream导致的内存泄露</title>
-    <url>/things-about-java-gzipstream.html</url>
-    <content><![CDATA[<p>我们来聊聊<code>GZIPOutputStream</code> 和 <code>GZIPInputStream</code>, 如果不关闭流会引起的内存泄露问题，以及<code>GZIPStream</code>申请和释放堆外内存的流程， Let’s do it!<br><span id="more"></span></p>
-<h3 id="引子"><a href="#引子" class="headerlink" title="引子"></a>引子</h3><p>在我的工程里面又一个工具类 <code>ZipHelper</code> 用来压缩和解压 <code>String</code></p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.ByteArrayInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.ByteArrayOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.util.zip.GZIPInputStream;</span><br><span class="line"><span class="keyword">import</span> java.util.zip.GZIPOutputStream;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 用来压缩和解压字符串</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ZipHelper</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 压缩</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">compress</span><span class="params">(String str)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (str == <span class="keyword">null</span> || str.length() == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> str;</span><br><span class="line">        &#125;</span><br><span class="line">        ByteArrayOutputStream out = <span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">        GZIPOutputStream gzip = <span class="keyword">new</span> GZIPOutputStream(out);</span><br><span class="line">        gzip.write(str.getBytes());</span><br><span class="line">        gzip.close();</span><br><span class="line">        <span class="keyword">return</span> out.toString(<span class="string">&quot;ISO-8859-1&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 解压缩</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">uncompress</span><span class="params">(String str)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (str == <span class="keyword">null</span> || str.length() == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> str;</span><br><span class="line">        &#125;</span><br><span class="line">        ByteArrayOutputStream out = <span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">        ByteArrayInputStream in = <span class="keyword">new</span> ByteArrayInputStream(str.getBytes(<span class="string">&quot;ISO-8859-1&quot;</span>));</span><br><span class="line">        GZIPInputStream gunzip = <span class="keyword">new</span> GZIPInputStream(in);</span><br><span class="line">        <span class="keyword">byte</span>[] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>];</span><br><span class="line">        <span class="keyword">int</span> n;</span><br><span class="line">        <span class="keyword">while</span> ((n = gunzip.read(buffer)) &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">            out.write(buffer, <span class="number">0</span>, n);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> out.toString();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>最近服务出现了占用swap空间的问题，初步定位为内存泄漏，最后通过分析定位到是 Native 方法<code>Java_java_util_zip_Inflater_init</code>一直在申请内存（关于分析方法可以查阅这篇博客<a href="https://jacobchang.cn/action-in-memory-leak-analysis.html">内存泄露分析实战</a>）但是没有释放，很有可能就是流没有关闭造成的，而这部分代码最大的问题就是没有在<code>finally</code>里面去关闭流，于是乎我打算改造这部分代码，利用 try-with-resource 语法糖，然后代码就被修改成了这样：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.ByteArrayInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.ByteArrayOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.util.zip.GZIPInputStream;</span><br><span class="line"><span class="keyword">import</span> java.util.zip.GZIPOutputStream;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Created by jacob.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 用来压缩和解压字符串</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ZipHelper</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 压缩字符串</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> str 待压缩的字符串</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 压缩后的字符串</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> Exception 压缩过程中的异常</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">compress</span><span class="params">(String str)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (str == <span class="keyword">null</span> || str.length() == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> str;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// ByteArrayOutputStream 和 ByteArrayInputStream 是一个虚拟的流,</span></span><br><span class="line">        <span class="comment">// JDk源码中关闭方法是空的, 所以无需关闭, 为了代码整洁，还是放到了try-with-resource里面</span></span><br><span class="line">        <span class="keyword">try</span> (ByteArrayOutputStream out = <span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">             GZIPOutputStream gzip = <span class="keyword">new</span> GZIPOutputStream(out)) &#123;</span><br><span class="line">            gzip.write(str.getBytes());</span><br><span class="line"><span class="comment">//            gzip.finish();</span></span><br><span class="line">            <span class="keyword">return</span> out.toString(<span class="string">&quot;ISO-8859-1&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 解压字符串</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> str 待解压的字符串</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 解压后的字符串</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> Exception 解压过程中的异常</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">uncompress</span><span class="params">(String str)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (str == <span class="keyword">null</span> || str.length() == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> str;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">try</span> (ByteArrayOutputStream out = <span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">             ByteArrayInputStream in = <span class="keyword">new</span> ByteArrayInputStream(str.getBytes(<span class="string">&quot;ISO-8859-1&quot;</span>));</span><br><span class="line">             GZIPInputStream gunzip = <span class="keyword">new</span> GZIPInputStream(in)) &#123;</span><br><span class="line">            <span class="keyword">byte</span>[] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>];</span><br><span class="line">            <span class="keyword">int</span> n;</span><br><span class="line">            <span class="keyword">while</span> ((n = gunzip.read(buffer)) &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">                out.write(buffer, <span class="number">0</span>, n);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> out.toString();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>是不是顺眼多了呐，可是这样的代码可以压缩的，在解压的时候会报错。一开始我以为是解压的代码出现了问题，最后才发现是因为压缩的时候没有成功压缩，导致解压的时候无法解压。报以下错误</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Exception in thread &quot;main&quot; java.io.EOFException: Unexpected end of ZLIB input stream</span><br><span class="line">	at java.util.zip.InflaterInputStream.fill(InflaterInputStream.java:240)</span><br><span class="line">	at java.util.zip.InflaterInputStream.read(InflaterInputStream.java:158)</span><br><span class="line">	at java.util.zip.GZIPInputStream.read(GZIPInputStream.java:117)</span><br><span class="line">	at java.io.FilterInputStream.read(FilterInputStream.java:107)</span><br><span class="line">	at coderbean.ZipHelper.uncompress(ZipHelper.java:52)</span><br><span class="line">	at coderbean.Main.main(Main.java:12)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>好好的代码怎么会突然压缩失败，后来发现的问题是在<code>GZIPOutputStream</code>中，在<code>close()</code>方法中会主动调用<code>finish()</code>方法。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* Writes remaining compressed data to the output stream and closes the</span></span><br><span class="line"><span class="comment">* underlying stream.</span></span><br><span class="line"><span class="comment">* <span class="doctag">@exception</span> IOException if an I/O error has occurred</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">close</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">   <span class="keyword">if</span> (!closed) &#123;</span><br><span class="line">       finish();</span><br><span class="line">       <span class="keyword">if</span> (usesDefaultDeflater)</span><br><span class="line">           def.end();</span><br><span class="line">       out.close();</span><br><span class="line">       closed = <span class="keyword">true</span>;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在下面的方法中才会将压缩后的数据输出到输入流，由于原来的代码会调用 <code>close()</code>方法，从而间接调用了 <code>finish()</code> 方法。那我我们的<code>try-with-resource</code>到底出了什么问题，其实问题就在于执行<code>close()</code>的时间。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Finishes writing compressed data to the output stream without closing</span></span><br><span class="line"><span class="comment"> * the underlying stream. Use this method when applying multiple filters</span></span><br><span class="line"><span class="comment"> * in succession to the same output stream.</span></span><br><span class="line"><span class="comment"> * 在该方法中才会将压缩后的数据输出到输入流，由于原来的代码会调用 close()方法，从而</span></span><br><span class="line"><span class="comment"> * 间接调用了 finish() 方法。</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@exception</span> IOException if an I/O error has occurred</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">finish</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!def.finished()) &#123;</span><br><span class="line">        def.finish();</span><br><span class="line">        <span class="keyword">while</span> (!def.finished()) &#123;</span><br><span class="line">            <span class="keyword">int</span> len = def.deflate(buf, <span class="number">0</span>, buf.length);</span><br><span class="line">            <span class="keyword">if</span> (def.finished() &amp;&amp; len &lt;= buf.length - TRAILER_SIZE) &#123;</span><br><span class="line">                <span class="comment">// last deflater buffer. Fit trailer at the end</span></span><br><span class="line">                writeTrailer(buf, len);</span><br><span class="line">                len = len + TRAILER_SIZE;</span><br><span class="line">                out.write(buf, <span class="number">0</span>, len);</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (len &gt; <span class="number">0</span>)</span><br><span class="line">                out.write(buf, <span class="number">0</span>, len);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// if we can&#x27;t fit the trailer at the end of the last</span></span><br><span class="line">        <span class="comment">// deflater buffer, we write it separately</span></span><br><span class="line">        <span class="keyword">byte</span>[] trailer = <span class="keyword">new</span> <span class="keyword">byte</span>[TRAILER_SIZE];</span><br><span class="line">        writeTrailer(trailer, <span class="number">0</span>);</span><br><span class="line">        out.write(trailer);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="try-with-resource-执行时机和条件"><a href="#try-with-resource-执行时机和条件" class="headerlink" title="try-with-resource 执行时机和条件"></a><code>try-with-resource</code> 执行时机和条件</h3><p><code>try-with-resource</code> 是在 JDK7 中新增加的语法糖（其实就是抄的C#），用来自动执行流的关闭操作，只要该类实现了<code>AutoCloseable</code>的<code>close()</code>方法。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">package</span> java.lang;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AutoCloseable</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> Exception if this resource cannot be closed</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">close</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>实现了这个接口之后，我们可以将会在<code>try</code>代码块执行结束之后自动关闭流</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span>(<span class="comment">/* 在此处初始化资源 */</span>)&#123;</span><br><span class="line">  <span class="comment">// do something</span></span><br><span class="line">&#125; <span class="comment">//在代码块执行结束前最后一步关闭流</span></span><br></pre></td></tr></table></figure>
-<p>由于在<code>GZIPOutputStream</code>执行了<code>finish()</code>方法或者<code>close()</code>方法之后才会真正的将压缩后的数据写入流，在上文我改造的代码中并没有首先执行<code>finish()</code>方法，而是直接在<code>try</code>代码块执行完之后关闭了流 <code>GZIPOutputStream</code>, 由于<code>close()</code>方法执行在<code>out.toString(&quot;ISO-8859-1&quot;)</code>之后，因此压缩并没有真正的被执行，然而对于<code>ZipHelper.compress()</code>方法并没有感知，而是返回了没有压缩成功的字符串，从而造成在解压的时候报错。</p>
-<h3 id="为什么会引起的堆外内存泄漏"><a href="#为什么会引起的堆外内存泄漏" class="headerlink" title="为什么会引起的堆外内存泄漏"></a>为什么会引起的堆外内存泄漏</h3><p>通过最开始的代码我们可以看出，在没有发生异常的情况下，<code>compress()</code>方法是可以正常的关闭流的，所以内存泄露的根源应该是在<code>uncompress()</code>方法，通过跟踪<code>GZIPInputStream</code>的构造函数和<code>close()</code>应该很快就能找到答案。</p>
-<p>下面是申请堆外内存和释放堆外内存的过程调用图，可以对比代码参考<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1flnrogyecdj316u0mudiq.jpg" alt="堆外内存调用释放流程图"></p>
-<p>由于篇幅的原因就不将JDK源码注释一同贴上来了，感兴趣的同学可以按图索骥，找到对应的注释。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//java.util.zip.GZIPInputStream.java</span></span><br><span class="line"><span class="keyword">public</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">GZIPInputStream</span> <span class="keyword">extends</span> <span class="title">InflaterInputStream</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">GZIPInputStream</span><span class="params">(InputStream in)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>(in, <span class="number">512</span>); <span class="comment">//调用下面的构造函数</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">GZIPInputStream</span><span class="params">(InputStream in, <span class="keyword">int</span> size)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(in, <span class="keyword">new</span> Inflater(<span class="keyword">true</span>), size); <span class="comment">//新建 Inflater 对象</span></span><br><span class="line">        usesDefaultInflater = <span class="keyword">true</span>;</span><br><span class="line">        readHeader(in);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">close</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (!closed) &#123;</span><br><span class="line">            <span class="keyword">super</span>.close(); <span class="comment">//这里的父类是java.util.zip.InflaterInputStream</span></span><br><span class="line">            eos = <span class="keyword">true</span>;</span><br><span class="line">            closed = <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//java.util.zip.Inflater.java</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Inflater</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Inflater</span><span class="params">(<span class="keyword">boolean</span> nowrap)</span> </span>&#123;</span><br><span class="line">        zsRef = <span class="keyword">new</span> ZStreamRef(init(nowrap));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Closes the decompressor and discards any unprocessed input.</span></span><br><span class="line"><span class="comment">     * This method should be called when the decompressor is no longer</span></span><br><span class="line"><span class="comment">     * being used, but will also be called automatically by the finalize()</span></span><br><span class="line"><span class="comment">     * method. Once this method is called, the behavior of the Inflater</span></span><br><span class="line"><span class="comment">     * object is undefined.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">end</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (zsRef) &#123;</span><br><span class="line">            <span class="keyword">long</span> addr = zsRef.address();</span><br><span class="line">            zsRef.clear();</span><br><span class="line">            <span class="keyword">if</span> (addr != <span class="number">0</span>) &#123;</span><br><span class="line">                end(addr);</span><br><span class="line">                buf = <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 此处调用了 Native 方法</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">native</span> <span class="keyword">static</span> <span class="keyword">long</span> <span class="title">init</span><span class="params">(<span class="keyword">boolean</span> nowrap)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">native</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">end</span><span class="params">(<span class="keyword">long</span> addr)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//java.util.zip.InflaterInputStream.java</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">InflaterInputStream</span> <span class="keyword">extends</span> <span class="title">FilterInputStream</span> </span>&#123;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Closes this input stream and releases any system resources associated</span></span><br><span class="line"><span class="comment">   * with the stream.</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@exception</span> IOException if an I/O error has occurred</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">close</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (!closed) &#123;</span><br><span class="line">          <span class="keyword">if</span> (usesDefaultInflater)</span><br><span class="line">              inf.end();</span><br><span class="line">          in.close();</span><br><span class="line">          closed = <span class="keyword">true</span>;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>openJDK 中 JVM 关于这个本地方法的实现</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">JNIEXPORT jlong JNICALL</span><br><span class="line"><span class="built_in">Java_java_util_zip_Inflater_init</span>(JNIEnv *env, jclass cls, jboolean nowrap)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//此处使用 calloc 申请了堆外内存</span></span><br><span class="line">    z_stream *strm = <span class="built_in">calloc</span>(<span class="number">1</span>, <span class="built_in"><span class="keyword">sizeof</span></span>(z_stream));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (strm == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">JNU_ThrowOutOfMemoryError</span>(env, <span class="number">0</span>);</span><br><span class="line">        <span class="keyword">return</span> jlong_zero;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">char</span> *msg;</span><br><span class="line">        <span class="keyword">int</span> ret = <span class="built_in">inflateInit2</span>(strm, nowrap ? -MAX_WBITS : MAX_WBITS);</span><br><span class="line">        <span class="built_in"><span class="keyword">switch</span></span> (ret) &#123;</span><br><span class="line">          <span class="keyword">case</span> Z_OK:</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">ptr_to_jlong</span>(strm);</span><br><span class="line">          <span class="keyword">case</span> Z_MEM_ERROR:</span><br><span class="line">            <span class="built_in">free</span>(strm);</span><br><span class="line">            <span class="built_in">JNU_ThrowOutOfMemoryError</span>(env, <span class="number">0</span>);</span><br><span class="line">            <span class="keyword">return</span> jlong_zero;</span><br><span class="line">          <span class="keyword">default</span>:</span><br><span class="line">            msg = ((strm-&gt;msg != <span class="literal">NULL</span>) ? strm-&gt;msg :</span><br><span class="line">                   (ret == Z_VERSION_ERROR) ?</span><br><span class="line">                   <span class="string">&quot;zlib returned Z_VERSION_ERROR: &quot;</span></span><br><span class="line">                   <span class="string">&quot;compile time and runtime zlib implementations differ&quot;</span> :</span><br><span class="line">                   (ret == Z_STREAM_ERROR) ?</span><br><span class="line">                   <span class="string">&quot;inflateInit2 returned Z_STREAM_ERROR&quot;</span> :</span><br><span class="line">                   <span class="string">&quot;unknown error initializing zlib library&quot;</span>);</span><br><span class="line">            <span class="built_in">free</span>(strm);</span><br><span class="line">            <span class="built_in">JNU_ThrowInternalError</span>(env, msg);</span><br><span class="line">            <span class="keyword">return</span> jlong_zero;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">JNIEXPORT <span class="keyword">void</span> JNICALL</span><br><span class="line"><span class="built_in">Java_java_util_zip_Inflater_end</span>(JNIEnv *env, jclass cls, jlong addr)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">inflateEnd</span>(<span class="built_in">jlong_to_ptr</span>(addr)) == Z_STREAM_ERROR) &#123;</span><br><span class="line">        <span class="built_in">JNU_ThrowInternalError</span>(env, <span class="number">0</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">free</span>(<span class="built_in">jlong_to_ptr</span>(addr)); <span class="comment">//此处释放堆外内存</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ul>
-<li><a href="http://blog.csdn.net/Revivedsun/article/details/52073554">java.io.EOFException: Unexpected end of ZLIB input stream异常处理</a></li>
-</ul>
-]]></content>
-      <categories>
-        <category>技术</category>
-      </categories>
-      <tags>
-        <tag>tech</tag>
-        <tag>Java</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Spring 中 Transactional 注解原理</title>
     <url>/transactional-of-spring.html</url>
     <content><![CDATA[<p>利用 Spring 框架可以很容易的使用注解的方式来使用事务，为我们的开发带来了巨大的便利，这种便利的实现是通过 Spring 本身的一系列机制来实现的，主要包含动态代理和 Spring Bean 的加载过程。本文将深入源码，揭开层层面纱…</p>
@@ -334,8 +295,8 @@
         <category>技术</category>
       </categories>
       <tags>
-        <tag>tech</tag>
         <tag>Java</tag>
+        <tag>tech</tag>
       </tags>
   </entry>
   <entry>
@@ -408,9 +369,9 @@
         <category>技术</category>
       </categories>
       <tags>
+        <tag>Java</tag>
         <tag>JVM</tag>
         <tag>tech</tag>
-        <tag>Java</tag>
       </tags>
   </entry>
   <entry>
@@ -444,8 +405,8 @@
         <category>技术</category>
       </categories>
       <tags>
-        <tag>概率论</tag>
         <tag>算法</tag>
+        <tag>概率论</tag>
       </tags>
   </entry>
   <entry>
@@ -563,8 +524,8 @@
         <category>技术</category>
       </categories>
       <tags>
-        <tag>tech</tag>
         <tag>Java</tag>
+        <tag>tech</tag>
       </tags>
   </entry>
   <entry>
@@ -609,41 +570,8 @@
         <category>技术</category>
       </categories>
       <tags>
+        <tag>Java</tag>
         <tag>tech</tag>
-        <tag>Java</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>幂等设计</title>
-    <url>/idempotence-design.html</url>
-    <content><![CDATA[<p>我们实际系统中有很多操作，是不管做多少次，都应该产生一样的效果或返回一样的结果。 例如</p>
-<ol>
-<li>前端重复提交选中的数据，应该后台只产生对应这个数据的一个反应结果；</li>
-<li>我们发起一笔付款请求，应该只扣用户账户一次钱，当遇到网络重发或系统bug重发，也应该只扣一次钱；</li>
-<li>发送消息，也应该只发一次</li>
-<li>创建业务订单，一次业务请求只能创建一个，创建多个就会出大问题等等很多重要的情况都需要幂等的特性来支持。 <span id="more"></span>
-</li>
-</ol>
-<h1 id="幂等性概念"><a href="#幂等性概念" class="headerlink" title="幂等性概念"></a>幂等性概念</h1><p>幂等（idempotent、idempotence）是一个数学与计算机学概念，常见于抽象代数中。 在编程中一个幂等操作的特点是其任意多次执行所产生的影响均与一次执行的影响相同。幂等函数，或幂等方法，是指可以使用相同参数重复执行，并能获得相同结果的函数。这些函数不会影响系统状态，也不用担心重复执行会对系统造成改变。例如，“getUsername()和setTrue()”函数就是一个幂等函数. 更复杂的操作幂等保证是利用唯一交易号(流水号)实现。幂等就是一个操作，不论执行多少次，产生的效果和返回的结果都是一样的。</p>
-<h1 id="幂等方案设计"><a href="#幂等方案设计" class="headerlink" title="幂等方案设计"></a>幂等方案设计</h1><p>有些操作是天然幂等的，譬如查询操作、删除操作。其他一些插入和更新操作有时候需要引入其他的机制来保证幂等，比如乐观锁、悲观锁等。这里介绍两种常用的来保证幂等的方案：利用数据库唯一索引和通过token机制来实现幂等。</p>
-<h2 id="利用数据库来实现幂等，"><a href="#利用数据库来实现幂等，" class="headerlink" title="利用数据库来实现幂等，"></a>利用数据库来实现幂等，</h2><p>利用数据库的一些特性来实现幂等设计，可以将一些复杂的加锁解锁操作转移到数据库来处理。这样可以大大减少编码的成本。<br>这里用来创建唯一索引的数据必须保证是唯一的，不可出现业务上允许的重复。<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNbRwgy1fyawz1gt0nj30e40ckwev.jpg" alt=""></p>
-<h2 id="token机制方式重复提交"><a href="#token机制方式重复提交" class="headerlink" title="token机制方式重复提交"></a>token机制方式重复提交</h2><p>token机制防止页面重复提交。由于网络或者重复点击的问题，可能会有重复的请求发送到服务器。利用token方式可以防止重复提交。</p>
-<ol>
-<li>数据提交之前要想服务器申请token， token放到redis或者tair</li>
-<li>提交后后台检验token，同时更新token状态</li>
-<li>进行逻辑处理</li>
-</ol>
-<p>这种方式适合web平台的管理页面，在进入页面后便拿到token，点击提交之后携带改token来请求逻辑处理，如果该token不存在，拒绝处理，如果已经处理完毕，返回处理结果。</p>
-<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ol>
-<li><a href="https://blog.csdn.net/u011635492/article/details/81058153">高并发下接口幂等性解决方案</a></li>
-<li><a href="http://blog.51cto.com/8132260/2134050">再谈幂等机制-java杂记-51CTO博客</a></li>
-</ol>
-]]></content>
-      <categories>
-        <category>设计</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
       </tags>
   </entry>
   <entry>
@@ -701,37 +629,35 @@ f(n-1)+f(n-2),\quad x>2
       </tags>
   </entry>
   <entry>
-    <title>理解VisualVM中的保留大小(Retained Size)</title>
-    <url>/meaning-of-retained-size.html</url>
-    <content><![CDATA[<p>是否在各种内存分析工具中看到过保留大小的概念呐，保留大小到底代表着什么？<br>保留大小代表着实例本事和引用的对象的总大小吗？</p>
-<span id="more"></span>
-<h2 id="Shallow-Size-and-Retained-Size"><a href="#Shallow-Size-and-Retained-Size" class="headerlink" title="Shallow Size and Retained Size"></a>Shallow Size and Retained Size</h2><p>Shallow Size and Retained Size 的含义都是指的实例对象，不是类本身。</p>
-<p>下面将用 sampleClass 表示类Sample的一个实例（instance）</p>
-<h3 id="Shallow-Size-含义"><a href="#Shallow-Size-含义" class="headerlink" title="Shallow Size 含义"></a>Shallow Size 含义</h3><p>Shallow Size 就是对象本身所占用的大小，不包括其引用的对象。</p>
-<p>举个例子：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SampleClass</span> </span>&#123;</span><br><span class="line">    <span class="comment">// age 属于 Shallow Size</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> age = <span class="number">1</span>;</span><br><span class="line">    <span class="comment">// String 类型引用本身 name 属于 Shallow Size，</span></span><br><span class="line">    <span class="comment">// 被引用对象 &quot;SOME_STRING&quot; 不属于 Sample 的实例Shallow Size</span></span><br><span class="line">    <span class="keyword">private</span> String name = SOME_STRING;</span><br><span class="line">    <span class="comment">// 数组所有内容都属于 Shallow Size</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span>[] ids = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="Retained-Size-含义"><a href="#Retained-Size-含义" class="headerlink" title="Retained Size 含义"></a>Retained Size 含义</h3><h4 id="针对可达对象"><a href="#针对可达对象" class="headerlink" title="针对可达对象"></a>针对可达对象</h4><p>可达对象就是说，从 GC roots 开始搜索，能够到达的对象，也就是说下一次GC不会被清理的对象，采用下面的计算方法来得到 Retained Size 对象</p>
-<p>Retained Size的含义相对于Shallow Size 不太好理解。依然是上面的例子，在不同的情况下，sampleClass 的Retained Size 并不相同。下面引用StackOverFlow上的一个<a href="https://stackoverflow.com/questions/23941688/yourkit-the-retained-size-of-an-object-doesnt-equal-the-retained-size-of-all">回答</a>来解释这个问题。</p>
-<blockquote>
-<p><strong>Retained size</strong> of an object is its shallow size plus the shallow sizes of the objects that are accessible, directly or indirectly, only from this object. In other words, the retained size represents the amount of memory that will be freed by the garbage collector when this object is collected.</p>
-</blockquote>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2cp92ho4j30p00fd0v3.jpg" alt="图一"></p>
-<p>上图应该比较容易理解，看起来每个对象的Retained Size 都符合公式（ Retained Size = Shallow Size + 直接子对象的 Retained Size），并没有什么问题，然后我们看另外一种引用关系中，Obj1 的Retained Size 就会发生变化。</p>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2cpvt71gj30p00jc76z.jpg" alt="图二"></p>
-<p>第二种图中，你会发现Obj2的Retained Size 不再符合我们刚刚总结出来的公式，这是因为Obj2的直接子对象Obj5还被Obj6所引用，造成的结果就是，如果Obj2被回收，Obj5并不会被回收，所以 Obj2 的Retained Size就不应该包括 Obj5 的Retained Size. 虽然 Obj2 的 Retained Size 发生了变化，但是 Obj1 的 Retained Size 并没有发生变化。</p>
-<h4 id="针对不可达对象"><a href="#针对不可达对象" class="headerlink" title="针对不可达对象"></a>针对不可达对象</h4><p>指的是下一次 GC 会被清理的对象，也就是说没有其他对象引用自己的对象。</p>
-<p>如果你尝试使用 VisualVM 分析dump文件的时候，你会发现有些对象的 Retained Size 居然是0，这个0就推翻了上面那种分析方法的的结论，觉得无论什么样的对象肯定是会有 Shallow Size 的，不可能为0。</p>
-<p>通过分析最后可以这样理解：针对不可达对象，也就是可以完全被清除的对象，Retained Size 都是0</p>
-<h2 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h2><h3 id="理解误区"><a href="#理解误区" class="headerlink" title="理解误区"></a>理解误区</h3><p>好多人是简单的将保留大小描述为，<code>该对象本身和其直接引用或者间接引用的对象的大小的总和</code>。这种理解是片面的，就像上面例子中的 Obj2 一样，如果按照这种理解就会得到错误的结论。</p>
-<h3 id="如何在-VisualVM-中计算保留大小（Retained-Size）"><a href="#如何在-VisualVM-中计算保留大小（Retained-Size）" class="headerlink" title="如何在 VisualVM 中计算保留大小（Retained Size）"></a>如何在 VisualVM 中计算保留大小（Retained Size）</h3><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2d8odqlmj31kw0a1ac9.jpg" alt=""></p>
-<h3 id="一些-Retained-Size-为-0-的例子"><a href="#一些-Retained-Size-为-0-的例子" class="headerlink" title="一些 Retained Size 为 0 的例子"></a>一些 Retained Size 为 0 的例子</h3><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2d9wrsm0j30ny074dgj.jpg" alt=""></p>
+    <title>幂等设计</title>
+    <url>/idempotence-design.html</url>
+    <content><![CDATA[<p>我们实际系统中有很多操作，是不管做多少次，都应该产生一样的效果或返回一样的结果。 例如</p>
+<ol>
+<li>前端重复提交选中的数据，应该后台只产生对应这个数据的一个反应结果；</li>
+<li>我们发起一笔付款请求，应该只扣用户账户一次钱，当遇到网络重发或系统bug重发，也应该只扣一次钱；</li>
+<li>发送消息，也应该只发一次</li>
+<li>创建业务订单，一次业务请求只能创建一个，创建多个就会出大问题等等很多重要的情况都需要幂等的特性来支持。 <span id="more"></span>
+</li>
+</ol>
+<h1 id="幂等性概念"><a href="#幂等性概念" class="headerlink" title="幂等性概念"></a>幂等性概念</h1><p>幂等（idempotent、idempotence）是一个数学与计算机学概念，常见于抽象代数中。 在编程中一个幂等操作的特点是其任意多次执行所产生的影响均与一次执行的影响相同。幂等函数，或幂等方法，是指可以使用相同参数重复执行，并能获得相同结果的函数。这些函数不会影响系统状态，也不用担心重复执行会对系统造成改变。例如，“getUsername()和setTrue()”函数就是一个幂等函数. 更复杂的操作幂等保证是利用唯一交易号(流水号)实现。幂等就是一个操作，不论执行多少次，产生的效果和返回的结果都是一样的。</p>
+<h1 id="幂等方案设计"><a href="#幂等方案设计" class="headerlink" title="幂等方案设计"></a>幂等方案设计</h1><p>有些操作是天然幂等的，譬如查询操作、删除操作。其他一些插入和更新操作有时候需要引入其他的机制来保证幂等，比如乐观锁、悲观锁等。这里介绍两种常用的来保证幂等的方案：利用数据库唯一索引和通过token机制来实现幂等。</p>
+<h2 id="利用数据库来实现幂等，"><a href="#利用数据库来实现幂等，" class="headerlink" title="利用数据库来实现幂等，"></a>利用数据库来实现幂等，</h2><p>利用数据库的一些特性来实现幂等设计，可以将一些复杂的加锁解锁操作转移到数据库来处理。这样可以大大减少编码的成本。<br>这里用来创建唯一索引的数据必须保证是唯一的，不可出现业务上允许的重复。<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNbRwgy1fyawz1gt0nj30e40ckwev.jpg" alt=""></p>
+<h2 id="token机制方式重复提交"><a href="#token机制方式重复提交" class="headerlink" title="token机制方式重复提交"></a>token机制方式重复提交</h2><p>token机制防止页面重复提交。由于网络或者重复点击的问题，可能会有重复的请求发送到服务器。利用token方式可以防止重复提交。</p>
+<ol>
+<li>数据提交之前要想服务器申请token， token放到redis或者tair</li>
+<li>提交后后台检验token，同时更新token状态</li>
+<li>进行逻辑处理</li>
+</ol>
+<p>这种方式适合web平台的管理页面，在进入页面后便拿到token，点击提交之后携带改token来请求逻辑处理，如果该token不存在，拒绝处理，如果已经处理完毕，返回处理结果。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ol>
+<li><a href="https://blog.csdn.net/u011635492/article/details/81058153">高并发下接口幂等性解决方案</a></li>
+<li><a href="http://blog.51cto.com/8132260/2134050">再谈幂等机制-java杂记-51CTO博客</a></li>
+</ol>
 ]]></content>
       <categories>
-        <category>技术</category>
+        <category>设计</category>
       </categories>
       <tags>
-        <tag>JVM</tag>
-        <tag>tech</tag>
         <tag>Java</tag>
       </tags>
   </entry>
@@ -748,37 +674,42 @@ f(n-1)+f(n-2),\quad x>2
       </tags>
   </entry>
   <entry>
-    <title>[面经] 如何拿下阿里/蚂蚁 offer</title>
-    <url>/how-get-antfin-offer.html</url>
-    <content><![CDATA[<p>总结一下我的阿里面试，做一个记录吧。分享给需要的人。</p>
-<span id="more"></span>
-<p><img src="../media/AugustBears_ZH-CN8159736622_1920x1080.jpg" alt="AugustBears_ZH-CN8159736622_1920x1080"></p>
-<h3 id="整体时间流程"><a href="#整体时间流程" class="headerlink" title="整体时间流程"></a>整体时间流程</h3><ul>
-<li>8月12日 14:00 通过猎头投递简历 </li>
-<li>8月13日 20:01、20:11 电话没有接到，是初面电话。 </li>
-<li>8月14日 21:10  接到初面的电话面试，面试内容多为基础内容，还有做过的项目。明确告知我初面过了，会有后续的面试 </li>
-<li>8月15日 20点左右，接到了 HR 的联系电话，约定二面现场面试时间 </li>
-<li>8月19日 15:30 ，在钱江浙商创投大厦进行面试，面试官 P9，全程讲项目，画各种图，最后考了一点技术问题。 </li>
-<li>8月22日 15:00 ，在 Z 空间三面，项目主管和 HR 我们三个人在一个小屋子里面试，主要是相互了解，不涉及技术。 </li>
-<li>8月24日 19:00，口头 offer，沟通薪资和职级 </li>
-<li>目前等待体检通知、进行背调</li>
+    <title>Java压缩流GZIPStream导致的内存泄露</title>
+    <url>/things-about-java-gzipstream.html</url>
+    <content><![CDATA[<p>我们来聊聊<code>GZIPOutputStream</code> 和 <code>GZIPInputStream</code>, 如果不关闭流会引起的内存泄露问题，以及<code>GZIPStream</code>申请和释放堆外内存的流程， Let’s do it!<br><span id="more"></span></p>
+<h3 id="引子"><a href="#引子" class="headerlink" title="引子"></a>引子</h3><p>在我的工程里面又一个工具类 <code>ZipHelper</code> 用来压缩和解压 <code>String</code></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.ByteArrayInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.ByteArrayOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.util.zip.GZIPInputStream;</span><br><span class="line"><span class="keyword">import</span> java.util.zip.GZIPOutputStream;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 用来压缩和解压字符串</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ZipHelper</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 压缩</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">compress</span><span class="params">(String str)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (str == <span class="keyword">null</span> || str.length() == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> str;</span><br><span class="line">        &#125;</span><br><span class="line">        ByteArrayOutputStream out = <span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">        GZIPOutputStream gzip = <span class="keyword">new</span> GZIPOutputStream(out);</span><br><span class="line">        gzip.write(str.getBytes());</span><br><span class="line">        gzip.close();</span><br><span class="line">        <span class="keyword">return</span> out.toString(<span class="string">&quot;ISO-8859-1&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 解压缩</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">uncompress</span><span class="params">(String str)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (str == <span class="keyword">null</span> || str.length() == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> str;</span><br><span class="line">        &#125;</span><br><span class="line">        ByteArrayOutputStream out = <span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">        ByteArrayInputStream in = <span class="keyword">new</span> ByteArrayInputStream(str.getBytes(<span class="string">&quot;ISO-8859-1&quot;</span>));</span><br><span class="line">        GZIPInputStream gunzip = <span class="keyword">new</span> GZIPInputStream(in);</span><br><span class="line">        <span class="keyword">byte</span>[] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>];</span><br><span class="line">        <span class="keyword">int</span> n;</span><br><span class="line">        <span class="keyword">while</span> ((n = gunzip.read(buffer)) &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">            out.write(buffer, <span class="number">0</span>, n);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> out.toString();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最近服务出现了占用swap空间的问题，初步定位为内存泄漏，最后通过分析定位到是 Native 方法<code>Java_java_util_zip_Inflater_init</code>一直在申请内存（关于分析方法可以查阅这篇博客<a href="https://jacobchang.cn/action-in-memory-leak-analysis.html">内存泄露分析实战</a>）但是没有释放，很有可能就是流没有关闭造成的，而这部分代码最大的问题就是没有在<code>finally</code>里面去关闭流，于是乎我打算改造这部分代码，利用 try-with-resource 语法糖，然后代码就被修改成了这样：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.ByteArrayInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.ByteArrayOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.util.zip.GZIPInputStream;</span><br><span class="line"><span class="keyword">import</span> java.util.zip.GZIPOutputStream;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Created by jacob.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 用来压缩和解压字符串</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ZipHelper</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 压缩字符串</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> str 待压缩的字符串</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 压缩后的字符串</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> Exception 压缩过程中的异常</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">compress</span><span class="params">(String str)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (str == <span class="keyword">null</span> || str.length() == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> str;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// ByteArrayOutputStream 和 ByteArrayInputStream 是一个虚拟的流,</span></span><br><span class="line">        <span class="comment">// JDk源码中关闭方法是空的, 所以无需关闭, 为了代码整洁，还是放到了try-with-resource里面</span></span><br><span class="line">        <span class="keyword">try</span> (ByteArrayOutputStream out = <span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">             GZIPOutputStream gzip = <span class="keyword">new</span> GZIPOutputStream(out)) &#123;</span><br><span class="line">            gzip.write(str.getBytes());</span><br><span class="line"><span class="comment">//            gzip.finish();</span></span><br><span class="line">            <span class="keyword">return</span> out.toString(<span class="string">&quot;ISO-8859-1&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 解压字符串</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> str 待解压的字符串</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 解压后的字符串</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> Exception 解压过程中的异常</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">uncompress</span><span class="params">(String str)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (str == <span class="keyword">null</span> || str.length() == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> str;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">try</span> (ByteArrayOutputStream out = <span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">             ByteArrayInputStream in = <span class="keyword">new</span> ByteArrayInputStream(str.getBytes(<span class="string">&quot;ISO-8859-1&quot;</span>));</span><br><span class="line">             GZIPInputStream gunzip = <span class="keyword">new</span> GZIPInputStream(in)) &#123;</span><br><span class="line">            <span class="keyword">byte</span>[] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>];</span><br><span class="line">            <span class="keyword">int</span> n;</span><br><span class="line">            <span class="keyword">while</span> ((n = gunzip.read(buffer)) &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">                out.write(buffer, <span class="number">0</span>, n);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> out.toString();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>是不是顺眼多了呐，可是这样的代码可以压缩的，在解压的时候会报错。一开始我以为是解压的代码出现了问题，最后才发现是因为压缩的时候没有成功压缩，导致解压的时候无法解压。报以下错误</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Exception in thread &quot;main&quot; java.io.EOFException: Unexpected end of ZLIB input stream</span><br><span class="line">	at java.util.zip.InflaterInputStream.fill(InflaterInputStream.java:240)</span><br><span class="line">	at java.util.zip.InflaterInputStream.read(InflaterInputStream.java:158)</span><br><span class="line">	at java.util.zip.GZIPInputStream.read(GZIPInputStream.java:117)</span><br><span class="line">	at java.io.FilterInputStream.read(FilterInputStream.java:107)</span><br><span class="line">	at coderbean.ZipHelper.uncompress(ZipHelper.java:52)</span><br><span class="line">	at coderbean.Main.main(Main.java:12)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>好好的代码怎么会突然压缩失败，后来发现的问题是在<code>GZIPOutputStream</code>中，在<code>close()</code>方法中会主动调用<code>finish()</code>方法。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* Writes remaining compressed data to the output stream and closes the</span></span><br><span class="line"><span class="comment">* underlying stream.</span></span><br><span class="line"><span class="comment">* <span class="doctag">@exception</span> IOException if an I/O error has occurred</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">close</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">   <span class="keyword">if</span> (!closed) &#123;</span><br><span class="line">       finish();</span><br><span class="line">       <span class="keyword">if</span> (usesDefaultDeflater)</span><br><span class="line">           def.end();</span><br><span class="line">       out.close();</span><br><span class="line">       closed = <span class="keyword">true</span>;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在下面的方法中才会将压缩后的数据输出到输入流，由于原来的代码会调用 <code>close()</code>方法，从而间接调用了 <code>finish()</code> 方法。那我我们的<code>try-with-resource</code>到底出了什么问题，其实问题就在于执行<code>close()</code>的时间。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Finishes writing compressed data to the output stream without closing</span></span><br><span class="line"><span class="comment"> * the underlying stream. Use this method when applying multiple filters</span></span><br><span class="line"><span class="comment"> * in succession to the same output stream.</span></span><br><span class="line"><span class="comment"> * 在该方法中才会将压缩后的数据输出到输入流，由于原来的代码会调用 close()方法，从而</span></span><br><span class="line"><span class="comment"> * 间接调用了 finish() 方法。</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@exception</span> IOException if an I/O error has occurred</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">finish</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!def.finished()) &#123;</span><br><span class="line">        def.finish();</span><br><span class="line">        <span class="keyword">while</span> (!def.finished()) &#123;</span><br><span class="line">            <span class="keyword">int</span> len = def.deflate(buf, <span class="number">0</span>, buf.length);</span><br><span class="line">            <span class="keyword">if</span> (def.finished() &amp;&amp; len &lt;= buf.length - TRAILER_SIZE) &#123;</span><br><span class="line">                <span class="comment">// last deflater buffer. Fit trailer at the end</span></span><br><span class="line">                writeTrailer(buf, len);</span><br><span class="line">                len = len + TRAILER_SIZE;</span><br><span class="line">                out.write(buf, <span class="number">0</span>, len);</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (len &gt; <span class="number">0</span>)</span><br><span class="line">                out.write(buf, <span class="number">0</span>, len);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// if we can&#x27;t fit the trailer at the end of the last</span></span><br><span class="line">        <span class="comment">// deflater buffer, we write it separately</span></span><br><span class="line">        <span class="keyword">byte</span>[] trailer = <span class="keyword">new</span> <span class="keyword">byte</span>[TRAILER_SIZE];</span><br><span class="line">        writeTrailer(trailer, <span class="number">0</span>);</span><br><span class="line">        out.write(trailer);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="try-with-resource-执行时机和条件"><a href="#try-with-resource-执行时机和条件" class="headerlink" title="try-with-resource 执行时机和条件"></a><code>try-with-resource</code> 执行时机和条件</h3><p><code>try-with-resource</code> 是在 JDK7 中新增加的语法糖（其实就是抄的C#），用来自动执行流的关闭操作，只要该类实现了<code>AutoCloseable</code>的<code>close()</code>方法。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">package</span> java.lang;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AutoCloseable</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> Exception if this resource cannot be closed</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">close</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>实现了这个接口之后，我们可以将会在<code>try</code>代码块执行结束之后自动关闭流</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span>(<span class="comment">/* 在此处初始化资源 */</span>)&#123;</span><br><span class="line">  <span class="comment">// do something</span></span><br><span class="line">&#125; <span class="comment">//在代码块执行结束前最后一步关闭流</span></span><br></pre></td></tr></table></figure>
+<p>由于在<code>GZIPOutputStream</code>执行了<code>finish()</code>方法或者<code>close()</code>方法之后才会真正的将压缩后的数据写入流，在上文我改造的代码中并没有首先执行<code>finish()</code>方法，而是直接在<code>try</code>代码块执行完之后关闭了流 <code>GZIPOutputStream</code>, 由于<code>close()</code>方法执行在<code>out.toString(&quot;ISO-8859-1&quot;)</code>之后，因此压缩并没有真正的被执行，然而对于<code>ZipHelper.compress()</code>方法并没有感知，而是返回了没有压缩成功的字符串，从而造成在解压的时候报错。</p>
+<h3 id="为什么会引起的堆外内存泄漏"><a href="#为什么会引起的堆外内存泄漏" class="headerlink" title="为什么会引起的堆外内存泄漏"></a>为什么会引起的堆外内存泄漏</h3><p>通过最开始的代码我们可以看出，在没有发生异常的情况下，<code>compress()</code>方法是可以正常的关闭流的，所以内存泄露的根源应该是在<code>uncompress()</code>方法，通过跟踪<code>GZIPInputStream</code>的构造函数和<code>close()</code>应该很快就能找到答案。</p>
+<p>下面是申请堆外内存和释放堆外内存的过程调用图，可以对比代码参考<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1flnrogyecdj316u0mudiq.jpg" alt="堆外内存调用释放流程图"></p>
+<p>由于篇幅的原因就不将JDK源码注释一同贴上来了，感兴趣的同学可以按图索骥，找到对应的注释。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//java.util.zip.GZIPInputStream.java</span></span><br><span class="line"><span class="keyword">public</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">GZIPInputStream</span> <span class="keyword">extends</span> <span class="title">InflaterInputStream</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">GZIPInputStream</span><span class="params">(InputStream in)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>(in, <span class="number">512</span>); <span class="comment">//调用下面的构造函数</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">GZIPInputStream</span><span class="params">(InputStream in, <span class="keyword">int</span> size)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(in, <span class="keyword">new</span> Inflater(<span class="keyword">true</span>), size); <span class="comment">//新建 Inflater 对象</span></span><br><span class="line">        usesDefaultInflater = <span class="keyword">true</span>;</span><br><span class="line">        readHeader(in);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">close</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (!closed) &#123;</span><br><span class="line">            <span class="keyword">super</span>.close(); <span class="comment">//这里的父类是java.util.zip.InflaterInputStream</span></span><br><span class="line">            eos = <span class="keyword">true</span>;</span><br><span class="line">            closed = <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//java.util.zip.Inflater.java</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Inflater</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Inflater</span><span class="params">(<span class="keyword">boolean</span> nowrap)</span> </span>&#123;</span><br><span class="line">        zsRef = <span class="keyword">new</span> ZStreamRef(init(nowrap));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Closes the decompressor and discards any unprocessed input.</span></span><br><span class="line"><span class="comment">     * This method should be called when the decompressor is no longer</span></span><br><span class="line"><span class="comment">     * being used, but will also be called automatically by the finalize()</span></span><br><span class="line"><span class="comment">     * method. Once this method is called, the behavior of the Inflater</span></span><br><span class="line"><span class="comment">     * object is undefined.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">end</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (zsRef) &#123;</span><br><span class="line">            <span class="keyword">long</span> addr = zsRef.address();</span><br><span class="line">            zsRef.clear();</span><br><span class="line">            <span class="keyword">if</span> (addr != <span class="number">0</span>) &#123;</span><br><span class="line">                end(addr);</span><br><span class="line">                buf = <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 此处调用了 Native 方法</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">native</span> <span class="keyword">static</span> <span class="keyword">long</span> <span class="title">init</span><span class="params">(<span class="keyword">boolean</span> nowrap)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">native</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">end</span><span class="params">(<span class="keyword">long</span> addr)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//java.util.zip.InflaterInputStream.java</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">InflaterInputStream</span> <span class="keyword">extends</span> <span class="title">FilterInputStream</span> </span>&#123;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Closes this input stream and releases any system resources associated</span></span><br><span class="line"><span class="comment">   * with the stream.</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@exception</span> IOException if an I/O error has occurred</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">close</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (!closed) &#123;</span><br><span class="line">          <span class="keyword">if</span> (usesDefaultInflater)</span><br><span class="line">              inf.end();</span><br><span class="line">          in.close();</span><br><span class="line">          closed = <span class="keyword">true</span>;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>openJDK 中 JVM 关于这个本地方法的实现</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">JNIEXPORT jlong JNICALL</span><br><span class="line"><span class="built_in">Java_java_util_zip_Inflater_init</span>(JNIEnv *env, jclass cls, jboolean nowrap)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//此处使用 calloc 申请了堆外内存</span></span><br><span class="line">    z_stream *strm = <span class="built_in">calloc</span>(<span class="number">1</span>, <span class="built_in"><span class="keyword">sizeof</span></span>(z_stream));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (strm == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">JNU_ThrowOutOfMemoryError</span>(env, <span class="number">0</span>);</span><br><span class="line">        <span class="keyword">return</span> jlong_zero;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">const</span> <span class="keyword">char</span> *msg;</span><br><span class="line">        <span class="keyword">int</span> ret = <span class="built_in">inflateInit2</span>(strm, nowrap ? -MAX_WBITS : MAX_WBITS);</span><br><span class="line">        <span class="built_in"><span class="keyword">switch</span></span> (ret) &#123;</span><br><span class="line">          <span class="keyword">case</span> Z_OK:</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">ptr_to_jlong</span>(strm);</span><br><span class="line">          <span class="keyword">case</span> Z_MEM_ERROR:</span><br><span class="line">            <span class="built_in">free</span>(strm);</span><br><span class="line">            <span class="built_in">JNU_ThrowOutOfMemoryError</span>(env, <span class="number">0</span>);</span><br><span class="line">            <span class="keyword">return</span> jlong_zero;</span><br><span class="line">          <span class="keyword">default</span>:</span><br><span class="line">            msg = ((strm-&gt;msg != <span class="literal">NULL</span>) ? strm-&gt;msg :</span><br><span class="line">                   (ret == Z_VERSION_ERROR) ?</span><br><span class="line">                   <span class="string">&quot;zlib returned Z_VERSION_ERROR: &quot;</span></span><br><span class="line">                   <span class="string">&quot;compile time and runtime zlib implementations differ&quot;</span> :</span><br><span class="line">                   (ret == Z_STREAM_ERROR) ?</span><br><span class="line">                   <span class="string">&quot;inflateInit2 returned Z_STREAM_ERROR&quot;</span> :</span><br><span class="line">                   <span class="string">&quot;unknown error initializing zlib library&quot;</span>);</span><br><span class="line">            <span class="built_in">free</span>(strm);</span><br><span class="line">            <span class="built_in">JNU_ThrowInternalError</span>(env, msg);</span><br><span class="line">            <span class="keyword">return</span> jlong_zero;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">JNIEXPORT <span class="keyword">void</span> JNICALL</span><br><span class="line"><span class="built_in">Java_java_util_zip_Inflater_end</span>(JNIEnv *env, jclass cls, jlong addr)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">inflateEnd</span>(<span class="built_in">jlong_to_ptr</span>(addr)) == Z_STREAM_ERROR) &#123;</span><br><span class="line">        <span class="built_in">JNU_ThrowInternalError</span>(env, <span class="number">0</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">free</span>(<span class="built_in">jlong_to_ptr</span>(addr)); <span class="comment">//此处释放堆外内存</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ul>
+<li><a href="http://blog.csdn.net/Revivedsun/article/details/52073554">java.io.EOFException: Unexpected end of ZLIB input stream异常处理</a></li>
 </ul>
-<h3 id="一面"><a href="#一面" class="headerlink" title="一面"></a>一面</h3><p>一面主要考察了基础知识，同时对于原来公司负责的服务也进行了考察。我统计了一篇基础知识的笔记，在我的公众号做分享。</p>
-<h3 id="二面"><a href="#二面" class="headerlink" title="二面"></a>二面</h3><p>二面则是基本上都是项目的介绍，面试官让我讲我负责的项目。就这样一个一个的讲，讲得我口干舌燥。</p>
-<p>这里我感觉要突出你项目的亮点，你用了什么方式，解决的什么问题，用到了什么技术。由于这次面试主要是项目所以，没有太多可以具体的可以分享。如果能在面试之前过一遍自己的项目，然后准备一些技术难点或是隐藏比较深的问题的解决思路。</p>
-<p>还有就是需要有一定的设计能力，当你自己提出了一个问题之后会问你是如何解决的这个问题，然后如果是现在的你会如何解决，有没有更好的方案，目的就是找出你的极限。</p>
-<h3 id="三面（包含HR面）"><a href="#三面（包含HR面）" class="headerlink" title="三面（包含HR面）"></a>三面（包含HR面）</h3><p>三面是主管和HR一起进行面试的，主管应该就是我以后的汇报主管。问的问题主要包含历史绩效、在原来公司的职级，为什么要换工作、希望在工作中负责什么部分、为什么没有考研、蚂蚁这边的加班是否能够接受、有么有遇到什么挫折。我看来主要是看我这个候选人的性格、为人是否符合公司的价值观吧。这个阶段的 HR 的问题基本上都是类似的，比起前面的技术面试更加有套路。</p>
-<h3 id="完整版资料"><a href="#完整版资料" class="headerlink" title="完整版资料"></a>完整版资料</h3><p><img src="../media/image-20190824164526602.png" alt="image-20190824164526602"></p>
-<p>完整版基础知识资料请关注我的个人公众号，回复 “<strong>蚂蚁面经</strong>“ 获取 HTML 版本。</p>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/uPic/2019-08-24-扫码_搜索联合传播样式-标准色版.png" alt=""></p>
 ]]></content>
       <categories>
-        <category>随笔</category>
+        <category>技术</category>
       </categories>
       <tags>
-        <tag>阿里</tag>
-        <tag>蚂蚁金服</tag>
-        <tag>面经</tag>
+        <tag>Java</tag>
+        <tag>tech</tag>
       </tags>
   </entry>
   <entry>
@@ -887,8 +818,77 @@ f(n-1)+f(n-2),\quad x>2
 <p>由于 <code>list.iterator();</code> 每次都会生成新的迭代器，所以 <code>cursor</code> 和 <code>lastRet</code>变量是线程封闭的，无需同步。</p>
 ]]></content>
       <tags>
-        <tag>tech</tag>
         <tag>Java</tag>
+        <tag>tech</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>[面经] 如何拿下阿里/蚂蚁 offer</title>
+    <url>/how-get-antfin-offer.html</url>
+    <content><![CDATA[<p>总结一下我的阿里面试，做一个记录吧。分享给需要的人。</p>
+<span id="more"></span>
+<p><img src="../media/AugustBears_ZH-CN8159736622_1920x1080.jpg" alt="AugustBears_ZH-CN8159736622_1920x1080"></p>
+<h3 id="整体时间流程"><a href="#整体时间流程" class="headerlink" title="整体时间流程"></a>整体时间流程</h3><ul>
+<li>8月12日 14:00 通过猎头投递简历 </li>
+<li>8月13日 20:01、20:11 电话没有接到，是初面电话。 </li>
+<li>8月14日 21:10  接到初面的电话面试，面试内容多为基础内容，还有做过的项目。明确告知我初面过了，会有后续的面试 </li>
+<li>8月15日 20点左右，接到了 HR 的联系电话，约定二面现场面试时间 </li>
+<li>8月19日 15:30 ，在钱江浙商创投大厦进行面试，面试官 P9，全程讲项目，画各种图，最后考了一点技术问题。 </li>
+<li>8月22日 15:00 ，在 Z 空间三面，项目主管和 HR 我们三个人在一个小屋子里面试，主要是相互了解，不涉及技术。 </li>
+<li>8月24日 19:00，口头 offer，沟通薪资和职级 </li>
+<li>目前等待体检通知、进行背调</li>
+</ul>
+<h3 id="一面"><a href="#一面" class="headerlink" title="一面"></a>一面</h3><p>一面主要考察了基础知识，同时对于原来公司负责的服务也进行了考察。我统计了一篇基础知识的笔记，在我的公众号做分享。</p>
+<h3 id="二面"><a href="#二面" class="headerlink" title="二面"></a>二面</h3><p>二面则是基本上都是项目的介绍，面试官让我讲我负责的项目。就这样一个一个的讲，讲得我口干舌燥。</p>
+<p>这里我感觉要突出你项目的亮点，你用了什么方式，解决的什么问题，用到了什么技术。由于这次面试主要是项目所以，没有太多可以具体的可以分享。如果能在面试之前过一遍自己的项目，然后准备一些技术难点或是隐藏比较深的问题的解决思路。</p>
+<p>还有就是需要有一定的设计能力，当你自己提出了一个问题之后会问你是如何解决的这个问题，然后如果是现在的你会如何解决，有没有更好的方案，目的就是找出你的极限。</p>
+<h3 id="三面（包含HR面）"><a href="#三面（包含HR面）" class="headerlink" title="三面（包含HR面）"></a>三面（包含HR面）</h3><p>三面是主管和HR一起进行面试的，主管应该就是我以后的汇报主管。问的问题主要包含历史绩效、在原来公司的职级，为什么要换工作、希望在工作中负责什么部分、为什么没有考研、蚂蚁这边的加班是否能够接受、有么有遇到什么挫折。我看来主要是看我这个候选人的性格、为人是否符合公司的价值观吧。这个阶段的 HR 的问题基本上都是类似的，比起前面的技术面试更加有套路。</p>
+<h3 id="完整版资料"><a href="#完整版资料" class="headerlink" title="完整版资料"></a>完整版资料</h3><p><img src="../media/image-20190824164526602.png" alt="image-20190824164526602"></p>
+<p>完整版基础知识资料请关注我的个人公众号，回复 “<strong>蚂蚁面经</strong>“ 获取 HTML 版本。</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/uPic/2019-08-24-扫码_搜索联合传播样式-标准色版.png" alt=""></p>
+]]></content>
+      <categories>
+        <category>随笔</category>
+      </categories>
+      <tags>
+        <tag>阿里</tag>
+        <tag>蚂蚁金服</tag>
+        <tag>面经</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>理解VisualVM中的保留大小(Retained Size)</title>
+    <url>/meaning-of-retained-size.html</url>
+    <content><![CDATA[<p>是否在各种内存分析工具中看到过保留大小的概念呐，保留大小到底代表着什么？<br>保留大小代表着实例本事和引用的对象的总大小吗？</p>
+<span id="more"></span>
+<h2 id="Shallow-Size-and-Retained-Size"><a href="#Shallow-Size-and-Retained-Size" class="headerlink" title="Shallow Size and Retained Size"></a>Shallow Size and Retained Size</h2><p>Shallow Size and Retained Size 的含义都是指的实例对象，不是类本身。</p>
+<p>下面将用 sampleClass 表示类Sample的一个实例（instance）</p>
+<h3 id="Shallow-Size-含义"><a href="#Shallow-Size-含义" class="headerlink" title="Shallow Size 含义"></a>Shallow Size 含义</h3><p>Shallow Size 就是对象本身所占用的大小，不包括其引用的对象。</p>
+<p>举个例子：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SampleClass</span> </span>&#123;</span><br><span class="line">    <span class="comment">// age 属于 Shallow Size</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> age = <span class="number">1</span>;</span><br><span class="line">    <span class="comment">// String 类型引用本身 name 属于 Shallow Size，</span></span><br><span class="line">    <span class="comment">// 被引用对象 &quot;SOME_STRING&quot; 不属于 Sample 的实例Shallow Size</span></span><br><span class="line">    <span class="keyword">private</span> String name = SOME_STRING;</span><br><span class="line">    <span class="comment">// 数组所有内容都属于 Shallow Size</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span>[] ids = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Retained-Size-含义"><a href="#Retained-Size-含义" class="headerlink" title="Retained Size 含义"></a>Retained Size 含义</h3><h4 id="针对可达对象"><a href="#针对可达对象" class="headerlink" title="针对可达对象"></a>针对可达对象</h4><p>可达对象就是说，从 GC roots 开始搜索，能够到达的对象，也就是说下一次GC不会被清理的对象，采用下面的计算方法来得到 Retained Size 对象</p>
+<p>Retained Size的含义相对于Shallow Size 不太好理解。依然是上面的例子，在不同的情况下，sampleClass 的Retained Size 并不相同。下面引用StackOverFlow上的一个<a href="https://stackoverflow.com/questions/23941688/yourkit-the-retained-size-of-an-object-doesnt-equal-the-retained-size-of-all">回答</a>来解释这个问题。</p>
+<blockquote>
+<p><strong>Retained size</strong> of an object is its shallow size plus the shallow sizes of the objects that are accessible, directly or indirectly, only from this object. In other words, the retained size represents the amount of memory that will be freed by the garbage collector when this object is collected.</p>
+</blockquote>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2cp92ho4j30p00fd0v3.jpg" alt="图一"></p>
+<p>上图应该比较容易理解，看起来每个对象的Retained Size 都符合公式（ Retained Size = Shallow Size + 直接子对象的 Retained Size），并没有什么问题，然后我们看另外一种引用关系中，Obj1 的Retained Size 就会发生变化。</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2cpvt71gj30p00jc76z.jpg" alt="图二"></p>
+<p>第二种图中，你会发现Obj2的Retained Size 不再符合我们刚刚总结出来的公式，这是因为Obj2的直接子对象Obj5还被Obj6所引用，造成的结果就是，如果Obj2被回收，Obj5并不会被回收，所以 Obj2 的Retained Size就不应该包括 Obj5 的Retained Size. 虽然 Obj2 的 Retained Size 发生了变化，但是 Obj1 的 Retained Size 并没有发生变化。</p>
+<h4 id="针对不可达对象"><a href="#针对不可达对象" class="headerlink" title="针对不可达对象"></a>针对不可达对象</h4><p>指的是下一次 GC 会被清理的对象，也就是说没有其他对象引用自己的对象。</p>
+<p>如果你尝试使用 VisualVM 分析dump文件的时候，你会发现有些对象的 Retained Size 居然是0，这个0就推翻了上面那种分析方法的的结论，觉得无论什么样的对象肯定是会有 Shallow Size 的，不可能为0。</p>
+<p>通过分析最后可以这样理解：针对不可达对象，也就是可以完全被清除的对象，Retained Size 都是0</p>
+<h2 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h2><h3 id="理解误区"><a href="#理解误区" class="headerlink" title="理解误区"></a>理解误区</h3><p>好多人是简单的将保留大小描述为，<code>该对象本身和其直接引用或者间接引用的对象的大小的总和</code>。这种理解是片面的，就像上面例子中的 Obj2 一样，如果按照这种理解就会得到错误的结论。</p>
+<h3 id="如何在-VisualVM-中计算保留大小（Retained-Size）"><a href="#如何在-VisualVM-中计算保留大小（Retained-Size）" class="headerlink" title="如何在 VisualVM 中计算保留大小（Retained Size）"></a>如何在 VisualVM 中计算保留大小（Retained Size）</h3><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2d8odqlmj31kw0a1ac9.jpg" alt=""></p>
+<h3 id="一些-Retained-Size-为-0-的例子"><a href="#一些-Retained-Size-为-0-的例子" class="headerlink" title="一些 Retained Size 为 0 的例子"></a>一些 Retained Size 为 0 的例子</h3><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2d9wrsm0j30ny074dgj.jpg" alt=""></p>
+]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>JVM</tag>
+        <tag>tech</tag>
       </tags>
   </entry>
   <entry>
@@ -1043,127 +1043,9 @@ f(n-1)+f(n-2),\quad x>2
         <category>技术</category>
       </categories>
       <tags>
+        <tag>Java</tag>
         <tag>JVM</tag>
         <tag>tech</tag>
-        <tag>Java</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>JVM 探究（三）：垃圾回收算法和垃圾回收器</title>
-    <url>/gc-algorithms-and-garbage-collector.html</url>
-    <content><![CDATA[<p>通过介绍当前的垃圾回收器和垃圾回收算法的对比和不同的优势，来帮助读者选择适合自己的垃圾回收器。主要涉及对象存活的判断、三种垃圾回收算法以及新生代和老年代的几种传统的收集器，最后会介绍一下比较火热的<code>Garbage First(G1)收集器</code>。<br><span id="more"></span></p>
-<h2 id="JVM-内存分配方式"><a href="#JVM-内存分配方式" class="headerlink" title="JVM 内存分配方式"></a>JVM 内存分配方式</h2><p>在 Java 虚拟机需要一种方式来分配对象，就像操作系统需要管理内存一样，Java 虚拟机也需要一种方式来管理 Java 虚拟机的内存，现在管理 Java 虚拟机的方式主要有两种，一种被称为<code>指针碰撞(Bump the Point)</code>，另外一种被称为<code>空闲列表(Free List)</code>.</p>
-<h3 id="指针碰撞"><a href="#指针碰撞" class="headerlink" title="指针碰撞"></a>指针碰撞</h3><p>这种内存分配方式需要配合拥有内存整理过程的垃圾收集器。简单来说，这种方式的内存管理方式就是在空闲内存和已用内存之间设置一个指针，如果有新的内存被分配，就需要将指针向空闲区域移动对应的大小。然而由于这种方式简单粗暴，就必须要对应的垃圾收集器能够将存活的对象占用的内存整理在指针的一侧。使用这种分配算法的垃圾收集器是<code>Serial</code>,<code>ParNew</code>等带有内存整理的垃圾收集器。</p>
-<h3 id="空闲列表"><a href="#空闲列表" class="headerlink" title="空闲列表"></a>空闲列表</h3><p>通过在虚拟机中维护一个列表来记录那些内存空间是能够使用的。如果需要分配新的对象，将会在空闲的列表中寻找一个足够大的空闲内存来分配对象，然后更新这个空闲列表。采用<code>标记-清除</code>算法的垃圾收集器（eg：CMS）会采用这种分配方式。但是这种分配方式很容易造成很多外部碎片，在一定程度上会造成内存的浪费。</p>
-<h2 id="如何定位需要访问的对象"><a href="#如何定位需要访问的对象" class="headerlink" title="如何定位需要访问的对象"></a>如何定位需要访问的对象</h2><p>如何通过变量表引用到需要用到的对象，通过引用我们要找到具体的对象，然后才能够对对象做一些列的操作。引用方式主要有一下两种方式</p>
-<h3 id="句柄方式"><a href="#句柄方式" class="headerlink" title="句柄方式"></a>句柄方式</h3><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fndxgjtgb8j31kw0phkjl.jpg" alt="句柄方式访问对象"><br>句柄方式通过在 Java 堆中维护一个句柄池，池中的维护了对象实例和对象类型的引用，然后在根据这两个信息分别找到对应的存储信息，但是这样做的一个确定是实例对象的类型和数据都是通过两次寻址的方式来找到的。</p>
-<h3 id="直接引用"><a href="#直接引用" class="headerlink" title="直接引用"></a>直接引用</h3><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fndxohdm1rj31kw0qqb29.jpg" alt="直接引用方式访问对象"><br>直接引用的方式相较于句柄的方式，在第一次寻址的时候就能够找到对象的实例数据，对象类型数据的指针和对象实例放到了一起，从而一次寻址就能够找到对象的实例数据。</p>
-<h2 id="垃圾回收算法"><a href="#垃圾回收算法" class="headerlink" title="垃圾回收算法"></a>垃圾回收算法</h2><p>介绍常用的垃圾回收算法，针对<code>HotSpot</code>虚拟机做一些深入的介绍。</p>
-<h3 id="Mark-Sweep算法"><a href="#Mark-Sweep算法" class="headerlink" title="Mark-Sweep算法"></a>Mark-Sweep算法</h3><p><code>标记-清除（Mark-Sweep）</code>算法回收前后内存占用情况如下：</p>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fndzgovb5ij311s0hsjs7.jpg" alt="标记-清除算法图示"><br><code>标记-清除（Mark-Sweep）</code>算法是通过可以回收的内存进行标记后做清除操作，这样做的缺点就是会产生很多的内存碎片，可能的结果就是空闲内存总量是能够进行新对象的分配的，但是由于这些空闲的空间都不连续，一个对象放不下。就必须进行另外一次垃圾回收，垃圾回收又会引起服务的暂时停顿。</p>
-<h3 id="Mark-Compact-算法"><a href="#Mark-Compact-算法" class="headerlink" title="Mark-Compact 算法"></a>Mark-Compact 算法</h3><p><code>标记-整理(Mark-Compact)</code>算法回收前后内存占用情况如下：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnnglisy2mj310u0ik754.jpg" alt="标记-整理算法图示"></p>
-<p><code>标记-整理(Mark-Compact)</code>算法解决了<code>标记-清除（Mark-Sweep）</code>算法会产生很多不连续的空闲空间做出了改进，具体的方法就是在进行标记之后不是将对象直接清理掉，而是将存活的对象进行整理，使得存活的对象占用一块连续的内存空间，因为存活对象和可回收空间有明显的分割，所以可以直接对边界之外的内存进行直接的清理。这样的清理无疑更加有效率，虽然增加了移动对象的开支，但是整体上会比<code>标记-清除（Mark-Sweep）</code>算法更有效率。</p>
-<h3 id="Copying-算法"><a href="#Copying-算法" class="headerlink" title="Copying 算法"></a>Copying 算法</h3><p><code>复制(Copying)</code>算法回收前后内存占用情况如下：</p>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnngl3n0qxj31120kimy3.jpg" alt="复制算法图示"></p>
-<p><code>复制(Copying)</code>算法将内存区域分为大小相同的两个区域，当需要内存回收的时候，只需要将存活的对象复制到另外一块空闲区域，然后将原来的区域一次清理干净，什么都不留。相较于<code>标记-清除（Mark-Sweep）</code>算法的优势就是在解决了在标记和清除阶段的低效率和内存碎片问题，相较于<code>标记-整理(Mark-Compact)</code>算法的优势则是有着固定的内存分割线，而不是动态的调整，同时由于有两块相同大小的内存区域，存活的对象的复制和内存的回收会更有效率。缺点也十分明显，就是需要的内存空间是可用空间的2倍，内存的使用率永远不会超过50%。（现代虚拟机根据经验优化了这个比例，在后面介绍收集器的时候会介绍）</p>
-<h2 id="聊聊HotSpot"><a href="#聊聊HotSpot" class="headerlink" title="聊聊HotSpot"></a>聊聊HotSpot</h2><p><code>HotSpot</code> 是现在最广泛使用的虚拟机，拥有出色的性能。</p>
-<h3 id="判断对象是否存活"><a href="#判断对象是否存活" class="headerlink" title="判断对象是否存活"></a>判断对象是否存活</h3><p>目前针对对象的判断生存状态的的算法主要有引用计数法和可达性分析两种。在<code>Object-C</code>等语言中使用的是引用计数法，在<code>HotSpot</code>中，是使用可达性分析来判断的。</p>
-<h4 id="引用计数法-Reference-Counting"><a href="#引用计数法-Reference-Counting" class="headerlink" title="引用计数法(Reference Counting)"></a>引用计数法(Reference Counting)</h4><p>引用计数法是想要解决引用问题最容易想到的一种算法，既然需要知道对象是否存活，那就在对象上加个计数器来表示自己被引用的次数呗，每有一次新的引用，这个计数器就加1，每少一次引用，计数器就减1。这样看来，事情似乎出奇的简单，因为当该对象的计数器为0的时候，这就是这个对象的死期了。这种方式十分高效，而且简单。</p>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnhj99v7b8j31hm0c4dh6.jpg" alt="引用计数方法对象的的数据结构"></p>
-<center>*引用计数方法对象的的数据结构*</center>
-
-<p>事情到此看起来都很美好。然而，却有一种循环引用的问题让想使用这种算法的 GC 退缩。那便是<code>循环引用</code>问题，像下图这种，两个对象相互引用，但是没有其他对象引用这两个对象的情况，实际上这两个对象已经都没有利用价值了，应该让 GC 回收。可是由于两个对象互相都持有对方的一个引用，让 GC 以为他们都还需要继续生存以服务另外的对象。长期下去会造成很严重的内存泄露。</p>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnhjjr6atzj31ko0f4q5k.jpg" alt="循环引用对象"></p>
-<center>*循环引用对象*</center>
-
-<p>除了上面这种最简单的引用计数法，还有<code>延迟引用计数法</code>和<code>Sticky引用计数法</code>。这里不再深入讨论，可以参考 <a href="http://kklin.farbox.com/post/cao-zuo-xi-tong/xu-ni-ji/2-gcyin-yong-ji-shu-suan-fa">GC引用计数算法</a> ，或者直接阅读<a href="https://www.amazon.cn/dp/B01JZS0AO8/ref=sr_1_1?ie=UTF8&amp;qid=1516017889&amp;sr=8-1&amp;keywords=%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%9A%84%E7%AE%97%E6%B3%95%E4%B8%8E%E5%AE%9E%E7%8E%B0">《垃圾回收的算法与实现》</a>。</p>
-<h4 id="可达性分析（Reachablity-Analysis）"><a href="#可达性分析（Reachablity-Analysis）" class="headerlink" title="可达性分析（Reachablity Analysis）"></a>可达性分析（Reachablity Analysis）</h4><p>与<code>引用计数法</code>相比，可达性分析就显得更加复杂了。可达性分析是通过<code>GC Root</code>开始搜索整个对象池，如果某些对象无法搜索到，在图论中我们称之为不可达，那么这些不可达的对象就会成为<code>GC</code>的刀下鬼了。通过这种方式就能够实现回收循环引用的对象。</p>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnhkmkwjq0j31kw15fwt3.jpg" alt=""></p>
-<center>*可达性分析判断对象是否可回收*</center>
-
-<p>在<code>HotSpot</code>中<code>GC Root</code>主要有</p>
-<ul>
-<li>虚拟机栈（栈帧中的本地变量表）中引用的对象。</li>
-<li>方法区中类静态属性引用的对象。</li>
-<li>方法区中常量引用的对象</li>
-<li>本地方法栈中<code>JNI</code>（即一般说的<code>Native</code>方法）引用的对象</li>
-</ul>
-<h5 id="HotSpot-的可达性分析实现"><a href="#HotSpot-的可达性分析实现" class="headerlink" title="HotSpot 的可达性分析实现"></a>HotSpot 的可达性分析实现</h5><p>在使用<code>可达性分析</code>算法的时候，不可避免地会引起<code>GC 停顿</code>，因为必须保证在进行可达性分析的时候对象之间的引用关系是不变的，我们无法针对一个在不断变化的图分析他的可达性。因此在进行可达性分析的时候难免要停止所有的用户线程。我们通常称之为<code>STW(Stop The Word)</code>. 有些收集器通过一些手段可以减少<code>STW</code>的时间（例如<code>CMS</code>），但是无法跳过这个过程。</p>
-<p>目前主流的 Java 虚拟机使用的都是<code>准确式GC</code>，就是说当<code>STW</code>发生的时候，并不需要检查全部的变量从而确定那些变量是引用类型，而是在类加载完成之后会将引用类型的变量存在一个数据结构中，在<code>HotSpot</code>虚拟机中使用<code>OopMap</code>来记录。</p>
-<p><code>准确式GC</code>解决了引用类型的定位问题，但是引用类型之间的关系错综复杂，如果为每一条指令都生成对应<code>OopMap</code>，那么<code>GC</code>的空间成本就会很大。为了解决这问题，引入了<code>安全点（Safepoint）</code>和<code>安全区域（Safe Region）</code>两个概念。<code>HotSpot</code>只有在<code>安全点（Safepoint）</code>和<code>安全区域（Safe Region）</code>这两个位置才会生成相应的<code>OopMap</code>，这两个区域的选择标准是能够让程序长时间执行（也就是这段时间内不会发生引用关系的改变）的指令。</p>
-<p><code>安全点</code>一般设置在循环的末尾（防止大循环的时候一直不进入safepoint，而其他线程在等待它进入safepoint)、方法返回前、调用方法的call之后、抛出异常的位置。如何让程序在安全点上停下里等待GC也有两种方式，分别是<code>抢先式中断(Preemptive Suspension)</code>和<code>主动式中断(Voluntary Suspension)</code>. 抢先式中断不需要程序配合，当 GC 发生时会中断所有的线程，然后找出不在安全点上的线程让其继续执行到最近的安全点；主动式中断需要程序进行配合，设置一个标识位，当GC开始后这个标识位置位，所有的进程到达安全点之后会主动的去查询这个标识位，如果为真时就会自动中断挂起自己。</p>
-<p><code>安全区域</code>是配合安全点的一种机制，因为有些指令程序是“不执行”的，例如线程处在 Sleep 状态或者 Blocked 状态，如果在 GC 的时候一直等待进入安全点，会使 GC 停顿变得十分长。 当线程执行到安全区域的开始位置的时候，会标识自己已经进入安全区域了，而在离开的时候会主动检查系统是否已经完成了根结点的枚举，如果没有就继续等待，如果完成当前线程才可以继续执行后面的代码。</p>
-<h2 id="垃圾收集器简介"><a href="#垃圾收集器简介" class="headerlink" title="垃圾收集器简介"></a>垃圾收集器简介</h2><p>按照使用场景介绍常用的垃圾收集器，介绍他们的适用场景。让读者能够根据自己的应用场景来选择合适的收集器。</p>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuas1qofj30f70aeaar.jpg" alt="垃圾收集器组合"></p>
-<center>*垃圾收集器组合和分类*</center>
-
-<p>上图中展示了各种收集器是新生代收集器还是老年代收集器，如果上面两种收集器时间有连线，则表示可以配合使用。具体的GC配置参数可以参照 <a href="/experiment-on-JVM.html">常用垃圾收集器参数</a></p>
-<p>首先说明两个名词的含义，以免在下面的阅读中产生歧义：</p>
-<ul>
-<li><code>并行（Parallel）</code>：指多条垃圾收集线程并行工作，但此时用户线程仍然处于等待状态</li>
-<li><code>并发(Concurrent)</code>：用户线程与垃圾收集线程同时执行（并行执行，或者交替执行）</li>
-</ul>
-<h3 id="新生代收集器"><a href="#新生代收集器" class="headerlink" title="新生代收集器"></a>新生代收集器</h3><p>本文介绍的新生代收集器都是使用的<code>复制算法</code></p>
-<h4 id="Serial-收集器"><a href="#Serial-收集器" class="headerlink" title="Serial 收集器"></a>Serial 收集器</h4><p>串行垃圾收集器，采用复制算法，Serial 说明他是单线程工作的，他只会使用一个CPU，使用一个线程去完成垃圾回收工作，同时这也意味着当<code>Serial GC</code>进行垃圾回收的时候，用户线程也不得不暂停（STW）。<code>Serial 收集器</code>+<code>Serial Old 收集器</code>垃圾回收的时间线如下图所示：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuxtkhfmj30ja06xdgi.jpg" alt="Serial/Serial Old"><br>这样的用户线程对于现在的服务来说基本是不可接受的，减少 GC 停顿也一直是很多垃圾收集器的努力目标。看似十分“无能”的<code>Serial GC</code>只能在客户端中发挥作用，因为一般客户端应用需要的内存并不是很大，因此停顿几十毫秒就可以完成内存回收，这样也是可以接受了，同时省去了并行 GC 切换线程的开销。</p>
-<h4 id="ParNew-收集器"><a href="#ParNew-收集器" class="headerlink" title="ParNew 收集器"></a>ParNew 收集器</h4><p><code>ParNew 收集器</code>基本上就是<code>Serial 收集器</code>的升级版本，在新生代中收集的时候采用了并行的方案。其他部分与<code>Serial 收集器</code>基本一样。该收集器在单 CPU 的环境下并不会有优于<code>Serial</code>的表现，，反而会由于线程的频繁切换而降低性能，而对于多核CPU就会有较好的表现了。因此比较适合服务端程序。<code>ParNew 收集器</code>+<code>Serial Old 收集器</code>的 GC 过程如下图所示：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjv10ohmwj30j206vaas.jpg" alt=""><br>虽然<code>ParNew 收集器</code>只是针对<code>Serial 收集器</code>的简单升级，但是有着十分广泛的使用，原因就是能和<code>CMS收集器</code>搭配使用的只有<code>Serial 收集器</code>和<code>ParNew 收集器</code>两种。<code>CMS</code>的广泛使用就带来了<code>ParNew</code>的广泛使用。</p>
-<h4 id="Parallel-Scavenge-收集器"><a href="#Parallel-Scavenge-收集器" class="headerlink" title="Parallel Scavenge 收集器"></a>Parallel Scavenge 收集器</h4><p><code>Parallel Scavenge 收集器</code>也是一个新生代收集器，他也是并行的、使用复制算法的。和<code>ParNew收集器</code>非常相似，GC过程图也与<code>ParNew收集器</code>相同。然而该收集器的关注点与其他收集器不同，其他收集器关注点都是如何缩短GC停顿时间，而<code>Parallel Scavenge 收集器</code>关注的确实如何保持系统一个较高的吞吐量（吞吐量 = 运行用户代码的时间/（运行用户代码时间+垃圾收集时间））。因此该收集器主要适合那些交互较少，运算较多的服务。该收集器允许用户设置极少的参数就能保证一个较高的吞吐量。</p>
-<p>该收集器提供两个参数用于精确控制吞吐量<code>-XX:MaxGCPauseMillis</code>和<code>-XX:GCTimeRatio</code>两个参数，含义分别是最大GC停顿时间和直接设置吞吐量。GC的处理优先级是<code>MaxGCPauseMillis</code>最高，<code>GCTimeRatio</code>次之，其他的空间大小配置优先级最低。除了上面的两个参数之外，还有一个参数<code>-XX:+UseAdaptiveSizePolicy</code>，当设置了这个参数之后，就不需要再配置新生代的大小、Eden 和 Survivor 区域的比例、晋升老年代对象年龄等参数（设置了也没用），虚拟机会根据当前系统运行状况来动态调整上面的几个参数。</p>
-<p><code>Parallel Scavenge</code>（-XX:+UseParallelGC）框架下，默认是在要触发full GC前先执行一次young GC，并且两次GC之间能让应用程序稍微运行一小下，以期降低full GC的暂停时间（因为young GC会尽量清理了young gen的死对象，减少了full GC的工作量）。控制这个行为的VM参数是<code>-XX:+ScavengeBeforeFullGC</code></p>
-<h3 id="老年代收集器"><a href="#老年代收集器" class="headerlink" title="老年代收集器"></a>老年代收集器</h3><h4 id="Serial-Old-收集器"><a href="#Serial-Old-收集器" class="headerlink" title="Serial Old 收集器"></a>Serial Old 收集器</h4><p><code>Serial Old 收集器</code>就是<code>Serial 收集器</code>的老年代版本，主要也是给Client模式下的虚拟机使用。在 Server 应用中用于和 PS 收集器搭配使用，还有就是在 CMS 失败后，作为后备方案来进行垃圾收集。<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuxtkhfmj30ja06xdgi.jpg" alt="Serial/Serial Old"></p>
-<h4 id="Parallel-Old-收集器"><a href="#Parallel-Old-收集器" class="headerlink" title="Parallel Old 收集器"></a>Parallel Old 收集器</h4><p><code>Parallel Old 收集器</code>是在<code>JDK1.6</code>中推出的，在此之前<code>Parallel Scavenge 收集器</code>只能和<code>Serial Old 收集器</code>搭配使用，由于<code>Serial Old 收集器</code>的拖累，导致高吞吐量的优势无法体现出来，这种组合的吞度量甚至不如<code>ParNew 收集器</code>+<code>CMS收集器</code>的组合。而<code>Parallel Old 收集器</code>的正式推出表示在需要关注高吞吐量的服务中可以使用<code>Parallel Scavenge 收集器</code>+<code>Parallel Old 收集器</code>的组合。这种组合的 GC 回收过程线程运行情况如下图：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuy6qgsrj30j606ugmd.jpg" alt=""></p>
-<h4 id="Concurrent-Mark-Sweep-收集器"><a href="#Concurrent-Mark-Sweep-收集器" class="headerlink" title="Concurrent Mark Sweep 收集器"></a>Concurrent Mark Sweep 收集器</h4><p><code>CMS 收集器</code>收集器是以最短的停顿时间为目标的收集器，这样的目标可以保证服务的高可用性，因此也成为了各种以交互为目的的服务的首选收集器。该收集器采用的是<code>标记-清除算法</code>，而前面介绍的收集器都是采用的<code>标记-整理算法</code>。该收集器 GC 过程相对复杂一些。分为以下四个步骤：</p>
-<ul>
-<li>初始标记(CMS initial mark)</li>
-<li>并发标记(CMS concurrent mark)</li>
-<li>重新标记(CMS final remark)</li>
-<li>并发清除(CMS concurrent sweep)</li>
-<li>重置线程(CMS concurrent reset）</li>
-</ul>
-<p>这里截取一段 GC 日志<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">2017-11-07T16:20:41.582+0800: 2.119: [GC (CMS Initial Mark) [1 CMS-initial-mark: 0K(3670016K)] 26854K(4141888K), 0.0036737 secs] [Times: user&#x3D;0.01 sys&#x3D;0.00, real&#x3D;0.01 secs]</span><br><span class="line">2017-11-07T16:20:41.585+0800: 2.123: [CMS-concurrent-mark-start]</span><br><span class="line">2017-11-07T16:20:41.587+0800: 2.125: [CMS-concurrent-mark: 0.002&#x2F;0.002 secs] [Times: user&#x3D;0.01 sys&#x3D;0.00, real&#x3D;0.00 secs]</span><br><span class="line">2017-11-07T16:20:41.587+0800: 2.125: [CMS-concurrent-preclean-start]</span><br><span class="line">2017-11-07T16:20:41.595+0800: 2.133: [CMS-concurrent-preclean: 0.008&#x2F;0.008 secs] [Times: user&#x3D;0.05 sys&#x3D;0.00, real&#x3D;0.01 secs]</span><br><span class="line">2017-11-07T16:20:41.595+0800: 2.133: [CMS-concurrent-abortable-preclean-start]</span><br><span class="line">2017-11-07T16:20:43.996+0800: 4.534: [CMS-concurrent-abortable-preclean: 1.514&#x2F;2.401 secs] [Times: user&#x3D;5.75 sys&#x3D;0.28, real&#x3D;2.40 secs]</span><br><span class="line">2017-11-07T16:20:43.996+0800: 4.534: [GC (CMS Final Remark) [YG occupancy: 241272 K (471872 K)]4.534: [Rescan (parallel) , 0.0123556 secs]4.546: [weak refs processing, 0.0000203 secs]4.546: [class unloading, 0.0059852 secs]4.552: [scrub symbol table, 0.0055144 secs]4.558: [scrub string table, 0.0006434 secs][1 CMS-remark: 0K(3670016K)] 241272K(4141888K), 0.0260691 secs] [Times: user&#x3D;0.11 sys&#x3D;0.00, real&#x3D;0.02 secs]</span><br><span class="line">2017-11-07T16:20:44.023+0800: 4.560: [CMS-concurrent-sweep-start]</span><br><span class="line">2017-11-07T16:20:44.023+0800: 4.560: [CMS-concurrent-sweep: 0.000&#x2F;0.000 secs] [Times: user&#x3D;0.00 sys&#x3D;0.00, real&#x3D;0.00 secs]</span><br><span class="line">2017-11-07T16:20:44.023+0800: 4.560: [CMS-concurrent-reset-start]</span><br><span class="line">2017-11-07T16:20:44.041+0800: 4.578: [CMS-concurrent-reset: 0.018&#x2F;0.018 secs] [Times: user&#x3D;0.07 sys&#x3D;0.02, real&#x3D;0.02 secs]</span><br></pre></td></tr></table></figure></p>
-<blockquote>
-<p>real是程序的实际运行时间，sys是内核态的时间，user是用户态的时间，单核情况，real远远大于user和sys之和。real，从程序开始到程序执行结束时所消耗的时间，包括CPU的用时和所有延迟程序执行的因素的总和。CPU用时被划分为user和sys两块。user表示程序本身，以及它所调用的库中的子例程使用的时间。sys是由程序直接或间接调用的系统调用执行的时间。<code>real=cpu用时+其他因素时间</code>,<code>cpu 用时=user+sys</code>,所以： real&gt; user + sys （单核情况）</p>
-</blockquote>
-<p>GC 过程中各个阶段 GC 线程和用户线程的运行关系如下图：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuyc1e48j30jj06hjsa.jpg" alt=""></p>
-<p>初始标记、重新标记这两个步骤需要 STW, 初始标记仅仅是标记以下 <code>GC Roots</code> 能够直接关联到的对象，速度很快，并发标记阶段就是进行<code>GC RootsTracing</code>的过程。重新标记是为了修正并发标记期间由于用户线程还在继续执行而产生变动的那一部分对象，这个阶段相比初始标记要长一点，但是远比并发标记短。整体来看用时最多的几个阶段：并发标记、并发清理、重置线程都会都是并发的，这样可以让应用程序尽可能的减少停顿。</p>
-<blockquote>
-<p>【关于CMS-concurrent-abortable-preclean】：从日志中我们还发现了一个细节叫做CMS-concurrent-abortable-preclean，这就要从Concurrent precleaning阶段说起了。Concurrent precleaning阶段的实际行为是：针对新生代做抽样，等待新生代在某个时间段（默认5秒，可以通过CMSMaxAbortablePrecleanTime参数设置）执行一次Minor GC，如果这个时间段内GC没有发生，那么就继续进行下一阶段（Remark）；如果时间段内触发了Minor GC，则可能会执行一些优化（具体可以参考<a href="https://blogs.oracle.com/jonthecollector/entry/did_you_know">https://blogs.oracle.com/jonthecollector/entry/did_you_know</a> ）</p>
-<p>并发可中止的预清理阶段。这个阶段其实跟上一个阶段做的东西一样，也是为了减少下一个STW重新标记阶段的工作量。增加这一阶段是为了让我们可以控制这个阶段的结束时机，比如扫描多长时间（默认5秒）或者Eden区使用占比达到期望比例（默认50%）就结束本阶段。</p>
-</blockquote>
-<p><code>CMS 收集器</code>也有明显的几个缺点：一是 CMS 默认启动的回收线程数是<code>（CPU数量+3）/4</code>，也就是当 CPU 在 4 个以上时，并发垃圾回收时 GC线程占用不少于 25% 的 CPU 资源，当 CPU 不足 4 个时，情况就变得更加严峻了。第二个缺点就是 CMS 无法处理<code>浮动垃圾(Floating Garbage)</code>，浮动垃圾是指在并发清理阶段新产生的垃圾，由于 CMS 垃圾回收线程要和用户线程并发，因此必须要保留一部分内存在回收期间供用户线程使用，增额比例通过参数<code>CMSInitiatingOccupancyFraction</code>设置，表示老年代空间占用比例达到多少的时候会出发CMS GC，这个值在<code>JDK1.6</code>中默认值是<code>68</code>，在<code>JDK1.7</code>和<code>JDK1.8</code>中都是<code>92</code>。如果在 CMS GC 期间剩余的老年代内存空间不足已支持程序继续执行，就是触发GC降级，也就是<code>Concurrent Mode Failure</code>,这个时候就需要使用<code>Serial Old收集器</code>来完成老年代回收的任务，效率可想而知。最后一个缺点就是<code>标记-清除算法</code>带来的内存碎片问题，这个问题可以通过参数<code>-XX：+UseCMSCompactAtFullCollection</code>来缓解（默认开启），用于在CMS进行Full GC的时候进行碎片的合并整理，但是内存整理并不是并发的，会造成的应用程序的停顿，所以通常配合<code>-XX：CMSFullGCsBeforeCompaction</code>参数一起使用，该参数表示在允许连续几次的不整理碎片的CMS GC。</p>
-<h3 id="G1收集器"><a href="#G1收集器" class="headerlink" title="G1收集器"></a>G1收集器</h3><p><code>Garbage First 收集器</code>应该是当今最前沿的垃圾收集器了，它的优点是：</p>
-<blockquote>
-<p>并行与并发：G1能充分利用多CPU、多核环境下的硬件优势，使用多个CPU（CPU或者CPU核心）来缩短Stop-The-World停顿的时间，部分其他收集器原本需要停顿Java线程执行的GC动作，G1收集器仍然可以通过并发的方式让Java程序继续执行。</p>
-<p>分代收集：与其他收集器一样，分代概念在G1中依然得以保留。虽然G1可以不需要其他收集器配合就能独立管理整个GC堆，但它能够采用不同的方式去处理新创建的对象和已经存活了一段时间、熬过多次GC的旧对象以获取更好的收集效果。</p>
-<p>空间整合：与CMS的“标记—清理”算法不同，G1从整体来看是基于“标记—整理”算法实现的收集器，从局部（两个Region之间）上来看是基于“复制”算法实现的，但无论如何，这两种算法都意味着G1运作期间不会产生内存空间碎片，收集后能提供规整的可用内存。这种特性有利于程序长时间运行,分配大对象时不会因为无法找到连续内存空间而提前触发下一次GC。</p>
-<p>可预测的停顿：这是G1相对于CMS的另一大优势，降低停顿时间是G1和CMS共同的关注点，但G1除了追求低停顿外，还能建立可预测的停顿时间模型，能让使用者明确指定在一个长度为M毫秒的时间片段内，消耗在垃圾收集上的时间不得超过N毫秒，这几乎已经是实时Java（RTSJ）的垃圾收集器的特征了。</p>
-<p>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
-</blockquote>
-<p>G1 收集器虽然还有老年代和新生代的感念，但是内存布局上却没有为其划定单独的物理隔离的区域，而是分给它们不同数量（无需连续）的<code>Region</code>。G1 能够预测停顿的功能就是依赖于 Region 这个东西实现的，因为将内存分割成多个大小相等的区域，然后在后台维护一个垃圾回收价值列表，每次根据允许的回收时间（使用参数<code>-XX:MaxGCPauseMillis</code>设定，默认值为<code>200</code>）来确定那些 Region 进行回收。理解起来很简单的 Region 回收，实现起来却很困难，其中一个主要的原因就是 Region 之间的对象相互引用，如果到回收时才进行可达性分析要扫描整个Java堆才能完成分析，同样的问题也存在于其他分代收集器新生代和老年代相互引用的关系中。虚拟机使用<code>Remembered Set</code>来避免扫描全堆，程序在对 Reference 类型进行写操作的时候会检测引用的对象是否存在于不同的 Region（或者是不同年代）中，如果是就将应用信息记录到 <strong>被引用对象</strong> 的 Remembered Set 中，在内存回收时，将 Remembered Set 加入 GC Roots 即可避免全堆扫描。</p>
-<p>G1 收集器的运作大致可以分为以下几个步骤：</p>
-<ol>
-<li>初始标记（Initial Marking）：仅仅标记 GC Roots直接关联的对象</li>
-<li>并发标记（Concurrent Marking）：从 GC Roots开始做可达性分析</li>
-<li>最终标记（Final Marking）：修正在并发标记阶段变动的标记</li>
-<li>筛选回收 （Live Data Counting and Evacuation）：根据回收机制和成本排序，根据用户期望的停顿时间制定回收计划</li>
-</ol>
-<p>线程运行情况如下图：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuyko6aij30jj06ddgp.jpg" alt=""></p>
-<p>更多可参考Oracle关于G1调优的官方文档：<a href="http://www.oracle.com/technetwork/cn/articles/java/g1gc-1984535.html">Garbage First Garbage Collector Tuning
-</a></p>
-<h2 id="参考内容"><a href="#参考内容" class="headerlink" title="参考内容"></a>参考内容</h2><ol>
-<li><a href="http://kklin.farbox.com/post/cao-zuo-xi-tong/xu-ni-ji/2-gcyin-yong-ji-shu-suan-fa">GC引用计数算法</a></li>
-<li><a href="https://www.amazon.cn/dp/B01JZS0AO8/">《垃圾回收的算法与实现》</a></li>
-<li><a href="https://www.amazon.cn/dp/B00D2ID4PK/">《深入理解Java虚拟机:JVM高级特性与最佳实践(第2版)》</a></li>
-<li>部分图片来源：<a href="https://crowhawk.github.io/2017/08/15/jvm_3/">深入理解JVM(3)——7种垃圾收集器</a></li>
-<li><a href="https://docs.oracle.com/javase/8/docs/technotes/guides/vm/gctuning/cms.html">Concurrent Mark Sweep (CMS) Collector</a></li>
-</ol>
-]]></content>
-      <categories>
-        <category>技术</category>
-      </categories>
-      <tags>
-        <tag>JVM</tag>
-        <tag>tech</tag>
-        <tag>Java</tag>
       </tags>
   </entry>
   <entry>
@@ -1964,9 +1846,127 @@ f(n-1)+f(n-2),\quad x>2
         <category>技术</category>
       </categories>
       <tags>
+        <tag>Java</tag>
         <tag>JVM</tag>
         <tag>tech</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>JVM 探究（三）：垃圾回收算法和垃圾回收器</title>
+    <url>/gc-algorithms-and-garbage-collector.html</url>
+    <content><![CDATA[<p>通过介绍当前的垃圾回收器和垃圾回收算法的对比和不同的优势，来帮助读者选择适合自己的垃圾回收器。主要涉及对象存活的判断、三种垃圾回收算法以及新生代和老年代的几种传统的收集器，最后会介绍一下比较火热的<code>Garbage First(G1)收集器</code>。<br><span id="more"></span></p>
+<h2 id="JVM-内存分配方式"><a href="#JVM-内存分配方式" class="headerlink" title="JVM 内存分配方式"></a>JVM 内存分配方式</h2><p>在 Java 虚拟机需要一种方式来分配对象，就像操作系统需要管理内存一样，Java 虚拟机也需要一种方式来管理 Java 虚拟机的内存，现在管理 Java 虚拟机的方式主要有两种，一种被称为<code>指针碰撞(Bump the Point)</code>，另外一种被称为<code>空闲列表(Free List)</code>.</p>
+<h3 id="指针碰撞"><a href="#指针碰撞" class="headerlink" title="指针碰撞"></a>指针碰撞</h3><p>这种内存分配方式需要配合拥有内存整理过程的垃圾收集器。简单来说，这种方式的内存管理方式就是在空闲内存和已用内存之间设置一个指针，如果有新的内存被分配，就需要将指针向空闲区域移动对应的大小。然而由于这种方式简单粗暴，就必须要对应的垃圾收集器能够将存活的对象占用的内存整理在指针的一侧。使用这种分配算法的垃圾收集器是<code>Serial</code>,<code>ParNew</code>等带有内存整理的垃圾收集器。</p>
+<h3 id="空闲列表"><a href="#空闲列表" class="headerlink" title="空闲列表"></a>空闲列表</h3><p>通过在虚拟机中维护一个列表来记录那些内存空间是能够使用的。如果需要分配新的对象，将会在空闲的列表中寻找一个足够大的空闲内存来分配对象，然后更新这个空闲列表。采用<code>标记-清除</code>算法的垃圾收集器（eg：CMS）会采用这种分配方式。但是这种分配方式很容易造成很多外部碎片，在一定程度上会造成内存的浪费。</p>
+<h2 id="如何定位需要访问的对象"><a href="#如何定位需要访问的对象" class="headerlink" title="如何定位需要访问的对象"></a>如何定位需要访问的对象</h2><p>如何通过变量表引用到需要用到的对象，通过引用我们要找到具体的对象，然后才能够对对象做一些列的操作。引用方式主要有一下两种方式</p>
+<h3 id="句柄方式"><a href="#句柄方式" class="headerlink" title="句柄方式"></a>句柄方式</h3><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fndxgjtgb8j31kw0phkjl.jpg" alt="句柄方式访问对象"><br>句柄方式通过在 Java 堆中维护一个句柄池，池中的维护了对象实例和对象类型的引用，然后在根据这两个信息分别找到对应的存储信息，但是这样做的一个确定是实例对象的类型和数据都是通过两次寻址的方式来找到的。</p>
+<h3 id="直接引用"><a href="#直接引用" class="headerlink" title="直接引用"></a>直接引用</h3><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fndxohdm1rj31kw0qqb29.jpg" alt="直接引用方式访问对象"><br>直接引用的方式相较于句柄的方式，在第一次寻址的时候就能够找到对象的实例数据，对象类型数据的指针和对象实例放到了一起，从而一次寻址就能够找到对象的实例数据。</p>
+<h2 id="垃圾回收算法"><a href="#垃圾回收算法" class="headerlink" title="垃圾回收算法"></a>垃圾回收算法</h2><p>介绍常用的垃圾回收算法，针对<code>HotSpot</code>虚拟机做一些深入的介绍。</p>
+<h3 id="Mark-Sweep算法"><a href="#Mark-Sweep算法" class="headerlink" title="Mark-Sweep算法"></a>Mark-Sweep算法</h3><p><code>标记-清除（Mark-Sweep）</code>算法回收前后内存占用情况如下：</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fndzgovb5ij311s0hsjs7.jpg" alt="标记-清除算法图示"><br><code>标记-清除（Mark-Sweep）</code>算法是通过可以回收的内存进行标记后做清除操作，这样做的缺点就是会产生很多的内存碎片，可能的结果就是空闲内存总量是能够进行新对象的分配的，但是由于这些空闲的空间都不连续，一个对象放不下。就必须进行另外一次垃圾回收，垃圾回收又会引起服务的暂时停顿。</p>
+<h3 id="Mark-Compact-算法"><a href="#Mark-Compact-算法" class="headerlink" title="Mark-Compact 算法"></a>Mark-Compact 算法</h3><p><code>标记-整理(Mark-Compact)</code>算法回收前后内存占用情况如下：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnnglisy2mj310u0ik754.jpg" alt="标记-整理算法图示"></p>
+<p><code>标记-整理(Mark-Compact)</code>算法解决了<code>标记-清除（Mark-Sweep）</code>算法会产生很多不连续的空闲空间做出了改进，具体的方法就是在进行标记之后不是将对象直接清理掉，而是将存活的对象进行整理，使得存活的对象占用一块连续的内存空间，因为存活对象和可回收空间有明显的分割，所以可以直接对边界之外的内存进行直接的清理。这样的清理无疑更加有效率，虽然增加了移动对象的开支，但是整体上会比<code>标记-清除（Mark-Sweep）</code>算法更有效率。</p>
+<h3 id="Copying-算法"><a href="#Copying-算法" class="headerlink" title="Copying 算法"></a>Copying 算法</h3><p><code>复制(Copying)</code>算法回收前后内存占用情况如下：</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnngl3n0qxj31120kimy3.jpg" alt="复制算法图示"></p>
+<p><code>复制(Copying)</code>算法将内存区域分为大小相同的两个区域，当需要内存回收的时候，只需要将存活的对象复制到另外一块空闲区域，然后将原来的区域一次清理干净，什么都不留。相较于<code>标记-清除（Mark-Sweep）</code>算法的优势就是在解决了在标记和清除阶段的低效率和内存碎片问题，相较于<code>标记-整理(Mark-Compact)</code>算法的优势则是有着固定的内存分割线，而不是动态的调整，同时由于有两块相同大小的内存区域，存活的对象的复制和内存的回收会更有效率。缺点也十分明显，就是需要的内存空间是可用空间的2倍，内存的使用率永远不会超过50%。（现代虚拟机根据经验优化了这个比例，在后面介绍收集器的时候会介绍）</p>
+<h2 id="聊聊HotSpot"><a href="#聊聊HotSpot" class="headerlink" title="聊聊HotSpot"></a>聊聊HotSpot</h2><p><code>HotSpot</code> 是现在最广泛使用的虚拟机，拥有出色的性能。</p>
+<h3 id="判断对象是否存活"><a href="#判断对象是否存活" class="headerlink" title="判断对象是否存活"></a>判断对象是否存活</h3><p>目前针对对象的判断生存状态的的算法主要有引用计数法和可达性分析两种。在<code>Object-C</code>等语言中使用的是引用计数法，在<code>HotSpot</code>中，是使用可达性分析来判断的。</p>
+<h4 id="引用计数法-Reference-Counting"><a href="#引用计数法-Reference-Counting" class="headerlink" title="引用计数法(Reference Counting)"></a>引用计数法(Reference Counting)</h4><p>引用计数法是想要解决引用问题最容易想到的一种算法，既然需要知道对象是否存活，那就在对象上加个计数器来表示自己被引用的次数呗，每有一次新的引用，这个计数器就加1，每少一次引用，计数器就减1。这样看来，事情似乎出奇的简单，因为当该对象的计数器为0的时候，这就是这个对象的死期了。这种方式十分高效，而且简单。</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnhj99v7b8j31hm0c4dh6.jpg" alt="引用计数方法对象的的数据结构"></p>
+<center>*引用计数方法对象的的数据结构*</center>
+
+<p>事情到此看起来都很美好。然而，却有一种循环引用的问题让想使用这种算法的 GC 退缩。那便是<code>循环引用</code>问题，像下图这种，两个对象相互引用，但是没有其他对象引用这两个对象的情况，实际上这两个对象已经都没有利用价值了，应该让 GC 回收。可是由于两个对象互相都持有对方的一个引用，让 GC 以为他们都还需要继续生存以服务另外的对象。长期下去会造成很严重的内存泄露。</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnhjjr6atzj31ko0f4q5k.jpg" alt="循环引用对象"></p>
+<center>*循环引用对象*</center>
+
+<p>除了上面这种最简单的引用计数法，还有<code>延迟引用计数法</code>和<code>Sticky引用计数法</code>。这里不再深入讨论，可以参考 <a href="http://kklin.farbox.com/post/cao-zuo-xi-tong/xu-ni-ji/2-gcyin-yong-ji-shu-suan-fa">GC引用计数算法</a> ，或者直接阅读<a href="https://www.amazon.cn/dp/B01JZS0AO8/ref=sr_1_1?ie=UTF8&amp;qid=1516017889&amp;sr=8-1&amp;keywords=%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%9A%84%E7%AE%97%E6%B3%95%E4%B8%8E%E5%AE%9E%E7%8E%B0">《垃圾回收的算法与实现》</a>。</p>
+<h4 id="可达性分析（Reachablity-Analysis）"><a href="#可达性分析（Reachablity-Analysis）" class="headerlink" title="可达性分析（Reachablity Analysis）"></a>可达性分析（Reachablity Analysis）</h4><p>与<code>引用计数法</code>相比，可达性分析就显得更加复杂了。可达性分析是通过<code>GC Root</code>开始搜索整个对象池，如果某些对象无法搜索到，在图论中我们称之为不可达，那么这些不可达的对象就会成为<code>GC</code>的刀下鬼了。通过这种方式就能够实现回收循环引用的对象。</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnhkmkwjq0j31kw15fwt3.jpg" alt=""></p>
+<center>*可达性分析判断对象是否可回收*</center>
+
+<p>在<code>HotSpot</code>中<code>GC Root</code>主要有</p>
+<ul>
+<li>虚拟机栈（栈帧中的本地变量表）中引用的对象。</li>
+<li>方法区中类静态属性引用的对象。</li>
+<li>方法区中常量引用的对象</li>
+<li>本地方法栈中<code>JNI</code>（即一般说的<code>Native</code>方法）引用的对象</li>
+</ul>
+<h5 id="HotSpot-的可达性分析实现"><a href="#HotSpot-的可达性分析实现" class="headerlink" title="HotSpot 的可达性分析实现"></a>HotSpot 的可达性分析实现</h5><p>在使用<code>可达性分析</code>算法的时候，不可避免地会引起<code>GC 停顿</code>，因为必须保证在进行可达性分析的时候对象之间的引用关系是不变的，我们无法针对一个在不断变化的图分析他的可达性。因此在进行可达性分析的时候难免要停止所有的用户线程。我们通常称之为<code>STW(Stop The Word)</code>. 有些收集器通过一些手段可以减少<code>STW</code>的时间（例如<code>CMS</code>），但是无法跳过这个过程。</p>
+<p>目前主流的 Java 虚拟机使用的都是<code>准确式GC</code>，就是说当<code>STW</code>发生的时候，并不需要检查全部的变量从而确定那些变量是引用类型，而是在类加载完成之后会将引用类型的变量存在一个数据结构中，在<code>HotSpot</code>虚拟机中使用<code>OopMap</code>来记录。</p>
+<p><code>准确式GC</code>解决了引用类型的定位问题，但是引用类型之间的关系错综复杂，如果为每一条指令都生成对应<code>OopMap</code>，那么<code>GC</code>的空间成本就会很大。为了解决这问题，引入了<code>安全点（Safepoint）</code>和<code>安全区域（Safe Region）</code>两个概念。<code>HotSpot</code>只有在<code>安全点（Safepoint）</code>和<code>安全区域（Safe Region）</code>这两个位置才会生成相应的<code>OopMap</code>，这两个区域的选择标准是能够让程序长时间执行（也就是这段时间内不会发生引用关系的改变）的指令。</p>
+<p><code>安全点</code>一般设置在循环的末尾（防止大循环的时候一直不进入safepoint，而其他线程在等待它进入safepoint)、方法返回前、调用方法的call之后、抛出异常的位置。如何让程序在安全点上停下里等待GC也有两种方式，分别是<code>抢先式中断(Preemptive Suspension)</code>和<code>主动式中断(Voluntary Suspension)</code>. 抢先式中断不需要程序配合，当 GC 发生时会中断所有的线程，然后找出不在安全点上的线程让其继续执行到最近的安全点；主动式中断需要程序进行配合，设置一个标识位，当GC开始后这个标识位置位，所有的进程到达安全点之后会主动的去查询这个标识位，如果为真时就会自动中断挂起自己。</p>
+<p><code>安全区域</code>是配合安全点的一种机制，因为有些指令程序是“不执行”的，例如线程处在 Sleep 状态或者 Blocked 状态，如果在 GC 的时候一直等待进入安全点，会使 GC 停顿变得十分长。 当线程执行到安全区域的开始位置的时候，会标识自己已经进入安全区域了，而在离开的时候会主动检查系统是否已经完成了根结点的枚举，如果没有就继续等待，如果完成当前线程才可以继续执行后面的代码。</p>
+<h2 id="垃圾收集器简介"><a href="#垃圾收集器简介" class="headerlink" title="垃圾收集器简介"></a>垃圾收集器简介</h2><p>按照使用场景介绍常用的垃圾收集器，介绍他们的适用场景。让读者能够根据自己的应用场景来选择合适的收集器。</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuas1qofj30f70aeaar.jpg" alt="垃圾收集器组合"></p>
+<center>*垃圾收集器组合和分类*</center>
+
+<p>上图中展示了各种收集器是新生代收集器还是老年代收集器，如果上面两种收集器时间有连线，则表示可以配合使用。具体的GC配置参数可以参照 <a href="/experiment-on-JVM.html">常用垃圾收集器参数</a></p>
+<p>首先说明两个名词的含义，以免在下面的阅读中产生歧义：</p>
+<ul>
+<li><code>并行（Parallel）</code>：指多条垃圾收集线程并行工作，但此时用户线程仍然处于等待状态</li>
+<li><code>并发(Concurrent)</code>：用户线程与垃圾收集线程同时执行（并行执行，或者交替执行）</li>
+</ul>
+<h3 id="新生代收集器"><a href="#新生代收集器" class="headerlink" title="新生代收集器"></a>新生代收集器</h3><p>本文介绍的新生代收集器都是使用的<code>复制算法</code></p>
+<h4 id="Serial-收集器"><a href="#Serial-收集器" class="headerlink" title="Serial 收集器"></a>Serial 收集器</h4><p>串行垃圾收集器，采用复制算法，Serial 说明他是单线程工作的，他只会使用一个CPU，使用一个线程去完成垃圾回收工作，同时这也意味着当<code>Serial GC</code>进行垃圾回收的时候，用户线程也不得不暂停（STW）。<code>Serial 收集器</code>+<code>Serial Old 收集器</code>垃圾回收的时间线如下图所示：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuxtkhfmj30ja06xdgi.jpg" alt="Serial/Serial Old"><br>这样的用户线程对于现在的服务来说基本是不可接受的，减少 GC 停顿也一直是很多垃圾收集器的努力目标。看似十分“无能”的<code>Serial GC</code>只能在客户端中发挥作用，因为一般客户端应用需要的内存并不是很大，因此停顿几十毫秒就可以完成内存回收，这样也是可以接受了，同时省去了并行 GC 切换线程的开销。</p>
+<h4 id="ParNew-收集器"><a href="#ParNew-收集器" class="headerlink" title="ParNew 收集器"></a>ParNew 收集器</h4><p><code>ParNew 收集器</code>基本上就是<code>Serial 收集器</code>的升级版本，在新生代中收集的时候采用了并行的方案。其他部分与<code>Serial 收集器</code>基本一样。该收集器在单 CPU 的环境下并不会有优于<code>Serial</code>的表现，，反而会由于线程的频繁切换而降低性能，而对于多核CPU就会有较好的表现了。因此比较适合服务端程序。<code>ParNew 收集器</code>+<code>Serial Old 收集器</code>的 GC 过程如下图所示：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjv10ohmwj30j206vaas.jpg" alt=""><br>虽然<code>ParNew 收集器</code>只是针对<code>Serial 收集器</code>的简单升级，但是有着十分广泛的使用，原因就是能和<code>CMS收集器</code>搭配使用的只有<code>Serial 收集器</code>和<code>ParNew 收集器</code>两种。<code>CMS</code>的广泛使用就带来了<code>ParNew</code>的广泛使用。</p>
+<h4 id="Parallel-Scavenge-收集器"><a href="#Parallel-Scavenge-收集器" class="headerlink" title="Parallel Scavenge 收集器"></a>Parallel Scavenge 收集器</h4><p><code>Parallel Scavenge 收集器</code>也是一个新生代收集器，他也是并行的、使用复制算法的。和<code>ParNew收集器</code>非常相似，GC过程图也与<code>ParNew收集器</code>相同。然而该收集器的关注点与其他收集器不同，其他收集器关注点都是如何缩短GC停顿时间，而<code>Parallel Scavenge 收集器</code>关注的确实如何保持系统一个较高的吞吐量（吞吐量 = 运行用户代码的时间/（运行用户代码时间+垃圾收集时间））。因此该收集器主要适合那些交互较少，运算较多的服务。该收集器允许用户设置极少的参数就能保证一个较高的吞吐量。</p>
+<p>该收集器提供两个参数用于精确控制吞吐量<code>-XX:MaxGCPauseMillis</code>和<code>-XX:GCTimeRatio</code>两个参数，含义分别是最大GC停顿时间和直接设置吞吐量。GC的处理优先级是<code>MaxGCPauseMillis</code>最高，<code>GCTimeRatio</code>次之，其他的空间大小配置优先级最低。除了上面的两个参数之外，还有一个参数<code>-XX:+UseAdaptiveSizePolicy</code>，当设置了这个参数之后，就不需要再配置新生代的大小、Eden 和 Survivor 区域的比例、晋升老年代对象年龄等参数（设置了也没用），虚拟机会根据当前系统运行状况来动态调整上面的几个参数。</p>
+<p><code>Parallel Scavenge</code>（-XX:+UseParallelGC）框架下，默认是在要触发full GC前先执行一次young GC，并且两次GC之间能让应用程序稍微运行一小下，以期降低full GC的暂停时间（因为young GC会尽量清理了young gen的死对象，减少了full GC的工作量）。控制这个行为的VM参数是<code>-XX:+ScavengeBeforeFullGC</code></p>
+<h3 id="老年代收集器"><a href="#老年代收集器" class="headerlink" title="老年代收集器"></a>老年代收集器</h3><h4 id="Serial-Old-收集器"><a href="#Serial-Old-收集器" class="headerlink" title="Serial Old 收集器"></a>Serial Old 收集器</h4><p><code>Serial Old 收集器</code>就是<code>Serial 收集器</code>的老年代版本，主要也是给Client模式下的虚拟机使用。在 Server 应用中用于和 PS 收集器搭配使用，还有就是在 CMS 失败后，作为后备方案来进行垃圾收集。<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuxtkhfmj30ja06xdgi.jpg" alt="Serial/Serial Old"></p>
+<h4 id="Parallel-Old-收集器"><a href="#Parallel-Old-收集器" class="headerlink" title="Parallel Old 收集器"></a>Parallel Old 收集器</h4><p><code>Parallel Old 收集器</code>是在<code>JDK1.6</code>中推出的，在此之前<code>Parallel Scavenge 收集器</code>只能和<code>Serial Old 收集器</code>搭配使用，由于<code>Serial Old 收集器</code>的拖累，导致高吞吐量的优势无法体现出来，这种组合的吞度量甚至不如<code>ParNew 收集器</code>+<code>CMS收集器</code>的组合。而<code>Parallel Old 收集器</code>的正式推出表示在需要关注高吞吐量的服务中可以使用<code>Parallel Scavenge 收集器</code>+<code>Parallel Old 收集器</code>的组合。这种组合的 GC 回收过程线程运行情况如下图：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuy6qgsrj30j606ugmd.jpg" alt=""></p>
+<h4 id="Concurrent-Mark-Sweep-收集器"><a href="#Concurrent-Mark-Sweep-收集器" class="headerlink" title="Concurrent Mark Sweep 收集器"></a>Concurrent Mark Sweep 收集器</h4><p><code>CMS 收集器</code>收集器是以最短的停顿时间为目标的收集器，这样的目标可以保证服务的高可用性，因此也成为了各种以交互为目的的服务的首选收集器。该收集器采用的是<code>标记-清除算法</code>，而前面介绍的收集器都是采用的<code>标记-整理算法</code>。该收集器 GC 过程相对复杂一些。分为以下四个步骤：</p>
+<ul>
+<li>初始标记(CMS initial mark)</li>
+<li>并发标记(CMS concurrent mark)</li>
+<li>重新标记(CMS final remark)</li>
+<li>并发清除(CMS concurrent sweep)</li>
+<li>重置线程(CMS concurrent reset）</li>
+</ul>
+<p>这里截取一段 GC 日志<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">2017-11-07T16:20:41.582+0800: 2.119: [GC (CMS Initial Mark) [1 CMS-initial-mark: 0K(3670016K)] 26854K(4141888K), 0.0036737 secs] [Times: user&#x3D;0.01 sys&#x3D;0.00, real&#x3D;0.01 secs]</span><br><span class="line">2017-11-07T16:20:41.585+0800: 2.123: [CMS-concurrent-mark-start]</span><br><span class="line">2017-11-07T16:20:41.587+0800: 2.125: [CMS-concurrent-mark: 0.002&#x2F;0.002 secs] [Times: user&#x3D;0.01 sys&#x3D;0.00, real&#x3D;0.00 secs]</span><br><span class="line">2017-11-07T16:20:41.587+0800: 2.125: [CMS-concurrent-preclean-start]</span><br><span class="line">2017-11-07T16:20:41.595+0800: 2.133: [CMS-concurrent-preclean: 0.008&#x2F;0.008 secs] [Times: user&#x3D;0.05 sys&#x3D;0.00, real&#x3D;0.01 secs]</span><br><span class="line">2017-11-07T16:20:41.595+0800: 2.133: [CMS-concurrent-abortable-preclean-start]</span><br><span class="line">2017-11-07T16:20:43.996+0800: 4.534: [CMS-concurrent-abortable-preclean: 1.514&#x2F;2.401 secs] [Times: user&#x3D;5.75 sys&#x3D;0.28, real&#x3D;2.40 secs]</span><br><span class="line">2017-11-07T16:20:43.996+0800: 4.534: [GC (CMS Final Remark) [YG occupancy: 241272 K (471872 K)]4.534: [Rescan (parallel) , 0.0123556 secs]4.546: [weak refs processing, 0.0000203 secs]4.546: [class unloading, 0.0059852 secs]4.552: [scrub symbol table, 0.0055144 secs]4.558: [scrub string table, 0.0006434 secs][1 CMS-remark: 0K(3670016K)] 241272K(4141888K), 0.0260691 secs] [Times: user&#x3D;0.11 sys&#x3D;0.00, real&#x3D;0.02 secs]</span><br><span class="line">2017-11-07T16:20:44.023+0800: 4.560: [CMS-concurrent-sweep-start]</span><br><span class="line">2017-11-07T16:20:44.023+0800: 4.560: [CMS-concurrent-sweep: 0.000&#x2F;0.000 secs] [Times: user&#x3D;0.00 sys&#x3D;0.00, real&#x3D;0.00 secs]</span><br><span class="line">2017-11-07T16:20:44.023+0800: 4.560: [CMS-concurrent-reset-start]</span><br><span class="line">2017-11-07T16:20:44.041+0800: 4.578: [CMS-concurrent-reset: 0.018&#x2F;0.018 secs] [Times: user&#x3D;0.07 sys&#x3D;0.02, real&#x3D;0.02 secs]</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>real是程序的实际运行时间，sys是内核态的时间，user是用户态的时间，单核情况，real远远大于user和sys之和。real，从程序开始到程序执行结束时所消耗的时间，包括CPU的用时和所有延迟程序执行的因素的总和。CPU用时被划分为user和sys两块。user表示程序本身，以及它所调用的库中的子例程使用的时间。sys是由程序直接或间接调用的系统调用执行的时间。<code>real=cpu用时+其他因素时间</code>,<code>cpu 用时=user+sys</code>,所以： real&gt; user + sys （单核情况）</p>
+</blockquote>
+<p>GC 过程中各个阶段 GC 线程和用户线程的运行关系如下图：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuyc1e48j30jj06hjsa.jpg" alt=""></p>
+<p>初始标记、重新标记这两个步骤需要 STW, 初始标记仅仅是标记以下 <code>GC Roots</code> 能够直接关联到的对象，速度很快，并发标记阶段就是进行<code>GC RootsTracing</code>的过程。重新标记是为了修正并发标记期间由于用户线程还在继续执行而产生变动的那一部分对象，这个阶段相比初始标记要长一点，但是远比并发标记短。整体来看用时最多的几个阶段：并发标记、并发清理、重置线程都会都是并发的，这样可以让应用程序尽可能的减少停顿。</p>
+<blockquote>
+<p>【关于CMS-concurrent-abortable-preclean】：从日志中我们还发现了一个细节叫做CMS-concurrent-abortable-preclean，这就要从Concurrent precleaning阶段说起了。Concurrent precleaning阶段的实际行为是：针对新生代做抽样，等待新生代在某个时间段（默认5秒，可以通过CMSMaxAbortablePrecleanTime参数设置）执行一次Minor GC，如果这个时间段内GC没有发生，那么就继续进行下一阶段（Remark）；如果时间段内触发了Minor GC，则可能会执行一些优化（具体可以参考<a href="https://blogs.oracle.com/jonthecollector/entry/did_you_know">https://blogs.oracle.com/jonthecollector/entry/did_you_know</a> ）</p>
+<p>并发可中止的预清理阶段。这个阶段其实跟上一个阶段做的东西一样，也是为了减少下一个STW重新标记阶段的工作量。增加这一阶段是为了让我们可以控制这个阶段的结束时机，比如扫描多长时间（默认5秒）或者Eden区使用占比达到期望比例（默认50%）就结束本阶段。</p>
+</blockquote>
+<p><code>CMS 收集器</code>也有明显的几个缺点：一是 CMS 默认启动的回收线程数是<code>（CPU数量+3）/4</code>，也就是当 CPU 在 4 个以上时，并发垃圾回收时 GC线程占用不少于 25% 的 CPU 资源，当 CPU 不足 4 个时，情况就变得更加严峻了。第二个缺点就是 CMS 无法处理<code>浮动垃圾(Floating Garbage)</code>，浮动垃圾是指在并发清理阶段新产生的垃圾，由于 CMS 垃圾回收线程要和用户线程并发，因此必须要保留一部分内存在回收期间供用户线程使用，增额比例通过参数<code>CMSInitiatingOccupancyFraction</code>设置，表示老年代空间占用比例达到多少的时候会出发CMS GC，这个值在<code>JDK1.6</code>中默认值是<code>68</code>，在<code>JDK1.7</code>和<code>JDK1.8</code>中都是<code>92</code>。如果在 CMS GC 期间剩余的老年代内存空间不足已支持程序继续执行，就是触发GC降级，也就是<code>Concurrent Mode Failure</code>,这个时候就需要使用<code>Serial Old收集器</code>来完成老年代回收的任务，效率可想而知。最后一个缺点就是<code>标记-清除算法</code>带来的内存碎片问题，这个问题可以通过参数<code>-XX：+UseCMSCompactAtFullCollection</code>来缓解（默认开启），用于在CMS进行Full GC的时候进行碎片的合并整理，但是内存整理并不是并发的，会造成的应用程序的停顿，所以通常配合<code>-XX：CMSFullGCsBeforeCompaction</code>参数一起使用，该参数表示在允许连续几次的不整理碎片的CMS GC。</p>
+<h3 id="G1收集器"><a href="#G1收集器" class="headerlink" title="G1收集器"></a>G1收集器</h3><p><code>Garbage First 收集器</code>应该是当今最前沿的垃圾收集器了，它的优点是：</p>
+<blockquote>
+<p>并行与并发：G1能充分利用多CPU、多核环境下的硬件优势，使用多个CPU（CPU或者CPU核心）来缩短Stop-The-World停顿的时间，部分其他收集器原本需要停顿Java线程执行的GC动作，G1收集器仍然可以通过并发的方式让Java程序继续执行。</p>
+<p>分代收集：与其他收集器一样，分代概念在G1中依然得以保留。虽然G1可以不需要其他收集器配合就能独立管理整个GC堆，但它能够采用不同的方式去处理新创建的对象和已经存活了一段时间、熬过多次GC的旧对象以获取更好的收集效果。</p>
+<p>空间整合：与CMS的“标记—清理”算法不同，G1从整体来看是基于“标记—整理”算法实现的收集器，从局部（两个Region之间）上来看是基于“复制”算法实现的，但无论如何，这两种算法都意味着G1运作期间不会产生内存空间碎片，收集后能提供规整的可用内存。这种特性有利于程序长时间运行,分配大对象时不会因为无法找到连续内存空间而提前触发下一次GC。</p>
+<p>可预测的停顿：这是G1相对于CMS的另一大优势，降低停顿时间是G1和CMS共同的关注点，但G1除了追求低停顿外，还能建立可预测的停顿时间模型，能让使用者明确指定在一个长度为M毫秒的时间片段内，消耗在垃圾收集上的时间不得超过N毫秒，这几乎已经是实时Java（RTSJ）的垃圾收集器的特征了。</p>
+<p>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
+</blockquote>
+<p>G1 收集器虽然还有老年代和新生代的感念，但是内存布局上却没有为其划定单独的物理隔离的区域，而是分给它们不同数量（无需连续）的<code>Region</code>。G1 能够预测停顿的功能就是依赖于 Region 这个东西实现的，因为将内存分割成多个大小相等的区域，然后在后台维护一个垃圾回收价值列表，每次根据允许的回收时间（使用参数<code>-XX:MaxGCPauseMillis</code>设定，默认值为<code>200</code>）来确定那些 Region 进行回收。理解起来很简单的 Region 回收，实现起来却很困难，其中一个主要的原因就是 Region 之间的对象相互引用，如果到回收时才进行可达性分析要扫描整个Java堆才能完成分析，同样的问题也存在于其他分代收集器新生代和老年代相互引用的关系中。虚拟机使用<code>Remembered Set</code>来避免扫描全堆，程序在对 Reference 类型进行写操作的时候会检测引用的对象是否存在于不同的 Region（或者是不同年代）中，如果是就将应用信息记录到 <strong>被引用对象</strong> 的 Remembered Set 中，在内存回收时，将 Remembered Set 加入 GC Roots 即可避免全堆扫描。</p>
+<p>G1 收集器的运作大致可以分为以下几个步骤：</p>
+<ol>
+<li>初始标记（Initial Marking）：仅仅标记 GC Roots直接关联的对象</li>
+<li>并发标记（Concurrent Marking）：从 GC Roots开始做可达性分析</li>
+<li>最终标记（Final Marking）：修正在并发标记阶段变动的标记</li>
+<li>筛选回收 （Live Data Counting and Evacuation）：根据回收机制和成本排序，根据用户期望的停顿时间制定回收计划</li>
+</ol>
+<p>线程运行情况如下图：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuyko6aij30jj06ddgp.jpg" alt=""></p>
+<p>更多可参考Oracle关于G1调优的官方文档：<a href="http://www.oracle.com/technetwork/cn/articles/java/g1gc-1984535.html">Garbage First Garbage Collector Tuning
+</a></p>
+<h2 id="参考内容"><a href="#参考内容" class="headerlink" title="参考内容"></a>参考内容</h2><ol>
+<li><a href="http://kklin.farbox.com/post/cao-zuo-xi-tong/xu-ni-ji/2-gcyin-yong-ji-shu-suan-fa">GC引用计数算法</a></li>
+<li><a href="https://www.amazon.cn/dp/B01JZS0AO8/">《垃圾回收的算法与实现》</a></li>
+<li><a href="https://www.amazon.cn/dp/B00D2ID4PK/">《深入理解Java虚拟机:JVM高级特性与最佳实践(第2版)》</a></li>
+<li>部分图片来源：<a href="https://crowhawk.github.io/2017/08/15/jvm_3/">深入理解JVM(3)——7种垃圾收集器</a></li>
+<li><a href="https://docs.oracle.com/javase/8/docs/technotes/guides/vm/gctuning/cms.html">Concurrent Mark Sweep (CMS) Collector</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
         <tag>Java</tag>
+        <tag>JVM</tag>
+        <tag>tech</tag>
       </tags>
   </entry>
   <entry>
