@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://jacobchang.cn/about-git-dff.html</loc>
+    
+    <lastmod>2021-11-04T12:54:33.610Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://jacobchang.cn/about/index.html</loc>
     
     <lastmod>2021-02-19T08:44:10.316Z</lastmod>
@@ -72,14 +79,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/categories/index.html</loc>
+    <loc>https://jacobchang.cn/comments/index.html</loc>
     
     <lastmod>2020-01-02T09:28:21.962Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/comments/index.html</loc>
+    <loc>https://jacobchang.cn/categories/index.html</loc>
     
     <lastmod>2020-01-02T09:28:21.962Z</lastmod>
     
@@ -107,14 +114,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/idempotence-design.html</loc>
+    <loc>https://jacobchang.cn/be-yourself.html</loc>
     
     <lastmod>2020-01-02T09:28:21.960Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/be-yourself.html</loc>
+    <loc>https://jacobchang.cn/idempotence-design.html</loc>
     
     <lastmod>2020-01-02T09:28:21.960Z</lastmod>
     
@@ -135,14 +142,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/how-to-use-java-se-create-simple-httpserver.html</loc>
+    <loc>https://jacobchang.cn/create-right-singleton.html</loc>
     
     <lastmod>2020-01-02T09:28:21.959Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/create-right-singleton.html</loc>
+    <loc>https://jacobchang.cn/how-to-use-java-se-create-simple-httpserver.html</loc>
     
     <lastmod>2020-01-02T09:28:21.959Z</lastmod>
     
@@ -163,14 +170,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/preparation-and-init-of-classloader.html</loc>
+    <loc>https://jacobchang.cn/transactional-of-spring.html</loc>
     
     <lastmod>2020-01-02T09:28:21.957Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/transactional-of-spring.html</loc>
+    <loc>https://jacobchang.cn/preparation-and-init-of-classloader.html</loc>
     
     <lastmod>2020-01-02T09:28:21.957Z</lastmod>
     

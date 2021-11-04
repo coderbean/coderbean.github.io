@@ -84,6 +84,32 @@
     
 
       <article class="recent-post-item">
+        <a class="title" href="/about-git-dff.html"><h2>到底什么是 Git 三方对比</h2></a>
+        <div class="post-meta">
+          
+          <time class="time" datetime="2021-11-04T12:44:39.000Z">
+            2021-11-04
+          </time>
+          
+          <span class="slash">/</span>
+          
+          <ul class="index-tag-list" itemprop="keywords"><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/Git/" rel="tag">Git</a></li></ul>
+          
+
+        </div>
+
+        
+          <div class="post-excerpt">
+            <p>问题： 为什么我在 gitlab 上提交的MR，代码diff不是两个分支的区别？</p>
+<p>带有场景的举例子：</p>
+<p>小A 在linke上建立的新的迭代，同时生成了代码分支 <code>dev</code>，然后 A、B两个同学都在这个迭代进行开发。小 A 基于 <code>dev</code> 分支创建了 <code>dev_A</code> 分支，小B基于dev分支创建了<code>dev_B</code> 分支。后来小A将他的变更合并到了 dev 分支，小B在开发过程中由于和master分支有冲突，所以他在本地解决冲突合并了一下 master 分支，然后又合并了一下 dev 分支，然后推送到 antcode 进行 MR，发现MR中代入了 master 的代码，和小A已经提交的代码？why？<br>
+          </div>
+        
+        <a class="more" href="/about-git-dff.html"> 阅读全文〉</a>
+      </article>
+    
+
+      <article class="recent-post-item">
         <a class="title" href="/how-get-antfin-offer.html"><h2>[面经] 如何拿下阿里/蚂蚁 offer</h2></a>
         <div class="post-meta">
           
@@ -300,30 +326,6 @@
           </div>
         
         <a class="more" href="/best-practices-of-aria2.html"> 阅读全文〉</a>
-      </article>
-    
-
-      <article class="recent-post-item">
-        <a class="title" href="/preparation-and-init-of-classloader.html"><h2>Java类加载器的准备和初始化</h2></a>
-        <div class="post-meta">
-          
-          <time class="time" datetime="2019-03-25T11:42:05.000Z">
-            2019-03-25
-          </time>
-          
-          <span class="slash">/</span>
-          
-          <ul class="index-tag-list" itemprop="keywords"><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/JVM/" rel="tag">JVM</a></li><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="index-tag-list-item"><a class="index-tag-list-link" href="/tags/tech/" rel="tag">tech</a></li></ul>
-          
-
-        </div>
-
-        
-          <div class="post-excerpt">
-            <p>好久没有更新博客了，昨天在浏览微信公众号的时候看到了一道面试题，给出一个包含 main 方法的类，一些输出语句，让读者判断这些语句的输出顺序，其实也就是考察读者的对于 Java 类的初始化的顺序，看到这道题目的时候，我也就按照自己的理解得出了一个顺序，可是和答案却大相径庭，原因就在于对于 Java 类加载器在加载类时候的两个阶段：<strong>准备 </strong>和 <strong>初始化</strong> 没有足够的理解。今天我们在本文中就来聊聊类加载的这两个阶段</p>
-          </div>
-        
-        <a class="more" href="/preparation-and-init-of-classloader.html"> 阅读全文〉</a>
       </article>
     
   </div>
