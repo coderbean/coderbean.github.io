@@ -30,14 +30,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/recommend/index.html</loc>
+    <loc>https://jacobchang.cn/resume/index.html</loc>
     
     <lastmod>2020-01-02T09:28:22.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/resume/index.html</loc>
+    <loc>https://jacobchang.cn/recommend/index.html</loc>
     
     <lastmod>2020-01-02T09:28:22.000Z</lastmod>
     
@@ -51,13 +51,6 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/google86b46aa7d9321122.html</loc>
-    
-    <lastmod>2020-01-02T09:28:21.963Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://jacobchang.cn/fanfou/index.html</loc>
     
     <lastmod>2020-01-02T09:28:21.963Z</lastmod>
@@ -65,21 +58,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/alipay.html</loc>
+    <loc>https://jacobchang.cn/google86b46aa7d9321122.html</loc>
     
-    <lastmod>2020-01-02T09:28:21.962Z</lastmod>
+    <lastmod>2020-01-02T09:28:21.963Z</lastmod>
     
   </url>
   
   <url>
     <loc>https://jacobchang.cn/baidu_verify_ALK0STR65j.html</loc>
-    
-    <lastmod>2020-01-02T09:28:21.962Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://jacobchang.cn/comments/index.html</loc>
     
     <lastmod>2020-01-02T09:28:21.962Z</lastmod>
     
@@ -93,9 +79,16 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/record-of-deadlock-analytics.html</loc>
+    <loc>https://jacobchang.cn/alipay.html</loc>
     
-    <lastmod>2020-01-02T09:28:21.961Z</lastmod>
+    <lastmod>2020-01-02T09:28:21.962Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jacobchang.cn/comments/index.html</loc>
+    
+    <lastmod>2020-01-02T09:28:21.962Z</lastmod>
     
   </url>
   
@@ -107,21 +100,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/solve-dp-problems.html</loc>
+    <loc>https://jacobchang.cn/record-of-deadlock-analytics.html</loc>
     
-    <lastmod>2020-01-02T09:28:21.960Z</lastmod>
+    <lastmod>2020-01-02T09:28:21.961Z</lastmod>
     
   </url>
   
   <url>
     <loc>https://jacobchang.cn/be-yourself.html</loc>
-    
-    <lastmod>2020-01-02T09:28:21.960Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://jacobchang.cn/idempotence-design.html</loc>
     
     <lastmod>2020-01-02T09:28:21.960Z</lastmod>
     
@@ -135,6 +121,20 @@
   </url>
   
   <url>
+    <loc>https://jacobchang.cn/solve-dp-problems.html</loc>
+    
+    <lastmod>2020-01-02T09:28:21.960Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jacobchang.cn/idempotence-design.html</loc>
+    
+    <lastmod>2020-01-02T09:28:21.960Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://jacobchang.cn/2PC-and-3PC.html</loc>
     
     <lastmod>2020-01-02T09:28:21.959Z</lastmod>
@@ -142,14 +142,14 @@
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/create-right-singleton.html</loc>
+    <loc>https://jacobchang.cn/how-to-use-java-se-create-simple-httpserver.html</loc>
     
     <lastmod>2020-01-02T09:28:21.959Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jacobchang.cn/how-to-use-java-se-create-simple-httpserver.html</loc>
+    <loc>https://jacobchang.cn/create-right-singleton.html</loc>
     
     <lastmod>2020-01-02T09:28:21.959Z</lastmod>
     

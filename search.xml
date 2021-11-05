@@ -1,6 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Atom插件和主题推荐</title>
+    <url>/theme-and-plugin-of-atom.html</url>
+    <content><![CDATA[<p>介绍本人使用<code>Atom</code>编辑器使用的插件和主题配置，推荐给大家使用，同时也给自己做个备份。 <span id="more"></span></p>
+<h1 id="theme"><a href="#theme" class="headerlink" title="theme"></a>theme</h1><p>下面是一些废话，可以跳过</p>
+<blockquote>
+<p>说起这个主题，真的是一波三折。Atom 默认的 <code>One Dark</code> 主题用的太久了，有点腻了，然后就寻思着换个主题，看了很多，没有特别有感觉的，直到在某国外网站上看到了这个推荐 <a href="https://myawesomemac.com/10-best-atom-themes-of-2017/">10 Best Atom themes of 2017</a>，感觉这个 <a href="https://atom.io/themes/native-ui">Native UI</a> 甚是满足我的审美，于是乎赶紧下载了下来，然后发现切换到该主题后 Atom 巨卡无比，本来打算放弃了，可是想了想设置里面应该可以关闭半透明效果应该能够让 Atom 不那么力不从心。机智的我终于看了设置里面的两个选项看了半天，愣是没发现这个 <code>User Interface</code> 是半透明效果的开关。甚是蛋疼。</p>
+</blockquote>
+<p>主题推荐：<a href="https://myawesomemac.com/10-best-atom-themes-of-2017/">10 Best Atom themes of 2017</a><br>我最推荐的主题：<a href="https://atom.io/themes/native-ui">Native UI</a></p>
+<p>大概是这个样子：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnqxdj3niij31kw0zi7ai.jpg" alt=""></p>
+<p>安装方法：</p>
+<ol>
+<li>cmd + ,</li>
+<li>install</li>
+<li>Search packages(右侧选定 Themes)</li>
+<li>输入 <code>native-ui</code></li>
+<li>enter</li>
+<li>选择第一个install</li>
+</ol>
+<p>GIF教程： <img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnqvdqfc63g30bn06oqve.gif" alt=""> 设置： 设置里面找到 theme ，然后选择 native，再然后点击右侧设置图标，取消勾选 User Interface</p>
+<h1 id="plugin"><a href="#plugin" class="headerlink" title="plugin"></a>plugin</h1><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnqvdu0u11j319i1d6k01.jpg" alt=""></p>
+<h2 id="atom-beautify"><a href="#atom-beautify" class="headerlink" title="atom-beautify"></a>atom-beautify</h2><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnqxhwjn5pg30bn06t7wk.gif" alt=""></p>
+<p>用来对代码进行格式化，让杂乱无章的代码瞬间变得有条理，我自己平常用的最多的就是格式化 JSON 字符串了，注意在格式化的时候必须先选定语言。快捷键可以通过 <code>cmd+shift+p</code> 搜索得到。</p>
+<h2 id="browser-plus"><a href="#browser-plus" class="headerlink" title="browser-plus"></a>browser-plus</h2><p><del>不太推荐这个插件了，有点丑。</del></p>
+<p>最近发现了一个比较好看的<code>atom-html-preview</code>，非常奶思。效果如下：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fraqdswhhwg30gn09ix6t.gif" alt=""></p>
+<p>可以在 atom 里面预览HTML，快捷键可以通过 <code>cmd+shift+p</code> 搜索得到。</p>
+<h2 id="file-icons"><a href="#file-icons" class="headerlink" title="file-icons"></a>file-icons</h2><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnqxmi7iftj30dk0pk0up.jpg" alt=""></p>
+<p>这个比较好，让atom更加美丽，会在文件前面给一个小图标，针对不同格式的文件有着很好的支持，atom 的文件图标再也不会那么单调了。</p>
+<h2 id="markdown-preview-enhanced"><a href="#markdown-preview-enhanced" class="headerlink" title="markdown-preview-enhanced"></a>markdown-preview-enhanced</h2><p>不推荐这个插件了，过于臃肿。</p>
+<p><del>这个号称最全markdown插件，可算是集成了所有用得到的和用不到的功能，强大的有些许过分，有时候会造成写markdown的时候卡顿，由于暂时没有找到能够同步滑动的插件，就暂时使用了这个。更多设置可以参考作者的中文文档：<a href="https://shd101wyy.github.io/markdown-preview-enhanced/#/zh-cn/">https://shd101wyy.github.io/markdown-preview-enhanced/#/zh-cn/</a></del></p>
+<p>好消息好消息：<a href="https://atom.io/packages/markdown-preview-plus">Markdown Preview Plus (MPP)</a> 也支持同步滑动了。<br>效果挺好的，简洁好看，推荐使用！</p>
+<h2 id="markdown-table-editor"><a href="#markdown-table-editor" class="headerlink" title="markdown-table-editor"></a>markdown-table-editor</h2><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnqxrf6hbsg30bn06tqv8.gif" alt=""></p>
+<p>markdown中编辑表格的神器，只需要打一个 <code>|</code> 然后通过 table 和回车键就可以完成表格的编辑，比起自己写效率高到不知道哪里去了。</p>
+<h2 id="pdf-view"><a href="#pdf-view" class="headerlink" title="pdf-view"></a>pdf-view</h2><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnqxs6qyevj31kw0z0459.jpg" alt=""></p>
+<p>没啥好说的，让你可以在Atom中直接查看PDF</p>
+<h2 id="platformio-ide-terminal"><a href="#platformio-ide-terminal" class="headerlink" title="platformio-ide-terminal"></a>platformio-ide-terminal</h2><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnqxsrxwwtj31kw0z0160.jpg" alt=""></p>
+<p>可以在atom中直接使用终端，是 <code>terminal-plus</code> 的替代品。有些许卡顿，大体可以接受。可以自定义shell。如果配合 iTerm2+Oh my zsh 使用出现乱码，注意在插件设置中设置你在 iTerm 中使用的字体，我的是<code>Meslo LG M DZ for Powerline</code></p>
+<h2 id="sync-settings"><a href="#sync-settings" class="headerlink" title="sync-settings"></a>sync-settings</h2><p>这个插件可以将你的atom配置和插件同步到指定的Gist，换了电脑也不需要一个一个的自己重新安装了，它会自动帮你装好，恢复你原来的工作环境。配置和使用教程查看官方说明。</p>
+]]></content>
+      <categories>
+        <category>工具</category>
+      </categories>
+      <tags>
+        <tag>tools</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Aria2 GUI最佳实践</title>
     <url>/best-practices-of-aria2.html</url>
     <content><![CDATA[<p>目前用的爽的下载工具，通过搭配  Chrome 和 自己写的一些脚本达到不输迅雷的用户体验。</p>
@@ -77,95 +123,6 @@
       </categories>
       <tags>
         <tag>tools</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Atom插件和主题推荐</title>
-    <url>/theme-and-plugin-of-atom.html</url>
-    <content><![CDATA[<p>介绍本人使用<code>Atom</code>编辑器使用的插件和主题配置，推荐给大家使用，同时也给自己做个备份。 <span id="more"></span></p>
-<h1 id="theme"><a href="#theme" class="headerlink" title="theme"></a>theme</h1><p>下面是一些废话，可以跳过</p>
-<blockquote>
-<p>说起这个主题，真的是一波三折。Atom 默认的 <code>One Dark</code> 主题用的太久了，有点腻了，然后就寻思着换个主题，看了很多，没有特别有感觉的，直到在某国外网站上看到了这个推荐 <a href="https://myawesomemac.com/10-best-atom-themes-of-2017/">10 Best Atom themes of 2017</a>，感觉这个 <a href="https://atom.io/themes/native-ui">Native UI</a> 甚是满足我的审美，于是乎赶紧下载了下来，然后发现切换到该主题后 Atom 巨卡无比，本来打算放弃了，可是想了想设置里面应该可以关闭半透明效果应该能够让 Atom 不那么力不从心。机智的我终于看了设置里面的两个选项看了半天，愣是没发现这个 <code>User Interface</code> 是半透明效果的开关。甚是蛋疼。</p>
-</blockquote>
-<p>主题推荐：<a href="https://myawesomemac.com/10-best-atom-themes-of-2017/">10 Best Atom themes of 2017</a><br>我最推荐的主题：<a href="https://atom.io/themes/native-ui">Native UI</a></p>
-<p>大概是这个样子：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnqxdj3niij31kw0zi7ai.jpg" alt=""></p>
-<p>安装方法：</p>
-<ol>
-<li>cmd + ,</li>
-<li>install</li>
-<li>Search packages(右侧选定 Themes)</li>
-<li>输入 <code>native-ui</code></li>
-<li>enter</li>
-<li>选择第一个install</li>
-</ol>
-<p>GIF教程： <img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnqvdqfc63g30bn06oqve.gif" alt=""> 设置： 设置里面找到 theme ，然后选择 native，再然后点击右侧设置图标，取消勾选 User Interface</p>
-<h1 id="plugin"><a href="#plugin" class="headerlink" title="plugin"></a>plugin</h1><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnqvdu0u11j319i1d6k01.jpg" alt=""></p>
-<h2 id="atom-beautify"><a href="#atom-beautify" class="headerlink" title="atom-beautify"></a>atom-beautify</h2><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnqxhwjn5pg30bn06t7wk.gif" alt=""></p>
-<p>用来对代码进行格式化，让杂乱无章的代码瞬间变得有条理，我自己平常用的最多的就是格式化 JSON 字符串了，注意在格式化的时候必须先选定语言。快捷键可以通过 <code>cmd+shift+p</code> 搜索得到。</p>
-<h2 id="browser-plus"><a href="#browser-plus" class="headerlink" title="browser-plus"></a>browser-plus</h2><p><del>不太推荐这个插件了，有点丑。</del></p>
-<p>最近发现了一个比较好看的<code>atom-html-preview</code>，非常奶思。效果如下：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fraqdswhhwg30gn09ix6t.gif" alt=""></p>
-<p>可以在 atom 里面预览HTML，快捷键可以通过 <code>cmd+shift+p</code> 搜索得到。</p>
-<h2 id="file-icons"><a href="#file-icons" class="headerlink" title="file-icons"></a>file-icons</h2><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnqxmi7iftj30dk0pk0up.jpg" alt=""></p>
-<p>这个比较好，让atom更加美丽，会在文件前面给一个小图标，针对不同格式的文件有着很好的支持，atom 的文件图标再也不会那么单调了。</p>
-<h2 id="markdown-preview-enhanced"><a href="#markdown-preview-enhanced" class="headerlink" title="markdown-preview-enhanced"></a>markdown-preview-enhanced</h2><p>不推荐这个插件了，过于臃肿。</p>
-<p><del>这个号称最全markdown插件，可算是集成了所有用得到的和用不到的功能，强大的有些许过分，有时候会造成写markdown的时候卡顿，由于暂时没有找到能够同步滑动的插件，就暂时使用了这个。更多设置可以参考作者的中文文档：<a href="https://shd101wyy.github.io/markdown-preview-enhanced/#/zh-cn/">https://shd101wyy.github.io/markdown-preview-enhanced/#/zh-cn/</a></del></p>
-<p>好消息好消息：<a href="https://atom.io/packages/markdown-preview-plus">Markdown Preview Plus (MPP)</a> 也支持同步滑动了。<br>效果挺好的，简洁好看，推荐使用！</p>
-<h2 id="markdown-table-editor"><a href="#markdown-table-editor" class="headerlink" title="markdown-table-editor"></a>markdown-table-editor</h2><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnqxrf6hbsg30bn06tqv8.gif" alt=""></p>
-<p>markdown中编辑表格的神器，只需要打一个 <code>|</code> 然后通过 table 和回车键就可以完成表格的编辑，比起自己写效率高到不知道哪里去了。</p>
-<h2 id="pdf-view"><a href="#pdf-view" class="headerlink" title="pdf-view"></a>pdf-view</h2><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnqxs6qyevj31kw0z0459.jpg" alt=""></p>
-<p>没啥好说的，让你可以在Atom中直接查看PDF</p>
-<h2 id="platformio-ide-terminal"><a href="#platformio-ide-terminal" class="headerlink" title="platformio-ide-terminal"></a>platformio-ide-terminal</h2><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnqxsrxwwtj31kw0z0160.jpg" alt=""></p>
-<p>可以在atom中直接使用终端，是 <code>terminal-plus</code> 的替代品。有些许卡顿，大体可以接受。可以自定义shell。如果配合 iTerm2+Oh my zsh 使用出现乱码，注意在插件设置中设置你在 iTerm 中使用的字体，我的是<code>Meslo LG M DZ for Powerline</code></p>
-<h2 id="sync-settings"><a href="#sync-settings" class="headerlink" title="sync-settings"></a>sync-settings</h2><p>这个插件可以将你的atom配置和插件同步到指定的Gist，换了电脑也不需要一个一个的自己重新安装了，它会自动帮你装好，恢复你原来的工作环境。配置和使用教程查看官方说明。</p>
-]]></content>
-      <categories>
-        <category>工具</category>
-      </categories>
-      <tags>
-        <tag>tools</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>JVM 探究（一）：JVM内存模型概念模型</title>
-    <url>/jmm-of-jvm.html</url>
-    <content><![CDATA[<p>作为一个 Java 程序员，不了解 Java 内存模型就不能写出能够充分利用内存的代码。本文通过对 Java 内存模型的介绍，让读者能够了解 Java 的内存的分配情况，适合 Java 初学者或者对 JMM 不熟悉的同学。后面的博客会针对每个部分做更加深入的解释。<br><span id="more"></span></p>
-<h2 id="Java-内存模型"><a href="#Java-内存模型" class="headerlink" title="Java 内存模型"></a>Java 内存模型</h2><p>首先通过下图对于 Java 内存模型有一个整体的认识，然后针对不同的区域的作用和存储的内容做进一步的解释。</p>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnvc6jtby5j30r50l9wh2.jpg" alt="Java内存模型"></p>
-<h3 id="PC（程序计数器）"><a href="#PC（程序计数器）" class="headerlink" title="PC（程序计数器）"></a>PC（程序计数器）</h3><p>这里的 PC 不是 Personal Computer，而是 Program Counter Register，从名字就可以看出来，这是一个寄存器，用来存储需要执行的指令地址。</p>
-<blockquote>
-<p>程序计数器（Program Counter (PC)）是在电脑处理器中的一个寄存器，用来指示电脑下一步要运行的指令序列。—WikiPedia</p>
-</blockquote>
-<p>PC 和其他 JVM 内存区域最大的区别是：</p>
-<blockquote>
-<p><strong>“此内存区域是唯一一个在Java虚拟机规范中没有规定任何OutOfMemoryError情况的区域。</strong>”<br>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
-</blockquote>
-<p>像上面的图片一样，PC 是每个线程私有的，对于 Java 方法而言，PC 中存储的是正在执行的虚拟机字节码的内存地址；对于 Native 方法来说，PC 中的值为空（Undefined）。</p>
-<h3 id="Java-虚拟机栈和本地方法栈"><a href="#Java-虚拟机栈和本地方法栈" class="headerlink" title="Java 虚拟机栈和本地方法栈"></a>Java 虚拟机栈和本地方法栈</h3><h4 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h4><p>无论是在大学的 Java 编程课堂上，还是我们在学习过程编码过程，经常会出现 StackOverFlow，甚至目前最大的技术问答社区的名字也是 StackOverFlow。Java 语言中会产生栈溢出的就是这块内存区域，当你的程序中设置了超过 JVM 规定的递归深度的时候就会触发这个异常。类似 JMM 的其他内存区域，如果虚拟机栈在动态扩展的时候无法申请到足够的内存也会报OOM异常。</p>
-<p>Java 语言中每一个方法的执行都对应着一个栈帧（Stack Frame）的创建，栈帧中存储的是局部变量、方法出口等信息，因此对于一个方法的执行而言，所能够使用到的内存是在编译期间就能够完全确定的，在运行期间不会发生变化。在栈帧中，局部变量空间成为 Slot，除了 double 和 long 占有 2 个 slot 外，其他基本数据类型和对象引用都占用 1 个 slot 空间</p>
-<h4 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h4><p>本地方法栈和虚拟机栈最大的区别就是虚拟机栈是为执行 Java 字节码服务的，而本地方法栈是为了虚拟机使用到的 Native 方法服务的。除此之外，Java 虚拟机规范并没有针对本地方法栈的实现做具体规定。在 HotSpot 虚拟机中，本地方法栈和虚拟机栈是共用同一块内存的，不做具体区分。同样，本地方法栈也会产生 OOM 异常和 StackOverFlow 异常。</p>
-<h3 id="Java-堆"><a href="#Java-堆" class="headerlink" title="Java 堆"></a>Java 堆</h3><blockquote>
-<p>“The heap is the runtime data area from which memory for all class instances and arrays is allocated。” —Java虚拟机规范</p>
-</blockquote>
-<p>Java 虚拟机规范规定所有的实例对象和数组都应该分配到 Java 堆中。<br>说的通俗一点就是所有 new 出来的对象和数组都会放到该区域，由于现在的收集器都采用分代收集算法，所以在 Java 堆中又分了新生代和老年代，新生代有做了详细的区分。该区域的大小可以通过 JVM 参数 <code>-Xmx</code> 和 <code>-Xms</code> 来设置。</p>
-<h4 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h4><p>在 JDK1.4 中引入了 NIO，可以通过 Native 方法直接在堆外分配内存，然后通过在堆中存储的引用来对这块内存区域做操作。<strong>注意</strong> 这块区域并不会在 <code>-Xmx</code>和 <code>-Xms</code> 设置的大小之内，因此在设置 JVM 参数的时候要注意考虑这块内存区域，避免设置的内存区域总额大于物理内存</p>
-<h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3><p>Method Area 又叫 NonHeap，也是线程共有的内存区域，用来存：</p>
-<ul>
-<li>类信息</li>
-<li>常量</li>
-<li>静态变量</li>
-<li>字符串常量池</li>
-</ul>
-<p>在 JDK1.7 中已经将字符串常量池移出永久代，在 Java8 中更是之内取消了永久代，而是使用了元空间（MetaSpace）来存储这些信息，从而永久代的大小不需要再指定，只要不超出物理内存的限制就不会产生 OOM 异常</p>
-<h4 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h4><p>运行时常量池主要用来存储类的版本、字段、方法、接口等描述信息。常量池（Constant Pool Table）用来存储各种字面量和符号引用。String 的 <code>intern()</code> 方法就是在运行期间将对象放到常量池中的。此部分也会出现 OOM 异常。</p>
-<h2 id="JDK8-以及之后的模型"><a href="#JDK8-以及之后的模型" class="headerlink" title="JDK8 以及之后的模型"></a>JDK8 以及之后的模型</h2><p><img src="https://raw.githubusercontent.com/PicGoBed/PicBed/master/2019-07-26-NrXELZ.jpg" alt="pic"></p>
-]]></content>
-      <categories>
-        <category>技术</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>JVM</tag>
-        <tag>tech</tag>
       </tags>
   </entry>
   <entry>
@@ -282,6 +239,49 @@
       </tags>
   </entry>
   <entry>
+    <title>JVM 探究（一）：JVM内存模型概念模型</title>
+    <url>/jmm-of-jvm.html</url>
+    <content><![CDATA[<p>作为一个 Java 程序员，不了解 Java 内存模型就不能写出能够充分利用内存的代码。本文通过对 Java 内存模型的介绍，让读者能够了解 Java 的内存的分配情况，适合 Java 初学者或者对 JMM 不熟悉的同学。后面的博客会针对每个部分做更加深入的解释。<br><span id="more"></span></p>
+<h2 id="Java-内存模型"><a href="#Java-内存模型" class="headerlink" title="Java 内存模型"></a>Java 内存模型</h2><p>首先通过下图对于 Java 内存模型有一个整体的认识，然后针对不同的区域的作用和存储的内容做进一步的解释。</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnvc6jtby5j30r50l9wh2.jpg" alt="Java内存模型"></p>
+<h3 id="PC（程序计数器）"><a href="#PC（程序计数器）" class="headerlink" title="PC（程序计数器）"></a>PC（程序计数器）</h3><p>这里的 PC 不是 Personal Computer，而是 Program Counter Register，从名字就可以看出来，这是一个寄存器，用来存储需要执行的指令地址。</p>
+<blockquote>
+<p>程序计数器（Program Counter (PC)）是在电脑处理器中的一个寄存器，用来指示电脑下一步要运行的指令序列。—WikiPedia</p>
+</blockquote>
+<p>PC 和其他 JVM 内存区域最大的区别是：</p>
+<blockquote>
+<p><strong>“此内存区域是唯一一个在Java虚拟机规范中没有规定任何OutOfMemoryError情况的区域。</strong>”<br>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
+</blockquote>
+<p>像上面的图片一样，PC 是每个线程私有的，对于 Java 方法而言，PC 中存储的是正在执行的虚拟机字节码的内存地址；对于 Native 方法来说，PC 中的值为空（Undefined）。</p>
+<h3 id="Java-虚拟机栈和本地方法栈"><a href="#Java-虚拟机栈和本地方法栈" class="headerlink" title="Java 虚拟机栈和本地方法栈"></a>Java 虚拟机栈和本地方法栈</h3><h4 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h4><p>无论是在大学的 Java 编程课堂上，还是我们在学习过程编码过程，经常会出现 StackOverFlow，甚至目前最大的技术问答社区的名字也是 StackOverFlow。Java 语言中会产生栈溢出的就是这块内存区域，当你的程序中设置了超过 JVM 规定的递归深度的时候就会触发这个异常。类似 JMM 的其他内存区域，如果虚拟机栈在动态扩展的时候无法申请到足够的内存也会报OOM异常。</p>
+<p>Java 语言中每一个方法的执行都对应着一个栈帧（Stack Frame）的创建，栈帧中存储的是局部变量、方法出口等信息，因此对于一个方法的执行而言，所能够使用到的内存是在编译期间就能够完全确定的，在运行期间不会发生变化。在栈帧中，局部变量空间成为 Slot，除了 double 和 long 占有 2 个 slot 外，其他基本数据类型和对象引用都占用 1 个 slot 空间</p>
+<h4 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h4><p>本地方法栈和虚拟机栈最大的区别就是虚拟机栈是为执行 Java 字节码服务的，而本地方法栈是为了虚拟机使用到的 Native 方法服务的。除此之外，Java 虚拟机规范并没有针对本地方法栈的实现做具体规定。在 HotSpot 虚拟机中，本地方法栈和虚拟机栈是共用同一块内存的，不做具体区分。同样，本地方法栈也会产生 OOM 异常和 StackOverFlow 异常。</p>
+<h3 id="Java-堆"><a href="#Java-堆" class="headerlink" title="Java 堆"></a>Java 堆</h3><blockquote>
+<p>“The heap is the runtime data area from which memory for all class instances and arrays is allocated。” —Java虚拟机规范</p>
+</blockquote>
+<p>Java 虚拟机规范规定所有的实例对象和数组都应该分配到 Java 堆中。<br>说的通俗一点就是所有 new 出来的对象和数组都会放到该区域，由于现在的收集器都采用分代收集算法，所以在 Java 堆中又分了新生代和老年代，新生代有做了详细的区分。该区域的大小可以通过 JVM 参数 <code>-Xmx</code> 和 <code>-Xms</code> 来设置。</p>
+<h4 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h4><p>在 JDK1.4 中引入了 NIO，可以通过 Native 方法直接在堆外分配内存，然后通过在堆中存储的引用来对这块内存区域做操作。<strong>注意</strong> 这块区域并不会在 <code>-Xmx</code>和 <code>-Xms</code> 设置的大小之内，因此在设置 JVM 参数的时候要注意考虑这块内存区域，避免设置的内存区域总额大于物理内存</p>
+<h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3><p>Method Area 又叫 NonHeap，也是线程共有的内存区域，用来存：</p>
+<ul>
+<li>类信息</li>
+<li>常量</li>
+<li>静态变量</li>
+<li>字符串常量池</li>
+</ul>
+<p>在 JDK1.7 中已经将字符串常量池移出永久代，在 Java8 中更是之内取消了永久代，而是使用了元空间（MetaSpace）来存储这些信息，从而永久代的大小不需要再指定，只要不超出物理内存的限制就不会产生 OOM 异常</p>
+<h4 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h4><p>运行时常量池主要用来存储类的版本、字段、方法、接口等描述信息。常量池（Constant Pool Table）用来存储各种字面量和符号引用。String 的 <code>intern()</code> 方法就是在运行期间将对象放到常量池中的。此部分也会出现 OOM 异常。</p>
+<h2 id="JDK8-以及之后的模型"><a href="#JDK8-以及之后的模型" class="headerlink" title="JDK8 以及之后的模型"></a>JDK8 以及之后的模型</h2><p><img src="https://raw.githubusercontent.com/PicGoBed/PicBed/master/2019-07-26-NrXELZ.jpg" alt="pic"></p>
+]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>JVM</tag>
+        <tag>tech</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Spring 中 Transactional 注解原理</title>
     <url>/transactional-of-spring.html</url>
     <content><![CDATA[<p>利用 Spring 框架可以很容易的使用注解的方式来使用事务，为我们的开发带来了巨大的便利，这种便利的实现是通过 Spring 本身的一系列机制来实现的，主要包含动态代理和 Spring Bean 的加载过程。本文将深入源码，揭开层层面纱…</p>
@@ -336,6 +336,41 @@
       <tags>
         <tag>Java</tag>
         <tag>tech</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>三门问题</title>
+    <url>/Monty-Hall-problem.html</url>
+    <content><![CDATA[<p>前几天有一个关注很久的公众号推送了一篇讲 “三门问题” 的文章。这不是我第一看到这个问题的分析，我一直觉得这个是个伪命题，后面两个门打开后面有大奖的概率都应该是<code>1/2</code>才对呀。直到我去看了一些分析，写了这篇文章。</p>
+<span id="more"></span>
+<p><img src="../media/HawksbillCrag_ZH-CN4429681235_1920x1080.jpg" alt="HawksbillCrag_ZH-CN4429681235_1920x1080"></p>
+<h3 id="什么是三门问题？"><a href="#什么是三门问题？" class="headerlink" title="什么是三门问题？"></a>什么是三门问题？</h3><blockquote>
+<p><strong>蒙提霍尔问题</strong>，亦称为<strong>蒙特霍问题</strong>或<strong>三门问题</strong>（英文：Monty Hall problem），是一个源自<a href="https://zh.wikipedia.org/wiki/%E5%8D%9A%E5%BC%88%E8%AB%96">博弈论</a>的<a href="https://zh.wikipedia.org/wiki/%E6%95%B8%E5%AD%B8%E9%81%8A%E6%88%B2">数学游戏</a>问题，大致出自<a href="https://zh.wikipedia.org/wiki/%E7%BE%8E%E5%9C%8B">美国</a>的<a href="https://zh.wikipedia.org/wiki/%E9%9B%BB%E8%A6%96">电视</a><a href="https://zh.wikipedia.org/wiki/%E9%81%8A%E6%88%B2%E7%AF%80%E7%9B%AE">游戏节目</a><em>Let’s Make a Deal</em>。问题的名字来自该节目的主持人<a href="https://zh.wikipedia.org/wiki/%E8%92%99%E8%92%82%C2%B7%E9%9C%8D%E5%B0%94">蒙蒂·霍尔</a>。</p>
+<p>这个游戏的玩法是：参赛者会看见三扇关闭了的门，其中一扇的后面有一辆<a href="https://zh.wikipedia.org/wiki/%E6%B1%BD%E8%BB%8A">汽车</a>或者是奖品，选中后面有车的那扇门就可以赢得该汽车或奖品，而另外两扇门后面则各藏有一只<a href="https://zh.wikipedia.org/wiki/%E5%B1%B1%E7%BE%8A">山羊</a>。当参赛者选定了一扇门，但未去开启它的时候，知道门后情形的节目主持人会开启剩下两扇门的其中一扇，露出其中一只山羊。主持人其后会问参赛者要不要换另一扇仍然关上的门。问题是：换另一扇门会否增加参赛者赢得汽车的几率？如果严格按照上述的条件的话，答案是<strong>会</strong>。换门的话，赢得汽车的几率是2/3。</p>
+<p>这条问题亦被叫做<strong>蒙提霍尔悖论</strong>：虽然该问题的答案在逻辑上并不自相矛盾，但十分违反直觉。这问题曾引起一阵热烈的讨论。</p>
+</blockquote>
+<h3 id="理论证明"><a href="#理论证明" class="headerlink" title="理论证明"></a>理论证明</h3><p>先说一下错误的思维方式：当主持人打开一扇后面有羊的门之后，问题就变成了有两扇门，一扇门里有汽车，一扇门里有羊，选择任何一个门获的汽车的概率必然是相同的，也就是<code>1/2</code>。</p>
+<p>上面这种方式的问题就是，打开一扇门后，并不等价于在两扇门里做选择；而是你是否需要转换。（人的直觉往往是不可信的）</p>
+<p>当年的<a href="https://zh.wikipedia.org/wiki/%E7%91%AA%E9%BA%97%E8%93%AE%C2%B7%E6%B2%83%E6%96%AF%C2%B7%E8%8E%8E%E5%87%A1%E7%89%B9">玛丽莲·沃斯·莎凡特</a>用整整4个专栏，数百个新闻故事及在小学生课堂模拟的测验来说服她的读者她是正确的。</p>
+<p>我们只有最最简单的列出所有可能的情况就可以证明这个问题。</p>
+<p><img src="../media/image-20190621171632386.png" alt="image-20190621171632386"></p>
+<p>上图可以看到，转换后获胜的概率是<code>2/3</code>。</p>
+<p>但是有质疑是为什么第一种情况下不可以分为 A 羊和 B 羊，而是算作一种情况呐。我认为这是由于打开门后出现 A 羊还是 B 羊，并不会影响我们计算的概率，影响概率的是<strong>主持人选羊</strong>这件事。所以 A 羊和 B 羊并不能算作两种情况。</p>
+<h3 id="代码佐证"><a href="#代码佐证" class="headerlink" title="代码佐证"></a>代码佐证</h3><p>概率问题通过增大样本容量来获取接近概率的值。所以不如写一段代码来看一下结果</p>
+<p>🐑🐑 区分 A 羊和 B 羊</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">boolean</span> CAR = <span class="keyword">true</span>; <span class="comment">// 是车</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">boolean</span> GOAT_A = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">boolean</span> GOAT_B = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> ExecutionException, InterruptedException </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> changeSuccess = <span class="number">0</span>; <span class="comment">// 换选换奖次数</span></span><br><span class="line">        <span class="keyword">int</span> totalCount = <span class="number">100_0000</span>; <span class="comment">// 总次数</span></span><br><span class="line"></span><br><span class="line">        List&lt;List&lt;Boolean&gt;&gt; lists = Arrays.asList( <span class="comment">// 所有可能的初始状态</span></span><br><span class="line">                Arrays.asList(CAR, GOAT_A, GOAT_B),</span><br><span class="line">                Arrays.asList(CAR, GOAT_B, GOAT_A),</span><br><span class="line">                Arrays.asList(GOAT_A, CAR, GOAT_B),</span><br><span class="line">                Arrays.asList(GOAT_A, GOAT_B, CAR),</span><br><span class="line">                Arrays.asList(GOAT_B, GOAT_A, CAR),</span><br><span class="line">                Arrays.asList(GOAT_B, CAR, GOAT_A));</span><br><span class="line">        ExecutorService executorService = Executors.newCachedThreadPool();</span><br><span class="line"></span><br><span class="line">        List&lt;Future&lt;Boolean&gt;&gt; resultList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; totalCount; i++) &#123;</span><br><span class="line">            Future&lt;Boolean&gt; resultFuture = executorService.submit(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">int</span> randomIndex = ((<span class="keyword">int</span>) (Math.random() * <span class="number">100</span>)) % lists.size();</span><br><span class="line">                List&lt;Boolean&gt; doors = lists.get(randomIndex); <span class="comment">// 随机选择一种初始情况</span></span><br><span class="line">                <span class="keyword">int</span> firstChoose = ((<span class="keyword">int</span>) (Math.random() * <span class="number">100</span>)) % <span class="number">3</span>; <span class="comment">// 随机选择一个门</span></span><br><span class="line">                <span class="keyword">int</span> openDoorIndex = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">do</span> &#123;</span><br><span class="line">                    openDoorIndex = ((<span class="keyword">int</span>) (Math.random() * <span class="number">100</span>)) % <span class="number">3</span>;</span><br><span class="line">                &#125; <span class="keyword">while</span> (openDoorIndex == firstChoose || doors.get(openDoorIndex)); <span class="comment">// 随机打开一扇羊的门</span></span><br><span class="line">                <span class="keyword">int</span> secondChoose = <span class="number">3</span> - firstChoose - openDoorIndex;</span><br><span class="line">                <span class="keyword">return</span> doors.get(secondChoose); <span class="comment">// 返回换选是否获奖</span></span><br><span class="line">            &#125;);</span><br><span class="line">            resultList.add(resultFuture);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (Future&lt;Boolean&gt; booleanFuture : resultList) &#123;</span><br><span class="line">            Boolean aBoolean = booleanFuture.get();</span><br><span class="line">            <span class="keyword">if</span> (aBoolean) &#123;</span><br><span class="line">                changeSuccess++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;换选获胜次数：&quot;</span> + changeSuccess);</span><br><span class="line">        System.out.println(<span class="string">&quot;总次数：&quot;</span> + totalCount);</span><br><span class="line">        System.out.println(<span class="string">&quot;换选获胜几率：&quot;</span> + (changeSuccess * <span class="number">1.0</span> / totalCount));</span><br><span class="line"></span><br><span class="line">        executorService.shutdown();</span><br><span class="line">        <span class="keyword">while</span> (executorService.isTerminated()) &#123;</span><br><span class="line">            executorService.awaitTermination(<span class="number">100</span>, TimeUnit.SECONDS);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">换选获胜次数：666072</span><br><span class="line">总次数：1000000</span><br><span class="line">换选获胜几率：0.666072</span><br></pre></td></tr></table></figure>
+<p>🐑 不区分两只羊</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main2</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">boolean</span> CAR = <span class="keyword">true</span>; <span class="comment">// 是车</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">boolean</span> GOAT = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> ExecutionException, InterruptedException </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> changeSuccess = <span class="number">0</span>; <span class="comment">// 换选换奖次数</span></span><br><span class="line">        <span class="keyword">int</span> totalCount = <span class="number">100_0000</span>; <span class="comment">// 总次数</span></span><br><span class="line"></span><br><span class="line">        List&lt;List&lt;Boolean&gt;&gt; lists = Arrays.asList( <span class="comment">// 所有可能的初始状态</span></span><br><span class="line">                Arrays.asList(CAR, GOAT, GOAT),</span><br><span class="line">                Arrays.asList(GOAT, CAR, GOAT),</span><br><span class="line">                Arrays.asList(GOAT, GOAT, CAR));</span><br><span class="line">        ExecutorService executorService = Executors.newCachedThreadPool();</span><br><span class="line"></span><br><span class="line">        List&lt;Future&lt;Boolean&gt;&gt; resultList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; totalCount; i++) &#123;</span><br><span class="line">            Future&lt;Boolean&gt; resultFuture = executorService.submit(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">int</span> randomIndex = ((<span class="keyword">int</span>) (Math.random() * <span class="number">100</span>)) % lists.size();</span><br><span class="line">                List&lt;Boolean&gt; doors = lists.get(randomIndex); <span class="comment">// 随机选择一种初始情况</span></span><br><span class="line">                <span class="keyword">int</span> firstChoose = ((<span class="keyword">int</span>) (Math.random() * <span class="number">100</span>)) % <span class="number">3</span>; <span class="comment">// 随机选择一个门</span></span><br><span class="line">                <span class="keyword">int</span> openDoorIndex = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">do</span> &#123;</span><br><span class="line">                    openDoorIndex = ((<span class="keyword">int</span>) (Math.random() * <span class="number">100</span>)) % <span class="number">3</span>;</span><br><span class="line">                &#125; <span class="keyword">while</span> (openDoorIndex == firstChoose || doors.get(openDoorIndex)); <span class="comment">// 随机打开一扇羊的门</span></span><br><span class="line">                <span class="keyword">int</span> secondChoose = <span class="number">3</span> - firstChoose - openDoorIndex;</span><br><span class="line">                <span class="keyword">return</span> doors.get(secondChoose); <span class="comment">// 返回换选是否获奖</span></span><br><span class="line">            &#125;);</span><br><span class="line">            resultList.add(resultFuture);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (Future&lt;Boolean&gt; booleanFuture : resultList) &#123;</span><br><span class="line">            Boolean aBoolean = booleanFuture.get();</span><br><span class="line">            <span class="keyword">if</span> (aBoolean) &#123;</span><br><span class="line">                changeSuccess++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;换选获胜次数：&quot;</span> + changeSuccess);</span><br><span class="line">        System.out.println(<span class="string">&quot;总次数：&quot;</span> + totalCount);</span><br><span class="line">        System.out.println(<span class="string">&quot;换选获胜几率：&quot;</span> + (changeSuccess * <span class="number">1.0</span> / totalCount));</span><br><span class="line"></span><br><span class="line">        executorService.shutdown();</span><br><span class="line">        <span class="keyword">while</span> (executorService.isTerminated()) &#123;</span><br><span class="line">            executorService.awaitTermination(<span class="number">100</span>, TimeUnit.SECONDS);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">换选获胜次数：665600</span><br><span class="line">总次数：1000000</span><br><span class="line">换选获胜几率：0.6656</span><br></pre></td></tr></table></figure>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://zh.wikipedia.org/wiki/%E8%92%99%E6%8F%90%E9%9C%8D%E7%88%BE%E5%95%8F%E9%A1%8C">蒙提霍尔问题 - 维基百科，自由的百科全书</a></p>
+]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>算法</tag>
+        <tag>概率论</tag>
       </tags>
   </entry>
   <entry>
@@ -411,41 +446,6 @@
         <tag>Java</tag>
         <tag>JVM</tag>
         <tag>tech</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>三门问题</title>
-    <url>/Monty-Hall-problem.html</url>
-    <content><![CDATA[<p>前几天有一个关注很久的公众号推送了一篇讲 “三门问题” 的文章。这不是我第一看到这个问题的分析，我一直觉得这个是个伪命题，后面两个门打开后面有大奖的概率都应该是<code>1/2</code>才对呀。直到我去看了一些分析，写了这篇文章。</p>
-<span id="more"></span>
-<p><img src="../media/HawksbillCrag_ZH-CN4429681235_1920x1080.jpg" alt="HawksbillCrag_ZH-CN4429681235_1920x1080"></p>
-<h3 id="什么是三门问题？"><a href="#什么是三门问题？" class="headerlink" title="什么是三门问题？"></a>什么是三门问题？</h3><blockquote>
-<p><strong>蒙提霍尔问题</strong>，亦称为<strong>蒙特霍问题</strong>或<strong>三门问题</strong>（英文：Monty Hall problem），是一个源自<a href="https://zh.wikipedia.org/wiki/%E5%8D%9A%E5%BC%88%E8%AB%96">博弈论</a>的<a href="https://zh.wikipedia.org/wiki/%E6%95%B8%E5%AD%B8%E9%81%8A%E6%88%B2">数学游戏</a>问题，大致出自<a href="https://zh.wikipedia.org/wiki/%E7%BE%8E%E5%9C%8B">美国</a>的<a href="https://zh.wikipedia.org/wiki/%E9%9B%BB%E8%A6%96">电视</a><a href="https://zh.wikipedia.org/wiki/%E9%81%8A%E6%88%B2%E7%AF%80%E7%9B%AE">游戏节目</a><em>Let’s Make a Deal</em>。问题的名字来自该节目的主持人<a href="https://zh.wikipedia.org/wiki/%E8%92%99%E8%92%82%C2%B7%E9%9C%8D%E5%B0%94">蒙蒂·霍尔</a>。</p>
-<p>这个游戏的玩法是：参赛者会看见三扇关闭了的门，其中一扇的后面有一辆<a href="https://zh.wikipedia.org/wiki/%E6%B1%BD%E8%BB%8A">汽车</a>或者是奖品，选中后面有车的那扇门就可以赢得该汽车或奖品，而另外两扇门后面则各藏有一只<a href="https://zh.wikipedia.org/wiki/%E5%B1%B1%E7%BE%8A">山羊</a>。当参赛者选定了一扇门，但未去开启它的时候，知道门后情形的节目主持人会开启剩下两扇门的其中一扇，露出其中一只山羊。主持人其后会问参赛者要不要换另一扇仍然关上的门。问题是：换另一扇门会否增加参赛者赢得汽车的几率？如果严格按照上述的条件的话，答案是<strong>会</strong>。换门的话，赢得汽车的几率是2/3。</p>
-<p>这条问题亦被叫做<strong>蒙提霍尔悖论</strong>：虽然该问题的答案在逻辑上并不自相矛盾，但十分违反直觉。这问题曾引起一阵热烈的讨论。</p>
-</blockquote>
-<h3 id="理论证明"><a href="#理论证明" class="headerlink" title="理论证明"></a>理论证明</h3><p>先说一下错误的思维方式：当主持人打开一扇后面有羊的门之后，问题就变成了有两扇门，一扇门里有汽车，一扇门里有羊，选择任何一个门获的汽车的概率必然是相同的，也就是<code>1/2</code>。</p>
-<p>上面这种方式的问题就是，打开一扇门后，并不等价于在两扇门里做选择；而是你是否需要转换。（人的直觉往往是不可信的）</p>
-<p>当年的<a href="https://zh.wikipedia.org/wiki/%E7%91%AA%E9%BA%97%E8%93%AE%C2%B7%E6%B2%83%E6%96%AF%C2%B7%E8%8E%8E%E5%87%A1%E7%89%B9">玛丽莲·沃斯·莎凡特</a>用整整4个专栏，数百个新闻故事及在小学生课堂模拟的测验来说服她的读者她是正确的。</p>
-<p>我们只有最最简单的列出所有可能的情况就可以证明这个问题。</p>
-<p><img src="../media/image-20190621171632386.png" alt="image-20190621171632386"></p>
-<p>上图可以看到，转换后获胜的概率是<code>2/3</code>。</p>
-<p>但是有质疑是为什么第一种情况下不可以分为 A 羊和 B 羊，而是算作一种情况呐。我认为这是由于打开门后出现 A 羊还是 B 羊，并不会影响我们计算的概率，影响概率的是<strong>主持人选羊</strong>这件事。所以 A 羊和 B 羊并不能算作两种情况。</p>
-<h3 id="代码佐证"><a href="#代码佐证" class="headerlink" title="代码佐证"></a>代码佐证</h3><p>概率问题通过增大样本容量来获取接近概率的值。所以不如写一段代码来看一下结果</p>
-<p>🐑🐑 区分 A 羊和 B 羊</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">boolean</span> CAR = <span class="keyword">true</span>; <span class="comment">// 是车</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">boolean</span> GOAT_A = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">boolean</span> GOAT_B = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> ExecutionException, InterruptedException </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> changeSuccess = <span class="number">0</span>; <span class="comment">// 换选换奖次数</span></span><br><span class="line">        <span class="keyword">int</span> totalCount = <span class="number">100_0000</span>; <span class="comment">// 总次数</span></span><br><span class="line"></span><br><span class="line">        List&lt;List&lt;Boolean&gt;&gt; lists = Arrays.asList( <span class="comment">// 所有可能的初始状态</span></span><br><span class="line">                Arrays.asList(CAR, GOAT_A, GOAT_B),</span><br><span class="line">                Arrays.asList(CAR, GOAT_B, GOAT_A),</span><br><span class="line">                Arrays.asList(GOAT_A, CAR, GOAT_B),</span><br><span class="line">                Arrays.asList(GOAT_A, GOAT_B, CAR),</span><br><span class="line">                Arrays.asList(GOAT_B, GOAT_A, CAR),</span><br><span class="line">                Arrays.asList(GOAT_B, CAR, GOAT_A));</span><br><span class="line">        ExecutorService executorService = Executors.newCachedThreadPool();</span><br><span class="line"></span><br><span class="line">        List&lt;Future&lt;Boolean&gt;&gt; resultList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; totalCount; i++) &#123;</span><br><span class="line">            Future&lt;Boolean&gt; resultFuture = executorService.submit(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">int</span> randomIndex = ((<span class="keyword">int</span>) (Math.random() * <span class="number">100</span>)) % lists.size();</span><br><span class="line">                List&lt;Boolean&gt; doors = lists.get(randomIndex); <span class="comment">// 随机选择一种初始情况</span></span><br><span class="line">                <span class="keyword">int</span> firstChoose = ((<span class="keyword">int</span>) (Math.random() * <span class="number">100</span>)) % <span class="number">3</span>; <span class="comment">// 随机选择一个门</span></span><br><span class="line">                <span class="keyword">int</span> openDoorIndex = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">do</span> &#123;</span><br><span class="line">                    openDoorIndex = ((<span class="keyword">int</span>) (Math.random() * <span class="number">100</span>)) % <span class="number">3</span>;</span><br><span class="line">                &#125; <span class="keyword">while</span> (openDoorIndex == firstChoose || doors.get(openDoorIndex)); <span class="comment">// 随机打开一扇羊的门</span></span><br><span class="line">                <span class="keyword">int</span> secondChoose = <span class="number">3</span> - firstChoose - openDoorIndex;</span><br><span class="line">                <span class="keyword">return</span> doors.get(secondChoose); <span class="comment">// 返回换选是否获奖</span></span><br><span class="line">            &#125;);</span><br><span class="line">            resultList.add(resultFuture);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (Future&lt;Boolean&gt; booleanFuture : resultList) &#123;</span><br><span class="line">            Boolean aBoolean = booleanFuture.get();</span><br><span class="line">            <span class="keyword">if</span> (aBoolean) &#123;</span><br><span class="line">                changeSuccess++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;换选获胜次数：&quot;</span> + changeSuccess);</span><br><span class="line">        System.out.println(<span class="string">&quot;总次数：&quot;</span> + totalCount);</span><br><span class="line">        System.out.println(<span class="string">&quot;换选获胜几率：&quot;</span> + (changeSuccess * <span class="number">1.0</span> / totalCount));</span><br><span class="line"></span><br><span class="line">        executorService.shutdown();</span><br><span class="line">        <span class="keyword">while</span> (executorService.isTerminated()) &#123;</span><br><span class="line">            executorService.awaitTermination(<span class="number">100</span>, TimeUnit.SECONDS);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">换选获胜次数：666072</span><br><span class="line">总次数：1000000</span><br><span class="line">换选获胜几率：0.666072</span><br></pre></td></tr></table></figure>
-<p>🐑 不区分两只羊</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main2</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">boolean</span> CAR = <span class="keyword">true</span>; <span class="comment">// 是车</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">boolean</span> GOAT = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> ExecutionException, InterruptedException </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> changeSuccess = <span class="number">0</span>; <span class="comment">// 换选换奖次数</span></span><br><span class="line">        <span class="keyword">int</span> totalCount = <span class="number">100_0000</span>; <span class="comment">// 总次数</span></span><br><span class="line"></span><br><span class="line">        List&lt;List&lt;Boolean&gt;&gt; lists = Arrays.asList( <span class="comment">// 所有可能的初始状态</span></span><br><span class="line">                Arrays.asList(CAR, GOAT, GOAT),</span><br><span class="line">                Arrays.asList(GOAT, CAR, GOAT),</span><br><span class="line">                Arrays.asList(GOAT, GOAT, CAR));</span><br><span class="line">        ExecutorService executorService = Executors.newCachedThreadPool();</span><br><span class="line"></span><br><span class="line">        List&lt;Future&lt;Boolean&gt;&gt; resultList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; totalCount; i++) &#123;</span><br><span class="line">            Future&lt;Boolean&gt; resultFuture = executorService.submit(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">int</span> randomIndex = ((<span class="keyword">int</span>) (Math.random() * <span class="number">100</span>)) % lists.size();</span><br><span class="line">                List&lt;Boolean&gt; doors = lists.get(randomIndex); <span class="comment">// 随机选择一种初始情况</span></span><br><span class="line">                <span class="keyword">int</span> firstChoose = ((<span class="keyword">int</span>) (Math.random() * <span class="number">100</span>)) % <span class="number">3</span>; <span class="comment">// 随机选择一个门</span></span><br><span class="line">                <span class="keyword">int</span> openDoorIndex = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">do</span> &#123;</span><br><span class="line">                    openDoorIndex = ((<span class="keyword">int</span>) (Math.random() * <span class="number">100</span>)) % <span class="number">3</span>;</span><br><span class="line">                &#125; <span class="keyword">while</span> (openDoorIndex == firstChoose || doors.get(openDoorIndex)); <span class="comment">// 随机打开一扇羊的门</span></span><br><span class="line">                <span class="keyword">int</span> secondChoose = <span class="number">3</span> - firstChoose - openDoorIndex;</span><br><span class="line">                <span class="keyword">return</span> doors.get(secondChoose); <span class="comment">// 返回换选是否获奖</span></span><br><span class="line">            &#125;);</span><br><span class="line">            resultList.add(resultFuture);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (Future&lt;Boolean&gt; booleanFuture : resultList) &#123;</span><br><span class="line">            Boolean aBoolean = booleanFuture.get();</span><br><span class="line">            <span class="keyword">if</span> (aBoolean) &#123;</span><br><span class="line">                changeSuccess++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;换选获胜次数：&quot;</span> + changeSuccess);</span><br><span class="line">        System.out.println(<span class="string">&quot;总次数：&quot;</span> + totalCount);</span><br><span class="line">        System.out.println(<span class="string">&quot;换选获胜几率：&quot;</span> + (changeSuccess * <span class="number">1.0</span> / totalCount));</span><br><span class="line"></span><br><span class="line">        executorService.shutdown();</span><br><span class="line">        <span class="keyword">while</span> (executorService.isTerminated()) &#123;</span><br><span class="line">            executorService.awaitTermination(<span class="number">100</span>, TimeUnit.SECONDS);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">换选获胜次数：665600</span><br><span class="line">总次数：1000000</span><br><span class="line">换选获胜几率：0.6656</span><br></pre></td></tr></table></figure>
-<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://zh.wikipedia.org/wiki/%E8%92%99%E6%8F%90%E9%9C%8D%E7%88%BE%E5%95%8F%E9%A1%8C">蒙提霍尔问题 - 维基百科，自由的百科全书</a></p>
-]]></content>
-      <categories>
-        <category>技术</category>
-      </categories>
-      <tags>
-        <tag>算法</tag>
-        <tag>概率论</tag>
       </tags>
   </entry>
   <entry>
@@ -550,6 +550,24 @@
       </tags>
   </entry>
   <entry>
+    <title>利用 JavaSE 创建简单 HTTP Server</title>
+    <url>/how-to-use-java-se-create-simple-httpserver.html</url>
+    <content><![CDATA[<p>在工作中经常会遇到简单实用 HTTP server 的场景，可是又不需要 Spring MVC 或者 web容器那样重的东西。这种情况下 JavaSE 就可以满足我们的要求了。<br><span id="more"></span></p>
+<h1 id="上代码"><a href="#上代码" class="headerlink" title="上代码"></a>上代码</h1><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> web;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.sun.net.httpserver.Headers;</span><br><span class="line"><span class="keyword">import</span> com.sun.net.httpserver.HttpExchange;</span><br><span class="line"><span class="keyword">import</span> com.sun.net.httpserver.HttpHandler;</span><br><span class="line"><span class="keyword">import</span> com.sun.net.httpserver.HttpServer;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Service;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.annotation.PostConstruct;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.OutputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.OutputStreamWriter;</span><br><span class="line"><span class="keyword">import</span> java.net.HttpURLConnection;</span><br><span class="line"><span class="keyword">import</span> java.net.InetSocketAddress;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Created by zhangbo54 on 2019-01-24.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimpleServer</span> </span>&#123;</span><br><span class="line">    <span class="meta">@PostConstruct</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initHttpServer</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        HttpServer server = HttpServer.create(<span class="keyword">new</span> InetSocketAddress(<span class="number">8418</span>), <span class="number">0</span>);</span><br><span class="line">        server.createContext(<span class="string">&quot;/test&quot;</span>, <span class="keyword">new</span> MyHandler());</span><br><span class="line">        server.setExecutor(<span class="keyword">null</span>); <span class="comment">// creates a default executor</span></span><br><span class="line">        server.start();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MyHandler</span> <span class="keyword">implements</span> <span class="title">HttpHandler</span> </span>&#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handle</span><span class="params">(HttpExchange httpExchange)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;receive&quot;</span>);</span><br><span class="line">            String requestMethod = httpExchange.getRequestMethod();</span><br><span class="line">            <span class="keyword">if</span> (requestMethod.equalsIgnoreCase(<span class="string">&quot;GET&quot;</span>)) &#123;<span class="comment">//客户端的请求是get方法</span></span><br><span class="line">                <span class="comment">//设置服务端响应的编码格式，否则在客户端收到的可能是乱码</span></span><br><span class="line">                Headers responseHeaders = httpExchange.getResponseHeaders();</span><br><span class="line">                responseHeaders.set(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;text/html;charset=utf-8&quot;</span>);</span><br><span class="line"></span><br><span class="line">                <span class="comment">//在这里通过httpExchange获取客户端发送过来的消息</span></span><br><span class="line">                <span class="comment">//URI url = httpExchange.getRequestURI();</span></span><br><span class="line">                <span class="comment">//InputStream requestBody = httpExchange.getRequestBody();</span></span><br><span class="line"></span><br><span class="line">                <span class="comment">// 这里获取get请求参数</span></span><br><span class="line">                <span class="comment">// will return string in format similar to this: &quot;field1=value1&amp;field2=value2&amp;field3=value3...&quot;</span></span><br><span class="line">                String queryParams = httpExchange.getRequestURI().getQuery();</span><br><span class="line">                System.out.println(queryParams);</span><br><span class="line"></span><br><span class="line">                String response = <span class="string">&quot;this is server&quot;</span>;</span><br><span class="line"></span><br><span class="line">                httpExchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, response.getBytes(<span class="string">&quot;UTF-8&quot;</span>).length);</span><br><span class="line"></span><br><span class="line">                <span class="keyword">try</span> (OutputStream responseBody = httpExchange.getResponseBody();</span><br><span class="line">                         OutputStreamWriter writer = <span class="keyword">new</span> OutputStreamWriter(responseBody, <span class="string">&quot;UTF-8&quot;</span>)) &#123;</span><br><span class="line">                        writer.write(response);</span><br><span class="line">                    &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a href="https://blog.csdn.net/qq_29125669/article/details/77873923">CSDN</a></li>
+<li><a href="https://stackoverflow.com/questions/11640025/how-to-obtain-the-query-string-in-a-get-with-java-httpserver-httpexchange">stackoverflow</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>tech</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>如何构建一个正确的单例</title>
     <url>/create-right-singleton.html</url>
     <content><![CDATA[<p>单例模式是设计模式里面最常见的，也是在面试过程中面试官最容易考到的，通过单例模式还可以引申到其他的一些并发问题。今天我们来聊聊如何正确的构建一个单例。</p>
@@ -619,20 +637,49 @@
       </tags>
   </entry>
   <entry>
-    <title>利用 JavaSE 创建简单 HTTP Server</title>
-    <url>/how-to-use-java-se-create-simple-httpserver.html</url>
-    <content><![CDATA[<p>在工作中经常会遇到简单实用 HTTP server 的场景，可是又不需要 Spring MVC 或者 web容器那样重的东西。这种情况下 JavaSE 就可以满足我们的要求了。<br><span id="more"></span></p>
-<h1 id="上代码"><a href="#上代码" class="headerlink" title="上代码"></a>上代码</h1><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> web;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.sun.net.httpserver.Headers;</span><br><span class="line"><span class="keyword">import</span> com.sun.net.httpserver.HttpExchange;</span><br><span class="line"><span class="keyword">import</span> com.sun.net.httpserver.HttpHandler;</span><br><span class="line"><span class="keyword">import</span> com.sun.net.httpserver.HttpServer;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Service;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.annotation.PostConstruct;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.OutputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.OutputStreamWriter;</span><br><span class="line"><span class="keyword">import</span> java.net.HttpURLConnection;</span><br><span class="line"><span class="keyword">import</span> java.net.InetSocketAddress;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Created by zhangbo54 on 2019-01-24.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimpleServer</span> </span>&#123;</span><br><span class="line">    <span class="meta">@PostConstruct</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initHttpServer</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        HttpServer server = HttpServer.create(<span class="keyword">new</span> InetSocketAddress(<span class="number">8418</span>), <span class="number">0</span>);</span><br><span class="line">        server.createContext(<span class="string">&quot;/test&quot;</span>, <span class="keyword">new</span> MyHandler());</span><br><span class="line">        server.setExecutor(<span class="keyword">null</span>); <span class="comment">// creates a default executor</span></span><br><span class="line">        server.start();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MyHandler</span> <span class="keyword">implements</span> <span class="title">HttpHandler</span> </span>&#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handle</span><span class="params">(HttpExchange httpExchange)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;receive&quot;</span>);</span><br><span class="line">            String requestMethod = httpExchange.getRequestMethod();</span><br><span class="line">            <span class="keyword">if</span> (requestMethod.equalsIgnoreCase(<span class="string">&quot;GET&quot;</span>)) &#123;<span class="comment">//客户端的请求是get方法</span></span><br><span class="line">                <span class="comment">//设置服务端响应的编码格式，否则在客户端收到的可能是乱码</span></span><br><span class="line">                Headers responseHeaders = httpExchange.getResponseHeaders();</span><br><span class="line">                responseHeaders.set(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;text/html;charset=utf-8&quot;</span>);</span><br><span class="line"></span><br><span class="line">                <span class="comment">//在这里通过httpExchange获取客户端发送过来的消息</span></span><br><span class="line">                <span class="comment">//URI url = httpExchange.getRequestURI();</span></span><br><span class="line">                <span class="comment">//InputStream requestBody = httpExchange.getRequestBody();</span></span><br><span class="line"></span><br><span class="line">                <span class="comment">// 这里获取get请求参数</span></span><br><span class="line">                <span class="comment">// will return string in format similar to this: &quot;field1=value1&amp;field2=value2&amp;field3=value3...&quot;</span></span><br><span class="line">                String queryParams = httpExchange.getRequestURI().getQuery();</span><br><span class="line">                System.out.println(queryParams);</span><br><span class="line"></span><br><span class="line">                String response = <span class="string">&quot;this is server&quot;</span>;</span><br><span class="line"></span><br><span class="line">                httpExchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, response.getBytes(<span class="string">&quot;UTF-8&quot;</span>).length);</span><br><span class="line"></span><br><span class="line">                <span class="keyword">try</span> (OutputStream responseBody = httpExchange.getResponseBody();</span><br><span class="line">                         OutputStreamWriter writer = <span class="keyword">new</span> OutputStreamWriter(responseBody, <span class="string">&quot;UTF-8&quot;</span>)) &#123;</span><br><span class="line">                        writer.write(response);</span><br><span class="line">                    &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
-<li><a href="https://blog.csdn.net/qq_29125669/article/details/77873923">CSDN</a></li>
-<li><a href="https://stackoverflow.com/questions/11640025/how-to-obtain-the-query-string-in-a-get-with-java-httpserver-httpexchange">stackoverflow</a></li>
-</ol>
+    <title>愿你做你自己</title>
+    <url>/be-yourself.html</url>
+    <content><![CDATA[<p>希望你永远都会是你自己，少年！</p>
+]]></content>
+      <categories>
+        <category>随笔</category>
+      </categories>
+      <tags>
+        <tag>think</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>理解VisualVM中的保留大小(Retained Size)</title>
+    <url>/meaning-of-retained-size.html</url>
+    <content><![CDATA[<p>是否在各种内存分析工具中看到过保留大小的概念呐，保留大小到底代表着什么？<br>保留大小代表着实例本事和引用的对象的总大小吗？</p>
+<span id="more"></span>
+<h2 id="Shallow-Size-and-Retained-Size"><a href="#Shallow-Size-and-Retained-Size" class="headerlink" title="Shallow Size and Retained Size"></a>Shallow Size and Retained Size</h2><p>Shallow Size and Retained Size 的含义都是指的实例对象，不是类本身。</p>
+<p>下面将用 sampleClass 表示类Sample的一个实例（instance）</p>
+<h3 id="Shallow-Size-含义"><a href="#Shallow-Size-含义" class="headerlink" title="Shallow Size 含义"></a>Shallow Size 含义</h3><p>Shallow Size 就是对象本身所占用的大小，不包括其引用的对象。</p>
+<p>举个例子：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SampleClass</span> </span>&#123;</span><br><span class="line">    <span class="comment">// age 属于 Shallow Size</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> age = <span class="number">1</span>;</span><br><span class="line">    <span class="comment">// String 类型引用本身 name 属于 Shallow Size，</span></span><br><span class="line">    <span class="comment">// 被引用对象 &quot;SOME_STRING&quot; 不属于 Sample 的实例Shallow Size</span></span><br><span class="line">    <span class="keyword">private</span> String name = SOME_STRING;</span><br><span class="line">    <span class="comment">// 数组所有内容都属于 Shallow Size</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span>[] ids = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Retained-Size-含义"><a href="#Retained-Size-含义" class="headerlink" title="Retained Size 含义"></a>Retained Size 含义</h3><h4 id="针对可达对象"><a href="#针对可达对象" class="headerlink" title="针对可达对象"></a>针对可达对象</h4><p>可达对象就是说，从 GC roots 开始搜索，能够到达的对象，也就是说下一次GC不会被清理的对象，采用下面的计算方法来得到 Retained Size 对象</p>
+<p>Retained Size的含义相对于Shallow Size 不太好理解。依然是上面的例子，在不同的情况下，sampleClass 的Retained Size 并不相同。下面引用StackOverFlow上的一个<a href="https://stackoverflow.com/questions/23941688/yourkit-the-retained-size-of-an-object-doesnt-equal-the-retained-size-of-all">回答</a>来解释这个问题。</p>
+<blockquote>
+<p><strong>Retained size</strong> of an object is its shallow size plus the shallow sizes of the objects that are accessible, directly or indirectly, only from this object. In other words, the retained size represents the amount of memory that will be freed by the garbage collector when this object is collected.</p>
+</blockquote>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2cp92ho4j30p00fd0v3.jpg" alt="图一"></p>
+<p>上图应该比较容易理解，看起来每个对象的Retained Size 都符合公式（ Retained Size = Shallow Size + 直接子对象的 Retained Size），并没有什么问题，然后我们看另外一种引用关系中，Obj1 的Retained Size 就会发生变化。</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2cpvt71gj30p00jc76z.jpg" alt="图二"></p>
+<p>第二种图中，你会发现Obj2的Retained Size 不再符合我们刚刚总结出来的公式，这是因为Obj2的直接子对象Obj5还被Obj6所引用，造成的结果就是，如果Obj2被回收，Obj5并不会被回收，所以 Obj2 的Retained Size就不应该包括 Obj5 的Retained Size. 虽然 Obj2 的 Retained Size 发生了变化，但是 Obj1 的 Retained Size 并没有发生变化。</p>
+<h4 id="针对不可达对象"><a href="#针对不可达对象" class="headerlink" title="针对不可达对象"></a>针对不可达对象</h4><p>指的是下一次 GC 会被清理的对象，也就是说没有其他对象引用自己的对象。</p>
+<p>如果你尝试使用 VisualVM 分析dump文件的时候，你会发现有些对象的 Retained Size 居然是0，这个0就推翻了上面那种分析方法的的结论，觉得无论什么样的对象肯定是会有 Shallow Size 的，不可能为0。</p>
+<p>通过分析最后可以这样理解：针对不可达对象，也就是可以完全被清除的对象，Retained Size 都是0</p>
+<h2 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h2><h3 id="理解误区"><a href="#理解误区" class="headerlink" title="理解误区"></a>理解误区</h3><p>好多人是简单的将保留大小描述为，<code>该对象本身和其直接引用或者间接引用的对象的大小的总和</code>。这种理解是片面的，就像上面例子中的 Obj2 一样，如果按照这种理解就会得到错误的结论。</p>
+<h3 id="如何在-VisualVM-中计算保留大小（Retained-Size）"><a href="#如何在-VisualVM-中计算保留大小（Retained-Size）" class="headerlink" title="如何在 VisualVM 中计算保留大小（Retained Size）"></a>如何在 VisualVM 中计算保留大小（Retained Size）</h3><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2d8odqlmj31kw0a1ac9.jpg" alt=""></p>
+<h3 id="一些-Retained-Size-为-0-的例子"><a href="#一些-Retained-Size-为-0-的例子" class="headerlink" title="一些 Retained Size 为 0 的例子"></a>一些 Retained Size 为 0 的例子</h3><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2d9wrsm0j30ny074dgj.jpg" alt=""></p>
 ]]></content>
       <categories>
         <category>技术</category>
       </categories>
       <tags>
         <tag>Java</tag>
+        <tag>JVM</tag>
         <tag>tech</tag>
       </tags>
   </entry>
@@ -691,18 +738,6 @@ f(n-1)+f(n-2),\quad x>2
       </tags>
   </entry>
   <entry>
-    <title>愿你做你自己</title>
-    <url>/be-yourself.html</url>
-    <content><![CDATA[<p>希望你永远都会是你自己，少年！</p>
-]]></content>
-      <categories>
-        <category>随笔</category>
-      </categories>
-      <tags>
-        <tag>think</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>幂等设计</title>
     <url>/idempotence-design.html</url>
     <content><![CDATA[<p>我们实际系统中有很多操作，是不管做多少次，都应该产生一样的效果或返回一样的结果。 例如</p>
@@ -733,112 +768,6 @@ f(n-1)+f(n-2),\quad x>2
       </categories>
       <tags>
         <tag>Java</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>线上死锁分析解决纪实</title>
-    <url>/record-of-deadlock-analytics.html</url>
-    <content><![CDATA[<p>服务发生死锁，死锁检测时间较长，31s后死锁检测出来事务才得以回滚，期间不断有相同请求进来，造成死锁越来越复杂，并且服务端线程池中的所有线程都在等待锁，最后造成服务端线程池无空闲线程，拒绝服务。</p>
-<p><strong>注意：单条 SQL 也是一个事务，也会和其他事务发生死锁。</strong></p>
-<span id="more"></span>
-<h1 id="原因分析"><a href="#原因分析" class="headerlink" title="原因分析"></a>原因分析</h1><p>首先奉上 InnoDB 日志 和 DDL</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `campaignmockqueue` (</span><br><span class="line">  `id` <span class="type">int</span>(<span class="number">10</span>) unsigned <span class="keyword">NOT</span> <span class="keyword">NULL</span> AUTO_INCREMENT,</span><br><span class="line">  `campaignid` <span class="type">int</span>(<span class="number">10</span>) unsigned <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  `addtime` <span class="type">int</span>(<span class="number">10</span>) unsigned <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  <span class="keyword">PRIMARY</span> KEY (`id`),</span><br><span class="line">  KEY `idx_campid` (`campaignid`),</span><br><span class="line">  KEY `addtime` (`addtime`)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB AUTO_INCREMENT<span class="operator">=</span><span class="number">1065620134</span> <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8</span><br></pre></td></tr></table></figure>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="comment">------------------------</span></span><br><span class="line">LATEST DETECTED DEADLOCK</span><br><span class="line"><span class="comment">------------------------</span></span><br><span class="line"><span class="number">2019</span><span class="number">-05</span><span class="number">-16</span> <span class="number">15</span>:<span class="number">38</span>:<span class="number">17</span> <span class="number">0x7f121830f700</span></span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> (<span class="number">1</span>) TRANSACTION:</span><br><span class="line">TRANSACTION <span class="number">161027737922</span>, ACTIVE <span class="number">0</span> sec fetching <span class="keyword">rows</span></span><br><span class="line">mysql tables <span class="keyword">in</span> use <span class="number">1</span>, locked <span class="number">1</span></span><br><span class="line">LOCK WAIT <span class="number">88</span> lock struct(s), heap size <span class="number">24784</span>, <span class="number">1412</span> <span class="type">row</span> lock(s), undo log entries <span class="number">2</span></span><br><span class="line">MySQL thread id <span class="number">42610991</span>, OS thread handle <span class="number">139701841643264</span>, query id <span class="number">40446554160</span> <span class="number">10.7</span><span class="number">.23</span><span class="number">.224</span> promotio_e0a1 updating</span><br><span class="line"><span class="comment">/*id:6d7cc9a7*/</span><span class="keyword">DELETE</span> <span class="keyword">FROM</span> `campaignmockqueue` <span class="keyword">WHERE</span> `campaignid`<span class="operator">=</span><span class="number">52327710</span> <span class="keyword">and</span> `addtime` <span class="operator">&lt;=</span> <span class="number">1557992297</span></span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> (<span class="number">1</span>) WAITING <span class="keyword">FOR</span> THIS LOCK <span class="keyword">TO</span> BE GRANTED:</span><br><span class="line">RECORD LOCKS space id <span class="number">1975</span> page <span class="keyword">no</span> <span class="number">5280</span> n bits <span class="number">1272</span> index idx_campid <span class="keyword">of</span> <span class="keyword">table</span> `promotion`.`campaignmockqueue` trx id <span class="number">161027737922</span> lock_mode X waiting</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> (<span class="number">2</span>) TRANSACTION:</span><br><span class="line">TRANSACTION <span class="number">161027729748</span>, ACTIVE <span class="number">31</span> sec inserting</span><br><span class="line">mysql tables <span class="keyword">in</span> use <span class="number">1</span>, locked <span class="number">1</span></span><br><span class="line"><span class="number">7</span> lock struct(s), heap size <span class="number">1136</span>, <span class="number">7</span> <span class="type">row</span> lock(s), undo log entries <span class="number">14</span></span><br><span class="line">MySQL thread id <span class="number">42610752</span>, OS thread handle <span class="number">139715692001024</span>, query id <span class="number">40446554260</span> <span class="number">10.43</span><span class="number">.174</span><span class="number">.209</span> promotio_e0a1 update</span><br><span class="line"><span class="comment">/*id:dfdc4b66*/</span><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `campaignmockqueue`(</span><br><span class="line">           `campaignid`, `addtime`</span><br><span class="line">        )</span><br><span class="line">        <span class="keyword">VALUES</span></span><br><span class="line">          </span><br><span class="line">            (<span class="number">52327709</span>, <span class="number">1557992297</span>)</span><br><span class="line">         , </span><br><span class="line">            (<span class="number">52327709</span>, <span class="number">1559383140</span>)</span><br><span class="line">         , </span><br><span class="line">            (<span class="number">52327709</span>, <span class="number">1557992296</span>)</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> (<span class="number">2</span>) HOLDS THE LOCK(S):</span><br><span class="line">RECORD LOCKS space id <span class="number">1975</span> page <span class="keyword">no</span> <span class="number">5280</span> n bits <span class="number">1272</span> index idx_campid <span class="keyword">of</span> <span class="keyword">table</span> `promotion`.`campaignmockqueue` trx id <span class="number">161027729748</span> lock_mode X locks rec but <span class="keyword">not</span> gap</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> (<span class="number">2</span>) WAITING <span class="keyword">FOR</span> THIS LOCK <span class="keyword">TO</span> BE GRANTED:</span><br><span class="line">RECORD LOCKS space id <span class="number">1975</span> page <span class="keyword">no</span> <span class="number">5271</span> n bits <span class="number">1272</span> index idx_campid <span class="keyword">of</span> <span class="keyword">table</span> `promotion`.`campaignmockqueue` trx id <span class="number">161027729748</span> lock_mode X locks gap before rec <span class="keyword">insert</span> intention waiting</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> WE ROLL BACK TRANSACTION (<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
-<p>如果看不懂日志，可以参考 <a href="https://blog.csdn.net/sun_ashe/article/details/88381576">这个文章</a></p>
-<p>我们先来看看 <strong>事务1</strong> 和<strong>事务2</strong> 分别持有什么锁，又在等待什么锁。由于日志是在事务 1 的角度来打印的，所以我们只能看到事务 2 持有 <code>lock_mode X locks rec but not gap</code> 锁，在等待 <code>lock_mode X locks gap before rec insert intention</code> 锁。</p>
-<blockquote>
-<p><code>lock_mode X locks rec but not gap</code> 就是写记录锁，只锁了单条记录。</p>
-<p> <code>lock_mode X locks gap before rec insert intention</code>  就是一个插入意向锁，目标是在对应的间隙上（不包括记录本身）加锁。</p>
-</blockquote>
-<p>通过事务 2 的锁信息我们可以推测出事务 1 的锁持有信息，因此就有了下面的图。</p>
-<p>事务 1 当前拥有的应该是间隙 A 和 记录X 组成的 nexy-key 锁 ，现在正在等待的是间隙 b 的锁。</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">DELETE</span> <span class="keyword">FROM</span> `campaignmockqueue` <span class="keyword">WHERE</span> `campaignid`<span class="operator">=</span><span class="number">52327710</span> <span class="keyword">and</span> `addtime` <span class="operator">&lt;=</span> <span class="number">1557992297</span></span><br></pre></td></tr></table></figure>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/20190517142816.png" alt=""></p>
-<p>事务 2 当前拥有的应该是 记录 Y 的 X锁， 间隙 D 的插入意向锁， 间隙 C 的插入意向锁 ，现在正在等待的是间隙 e 的 间隙插入意向锁（也有可能是 记录 Y 的 record lock）。</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `campaignmockqueue`(`campaignid`, `addtime` )<span class="keyword">VALUES</span> (<span class="number">52327709</span>, <span class="number">1557992297</span>) , (<span class="number">52327709</span>, <span class="number">1559383140</span>), (<span class="number">52327709</span>, <span class="number">1557992296</span>)</span><br></pre></td></tr></table></figure>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/20190516203451.png" alt=""></p>
-<p> 由于 next-key 锁 和 插入意向锁互斥，所以事务 1 在等待事务 2 释放 C, Y, D；事务 2 在等待事务 1 释放 A。 这样看来正好符合 InnoDB 中的 log。</p>
-<h1 id="模拟流程"><a href="#模拟流程" class="headerlink" title="模拟流程"></a>模拟流程</h1><p>个人认为 由于 next-key 锁和 Gap 锁不是一种锁，因此必然存在时间差，这种时间差在并发量很大的情况下才会凸显出来。</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th style="text-align:left">事务1</th>
-<th>事务2</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left"></td>
-<td>INSERT INTO <code>campaignmockqueue</code> 记录 Y</td>
-</tr>
-<tr>
-<td style="text-align:left">DELETE FROM <code>campaignmockqueue</code> 获取了 A 的间隙锁还没获取 next-key  锁</td>
-<td></td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td>INSERT INTO <code>campaignmockqueue</code>(<code>campaignid</code>, <code>addtime</code> )VALUES (52327709, 1557992297) , (52327709, 1559383140), (52327709, 1557992296) （阻塞）</td>
-</tr>
-<tr>
-<td style="text-align:left">DELETE FROM <code>campaignmockqueue</code> 获取 next-key  锁 （阻塞）</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h1 id="验证猜想"><a href="#验证猜想" class="headerlink" title="验证猜想"></a>验证猜想</h1><p>上面的情况仅仅是推测，如果我们能拿到 INSERT 语句角度的死锁日志就好了。搜寻了一下 InnoDB 日志，得到了下面的日志，通过交叉分析，可以验证了我们的猜想。</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">------------------------</span><br><span class="line">LATEST DETECTED DEADLOCK</span><br><span class="line">------------------------</span><br><span class="line">2019-05-16 03:02:36 0x7f11eebd8700</span><br><span class="line">*** (1) TRANSACTION:</span><br><span class="line">TRANSACTION 161022641521, ACTIVE 0 sec inserting</span><br><span class="line">mysql tables in use 1, locked 1</span><br><span class="line">LOCK WAIT 5 lock struct(s), heap size 1136, 3 row lock(s), undo log entries 2</span><br><span class="line">MySQL thread id 42518313, OS thread handle 139715027216128, query id 40270385508 10.7.224.35 promotio_e0a1 update</span><br><span class="line">&#x2F;*id:dfdc4b66*&#x2F;INSERT INTO &#96;campaignmockqueue&#96;(</span><br><span class="line">&#96;campaignid&#96;, &#96;addtime&#96;</span><br><span class="line">)</span><br><span class="line">VALUES</span><br><span class="line"></span><br><span class="line">(52247612, 1557946956)</span><br><span class="line">, </span><br><span class="line">(52247612, 1557936000)</span><br><span class="line">, </span><br><span class="line">(52247612, 1558022399)</span><br><span class="line">*** (1) WAITING FOR THIS LOCK TO BE GRANTED:</span><br><span class="line">RECORD LOCKS space id 1975 page no 4904 n bits 1264 index addtime of table &#96;promotion&#96;.&#96;campaignmockqueue&#96; trx id 161022641521 lock_mode X locks gap before rec insert intention waiting</span><br><span class="line">*** (2) TRANSACTION:</span><br><span class="line">TRANSACTION 161022641523, ACTIVE 0 sec fetching rows</span><br><span class="line">mysql tables in use 1, locked 1</span><br><span class="line">4 lock struct(s), heap size 1136, 3 row lock(s), undo log entries 1</span><br><span class="line">MySQL thread id 42543917, OS thread handle 139714996569856, query id 40270385509 10.7.23.224 promotio_e0a1 updating</span><br><span class="line">&#x2F;*id:6d7cc9a7*&#x2F;DELETE FROM &#96;campaignmockqueue&#96; WHERE &#96;campaignid&#96;&#x3D;52247612 and &#96;addtime&#96; &lt;&#x3D; 1557946956</span><br><span class="line">*** (2) HOLDS THE LOCK(S):</span><br><span class="line">RECORD LOCKS space id 1975 page no 4904 n bits 1264 index addtime of table &#96;promotion&#96;.&#96;campaignmockqueue&#96; trx id 161022641523 lock_mode X</span><br><span class="line">*** (2) WAITING FOR THIS LOCK TO BE GRANTED:</span><br><span class="line">RECORD LOCKS space id 1975 page no 4904 n bits 1264 index addtime of table &#96;promotion&#96;.&#96;campaignmockqueue&#96; trx id 161022641523 lock_mode X waiting</span><br><span class="line">*** WE ROLL BACK TRANSACTION (2)</span><br></pre></td></tr></table></figure>
-<h1 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h1><p>DELETE FROM <code>campaignmockqueue</code> 不使用 <code>idx_campid</code> 这个索引加锁，而使用唯一主键来做操作，和 insert 操作使用不同的索引，来避免这个问题。</p>
-<h1 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h1><ol>
-<li><a href="http://hedengcheng.com/?p=771#_Toc374698311">何登成的技术博客 » MySQL 加锁处理分析</a></li>
-<li><a href="https://my.oschina.net/hebaodan/blog/1835966">mysql并发insert死锁问题——gap、插入意向锁冲突 - hebaodan的博客 - OSCHINA</a></li>
-<li><a href="https://jacobchang.cn/lock-of-mysql.html#%E8%AF%BB%E5%86%99%E6%84%8F%E5%90%91%E9%94%81">MySQL 中的锁 [ 黄小豆的博客 ]</a></li>
-<li><a href="https://www.aneasystone.com/archives/2018/06/insert-locks-via-mysql-source-code.html">读 MySQL 源码再看 INSERT 加锁流程 - aneasystone’s blog</a></li>
-<li><a href="https://blog.csdn.net/sun_ashe/article/details/88381576">Innodb死锁日志分段解读-如何阅读死锁日志 - 奎因&amp;华洛 - CSDN博客</a></li>
-<li><a href="http://www.fordba.com/lock-analyse-of-delete.html">MySQL DELETE 删除语句加锁分析 | | For DBA</a></li>
-</ol>
-]]></content>
-      <categories>
-        <category>技术</category>
-      </categories>
-      <tags>
-        <tag>tech</tag>
-        <tag>MySQL</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>理解VisualVM中的保留大小(Retained Size)</title>
-    <url>/meaning-of-retained-size.html</url>
-    <content><![CDATA[<p>是否在各种内存分析工具中看到过保留大小的概念呐，保留大小到底代表着什么？<br>保留大小代表着实例本事和引用的对象的总大小吗？</p>
-<span id="more"></span>
-<h2 id="Shallow-Size-and-Retained-Size"><a href="#Shallow-Size-and-Retained-Size" class="headerlink" title="Shallow Size and Retained Size"></a>Shallow Size and Retained Size</h2><p>Shallow Size and Retained Size 的含义都是指的实例对象，不是类本身。</p>
-<p>下面将用 sampleClass 表示类Sample的一个实例（instance）</p>
-<h3 id="Shallow-Size-含义"><a href="#Shallow-Size-含义" class="headerlink" title="Shallow Size 含义"></a>Shallow Size 含义</h3><p>Shallow Size 就是对象本身所占用的大小，不包括其引用的对象。</p>
-<p>举个例子：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SampleClass</span> </span>&#123;</span><br><span class="line">    <span class="comment">// age 属于 Shallow Size</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> age = <span class="number">1</span>;</span><br><span class="line">    <span class="comment">// String 类型引用本身 name 属于 Shallow Size，</span></span><br><span class="line">    <span class="comment">// 被引用对象 &quot;SOME_STRING&quot; 不属于 Sample 的实例Shallow Size</span></span><br><span class="line">    <span class="keyword">private</span> String name = SOME_STRING;</span><br><span class="line">    <span class="comment">// 数组所有内容都属于 Shallow Size</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span>[] ids = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="Retained-Size-含义"><a href="#Retained-Size-含义" class="headerlink" title="Retained Size 含义"></a>Retained Size 含义</h3><h4 id="针对可达对象"><a href="#针对可达对象" class="headerlink" title="针对可达对象"></a>针对可达对象</h4><p>可达对象就是说，从 GC roots 开始搜索，能够到达的对象，也就是说下一次GC不会被清理的对象，采用下面的计算方法来得到 Retained Size 对象</p>
-<p>Retained Size的含义相对于Shallow Size 不太好理解。依然是上面的例子，在不同的情况下，sampleClass 的Retained Size 并不相同。下面引用StackOverFlow上的一个<a href="https://stackoverflow.com/questions/23941688/yourkit-the-retained-size-of-an-object-doesnt-equal-the-retained-size-of-all">回答</a>来解释这个问题。</p>
-<blockquote>
-<p><strong>Retained size</strong> of an object is its shallow size plus the shallow sizes of the objects that are accessible, directly or indirectly, only from this object. In other words, the retained size represents the amount of memory that will be freed by the garbage collector when this object is collected.</p>
-</blockquote>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2cp92ho4j30p00fd0v3.jpg" alt="图一"></p>
-<p>上图应该比较容易理解，看起来每个对象的Retained Size 都符合公式（ Retained Size = Shallow Size + 直接子对象的 Retained Size），并没有什么问题，然后我们看另外一种引用关系中，Obj1 的Retained Size 就会发生变化。</p>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2cpvt71gj30p00jc76z.jpg" alt="图二"></p>
-<p>第二种图中，你会发现Obj2的Retained Size 不再符合我们刚刚总结出来的公式，这是因为Obj2的直接子对象Obj5还被Obj6所引用，造成的结果就是，如果Obj2被回收，Obj5并不会被回收，所以 Obj2 的Retained Size就不应该包括 Obj5 的Retained Size. 虽然 Obj2 的 Retained Size 发生了变化，但是 Obj1 的 Retained Size 并没有发生变化。</p>
-<h4 id="针对不可达对象"><a href="#针对不可达对象" class="headerlink" title="针对不可达对象"></a>针对不可达对象</h4><p>指的是下一次 GC 会被清理的对象，也就是说没有其他对象引用自己的对象。</p>
-<p>如果你尝试使用 VisualVM 分析dump文件的时候，你会发现有些对象的 Retained Size 居然是0，这个0就推翻了上面那种分析方法的的结论，觉得无论什么样的对象肯定是会有 Shallow Size 的，不可能为0。</p>
-<p>通过分析最后可以这样理解：针对不可达对象，也就是可以完全被清除的对象，Retained Size 都是0</p>
-<h2 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h2><h3 id="理解误区"><a href="#理解误区" class="headerlink" title="理解误区"></a>理解误区</h3><p>好多人是简单的将保留大小描述为，<code>该对象本身和其直接引用或者间接引用的对象的大小的总和</code>。这种理解是片面的，就像上面例子中的 Obj2 一样，如果按照这种理解就会得到错误的结论。</p>
-<h3 id="如何在-VisualVM-中计算保留大小（Retained-Size）"><a href="#如何在-VisualVM-中计算保留大小（Retained-Size）" class="headerlink" title="如何在 VisualVM 中计算保留大小（Retained Size）"></a>如何在 VisualVM 中计算保留大小（Retained Size）</h3><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2d8odqlmj31kw0a1ac9.jpg" alt=""></p>
-<h3 id="一些-Retained-Size-为-0-的例子"><a href="#一些-Retained-Size-为-0-的例子" class="headerlink" title="一些 Retained Size 为 0 的例子"></a>一些 Retained Size 为 0 的例子</h3><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2d9wrsm0j30ny074dgj.jpg" alt=""></p>
-]]></content>
-      <categories>
-        <category>技术</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>JVM</tag>
-        <tag>tech</tag>
       </tags>
   </entry>
   <entry>
@@ -915,160 +844,74 @@ f(n-1)+f(n-2),\quad x>2
       </tags>
   </entry>
   <entry>
-    <title>JVM-探究（二）：JVM实验和 GC 日志解读</title>
-    <url>/experiment-on-jvm.html</url>
-    <content><![CDATA[<p>本文用于记录在学习 JVM 过程中的实验，在完成《深入理解Java虚拟机》第二版第三章中的实验的基础上，同时保证在<code>JDK1.8</code>上实验的可重复性，并且针对不同的垃圾收集器做实验扩充。在对不能在<code>JDK8</code>上重现的实验代码做了修正，在实验结果中分析了JVM的部分特性, 介绍了GC日志的解读等。<br><span id="more"></span></p>
-<h2 id="GC-日志含义"><a href="#GC-日志含义" class="headerlink" title="GC 日志含义"></a>GC 日志含义</h2><p>GC 日志理解起来十分简单，因为日志本来就是要给开发人员看的，所以设计的很直观。</p>
-<p>举个例子，我们来分别说明各个部分所代表的含义：</p>
-<p><code>[GC (Allocation Failure) [ParNew: 7989K-&gt;424K(9216K), 0.0037834 secs] 7989K-&gt;6568K(19456K), 0.0038147 secs] [Times: user=0.02 sys=0.00, real=0.00 secs]</code></p>
-<p>将上面 GC 日志抽象为各个部分，然后我们再分别说明各个部分的含义</p>
-<p><code>[a(b)[c:d-&gt;e(f), g secs] h-&gt;i(j), k secs] [Times: user:l sys=m, real=n secs]</code></p>
-<p>a: GC 或者是 Full GC， 这里引用一句话</p>
+    <title>线上死锁分析解决纪实</title>
+    <url>/record-of-deadlock-analytics.html</url>
+    <content><![CDATA[<p>服务发生死锁，死锁检测时间较长，31s后死锁检测出来事务才得以回滚，期间不断有相同请求进来，造成死锁越来越复杂，并且服务端线程池中的所有线程都在等待锁，最后造成服务端线程池无空闲线程，拒绝服务。</p>
+<p><strong>注意：单条 SQL 也是一个事务，也会和其他事务发生死锁。</strong></p>
+<span id="more"></span>
+<h1 id="原因分析"><a href="#原因分析" class="headerlink" title="原因分析"></a>原因分析</h1><p>首先奉上 InnoDB 日志 和 DDL</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `campaignmockqueue` (</span><br><span class="line">  `id` <span class="type">int</span>(<span class="number">10</span>) unsigned <span class="keyword">NOT</span> <span class="keyword">NULL</span> AUTO_INCREMENT,</span><br><span class="line">  `campaignid` <span class="type">int</span>(<span class="number">10</span>) unsigned <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  `addtime` <span class="type">int</span>(<span class="number">10</span>) unsigned <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  <span class="keyword">PRIMARY</span> KEY (`id`),</span><br><span class="line">  KEY `idx_campid` (`campaignid`),</span><br><span class="line">  KEY `addtime` (`addtime`)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB AUTO_INCREMENT<span class="operator">=</span><span class="number">1065620134</span> <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="comment">------------------------</span></span><br><span class="line">LATEST DETECTED DEADLOCK</span><br><span class="line"><span class="comment">------------------------</span></span><br><span class="line"><span class="number">2019</span><span class="number">-05</span><span class="number">-16</span> <span class="number">15</span>:<span class="number">38</span>:<span class="number">17</span> <span class="number">0x7f121830f700</span></span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> (<span class="number">1</span>) TRANSACTION:</span><br><span class="line">TRANSACTION <span class="number">161027737922</span>, ACTIVE <span class="number">0</span> sec fetching <span class="keyword">rows</span></span><br><span class="line">mysql tables <span class="keyword">in</span> use <span class="number">1</span>, locked <span class="number">1</span></span><br><span class="line">LOCK WAIT <span class="number">88</span> lock struct(s), heap size <span class="number">24784</span>, <span class="number">1412</span> <span class="type">row</span> lock(s), undo log entries <span class="number">2</span></span><br><span class="line">MySQL thread id <span class="number">42610991</span>, OS thread handle <span class="number">139701841643264</span>, query id <span class="number">40446554160</span> <span class="number">10.7</span><span class="number">.23</span><span class="number">.224</span> promotio_e0a1 updating</span><br><span class="line"><span class="comment">/*id:6d7cc9a7*/</span><span class="keyword">DELETE</span> <span class="keyword">FROM</span> `campaignmockqueue` <span class="keyword">WHERE</span> `campaignid`<span class="operator">=</span><span class="number">52327710</span> <span class="keyword">and</span> `addtime` <span class="operator">&lt;=</span> <span class="number">1557992297</span></span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> (<span class="number">1</span>) WAITING <span class="keyword">FOR</span> THIS LOCK <span class="keyword">TO</span> BE GRANTED:</span><br><span class="line">RECORD LOCKS space id <span class="number">1975</span> page <span class="keyword">no</span> <span class="number">5280</span> n bits <span class="number">1272</span> index idx_campid <span class="keyword">of</span> <span class="keyword">table</span> `promotion`.`campaignmockqueue` trx id <span class="number">161027737922</span> lock_mode X waiting</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> (<span class="number">2</span>) TRANSACTION:</span><br><span class="line">TRANSACTION <span class="number">161027729748</span>, ACTIVE <span class="number">31</span> sec inserting</span><br><span class="line">mysql tables <span class="keyword">in</span> use <span class="number">1</span>, locked <span class="number">1</span></span><br><span class="line"><span class="number">7</span> lock struct(s), heap size <span class="number">1136</span>, <span class="number">7</span> <span class="type">row</span> lock(s), undo log entries <span class="number">14</span></span><br><span class="line">MySQL thread id <span class="number">42610752</span>, OS thread handle <span class="number">139715692001024</span>, query id <span class="number">40446554260</span> <span class="number">10.43</span><span class="number">.174</span><span class="number">.209</span> promotio_e0a1 update</span><br><span class="line"><span class="comment">/*id:dfdc4b66*/</span><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `campaignmockqueue`(</span><br><span class="line">           `campaignid`, `addtime`</span><br><span class="line">        )</span><br><span class="line">        <span class="keyword">VALUES</span></span><br><span class="line">          </span><br><span class="line">            (<span class="number">52327709</span>, <span class="number">1557992297</span>)</span><br><span class="line">         , </span><br><span class="line">            (<span class="number">52327709</span>, <span class="number">1559383140</span>)</span><br><span class="line">         , </span><br><span class="line">            (<span class="number">52327709</span>, <span class="number">1557992296</span>)</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> (<span class="number">2</span>) HOLDS THE LOCK(S):</span><br><span class="line">RECORD LOCKS space id <span class="number">1975</span> page <span class="keyword">no</span> <span class="number">5280</span> n bits <span class="number">1272</span> index idx_campid <span class="keyword">of</span> <span class="keyword">table</span> `promotion`.`campaignmockqueue` trx id <span class="number">161027729748</span> lock_mode X locks rec but <span class="keyword">not</span> gap</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> (<span class="number">2</span>) WAITING <span class="keyword">FOR</span> THIS LOCK <span class="keyword">TO</span> BE GRANTED:</span><br><span class="line">RECORD LOCKS space id <span class="number">1975</span> page <span class="keyword">no</span> <span class="number">5271</span> n bits <span class="number">1272</span> index idx_campid <span class="keyword">of</span> <span class="keyword">table</span> `promotion`.`campaignmockqueue` trx id <span class="number">161027729748</span> lock_mode X locks gap before rec <span class="keyword">insert</span> intention waiting</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> WE ROLL BACK TRANSACTION (<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+<p>如果看不懂日志，可以参考 <a href="https://blog.csdn.net/sun_ashe/article/details/88381576">这个文章</a></p>
+<p>我们先来看看 <strong>事务1</strong> 和<strong>事务2</strong> 分别持有什么锁，又在等待什么锁。由于日志是在事务 1 的角度来打印的，所以我们只能看到事务 2 持有 <code>lock_mode X locks rec but not gap</code> 锁，在等待 <code>lock_mode X locks gap before rec insert intention</code> 锁。</p>
 <blockquote>
-<p>“GC日志开头的“[GC”和“[Full GC”说明了这次垃圾收集的停顿类型，而不是用来区分新生代GC还是老年代GC的。如果有“Full”，说明这次GC是发生了Stop-The-World的”</p>
-<p>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
+<p><code>lock_mode X locks rec but not gap</code> 就是写记录锁，只锁了单条记录。</p>
+<p> <code>lock_mode X locks gap before rec insert intention</code>  就是一个插入意向锁，目标是在对应的间隙上（不包括记录本身）加锁。</p>
 </blockquote>
-<p>b: 用来说明发生这次 GC 的原因，我们例子中发生这次GC的原因是内存分配失败</p>
-<p>c: 表示发生GC的区域，这里表示是新生代发生了GC，上面那个例子是因为在新生代中内存不够给新对象分配了，然后触发了 GC  </p>
-<p>d: GC 之前该区域已使用的容量</p>
-<p>e: GC 之后该区域已使用的容量</p>
-<p>f: 该内存区域的总容量</p>
-<p>g: 表示该区域这次 GC 使用的时间</p>
-<p>h: 表示 GC 前整个堆的已使用容量</p>
-<p>i: 表示 GC 后整个堆的已使用容量</p>
-<p>j: 表示 Java 堆的总容量</p>
-<p>k: 表示 Java堆 这次 GC 使用的时间</p>
-<p>l: 代表用户态消耗的 CPU 时间</p>
-<p>m: 代表内核态消耗的 CPU 时间</p>
-<p>n: 整个 GC 事件从开始到结束的墙钟时间（Wall Clock Time）</p>
-<blockquote>
-<p>“CPU时间与墙钟时间的区别是，墙钟时间包括各种非运算的等待耗时，例如等待磁盘I/O、等待线程阻塞，而CPU时间不包括这些耗时，但当系统有多CPU或者多核的话，多线程操作会叠加这些CPU时间，所以读者看到user或sys时间超过real时间是完全正常的。”</p>
-<p>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
-</blockquote>
-<h2 id="名词解释"><a href="#名词解释" class="headerlink" title="名词解释"></a>名词解释</h2><blockquote>
-<p>“<strong>新生代GC（Minor GC)</strong>：指发生在新生代的垃圾收集动作，因为Java对象大多都具备朝生夕灭的特性，所以Minor GC非常频繁，一般回收速度也比较快。</p>
-<p><strong>老年代GC（Major GC/Full GC）</strong>：指发生在老年代的GC，出现了Major GC，经常会伴随至少一次的Minor GC（但非绝对的，在Parallel Scavenge收集器的收集策略里就有直接进行Major GC的策略选择过程）。Major GC的速度一般会比Minor GC慢10倍以上。”</p>
-<p>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
-</blockquote>
-<h2 id="常用垃圾收集器参数"><a href="#常用垃圾收集器参数" class="headerlink" title="常用垃圾收集器参数"></a>常用垃圾收集器参数</h2><div class="table-container">
+<p>通过事务 2 的锁信息我们可以推测出事务 1 的锁持有信息，因此就有了下面的图。</p>
+<p>事务 1 当前拥有的应该是间隙 A 和 记录X 组成的 nexy-key 锁 ，现在正在等待的是间隙 b 的锁。</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">DELETE</span> <span class="keyword">FROM</span> `campaignmockqueue` <span class="keyword">WHERE</span> `campaignid`<span class="operator">=</span><span class="number">52327710</span> <span class="keyword">and</span> `addtime` <span class="operator">&lt;=</span> <span class="number">1557992297</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/20190517142816.png" alt=""></p>
+<p>事务 2 当前拥有的应该是 记录 Y 的 X锁， 间隙 D 的插入意向锁， 间隙 C 的插入意向锁 ，现在正在等待的是间隙 e 的 间隙插入意向锁（也有可能是 记录 Y 的 record lock）。</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `campaignmockqueue`(`campaignid`, `addtime` )<span class="keyword">VALUES</span> (<span class="number">52327709</span>, <span class="number">1557992297</span>) , (<span class="number">52327709</span>, <span class="number">1559383140</span>), (<span class="number">52327709</span>, <span class="number">1557992296</span>)</span><br></pre></td></tr></table></figure>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/20190516203451.png" alt=""></p>
+<p> 由于 next-key 锁 和 插入意向锁互斥，所以事务 1 在等待事务 2 释放 C, Y, D；事务 2 在等待事务 1 释放 A。 这样看来正好符合 InnoDB 中的 log。</p>
+<h1 id="模拟流程"><a href="#模拟流程" class="headerlink" title="模拟流程"></a>模拟流程</h1><p>个人认为 由于 next-key 锁和 Gap 锁不是一种锁，因此必然存在时间差，这种时间差在并发量很大的情况下才会凸显出来。</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
-<th>参数</th>
-<th style="text-align:left">描述</th>
+<th style="text-align:left">事务1</th>
+<th>事务2</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>UseSerialGC</td>
-<td style="text-align:left">虚拟机在运行在 Client 模式下的默认值，打开此开关后，使用 Serial+Serial Old 收集器组合进行内存回收</td>
+<td style="text-align:left"></td>
+<td>INSERT INTO <code>campaignmockqueue</code> 记录 Y</td>
 </tr>
 <tr>
-<td>UseParNewGC</td>
-<td style="text-align:left">使用 ParNew + Serial Old 收集器组合进行内存回收</td>
+<td style="text-align:left">DELETE FROM <code>campaignmockqueue</code> 获取了 A 的间隙锁还没获取 next-key  锁</td>
+<td></td>
 </tr>
 <tr>
-<td>UseConcMarkSweepGC</td>
-<td style="text-align:left">使用 ParNew + CMS + Serial Old 的收集器组合进行内存回收，当 CMS 出现 Concurrent Mode Failure 失败后会使用 Serial Old 作为备用收集器</td>
+<td style="text-align:left"></td>
+<td>INSERT INTO <code>campaignmockqueue</code>(<code>campaignid</code>, <code>addtime</code> )VALUES (52327709, 1557992297) , (52327709, 1559383140), (52327709, 1557992296) （阻塞）</td>
 </tr>
 <tr>
-<td>UseParallelOldGC</td>
-<td style="text-align:left">使用 Parallel Scavenge + Parallel Old 的收集器组合</td>
-</tr>
-<tr>
-<td>UseParallelGC</td>
-<td style="text-align:left">使用 Parallel Scavenge + Serial Old （PS MarkSweep）的收集器组合</td>
-</tr>
-<tr>
-<td>SurvivorRatio</td>
-<td style="text-align:left">新生代中 Eden 和任何一个 Survivor 区域的容量比值，默认为 8</td>
-</tr>
-<tr>
-<td>PretenureSizeThreshold</td>
-<td style="text-align:left">直接晋升到老年代对象的大小，单位是Byte</td>
-</tr>
-<tr>
-<td>MaxTenuringThreshold</td>
-<td style="text-align:left">晋升到老年代的对象最大年龄</td>
-</tr>
-<tr>
-<td>UseAdaptiveSizePolicy</td>
-<td style="text-align:left">动态调整 Java 堆中各区域的大小以及进入老年代的年龄</td>
-</tr>
-<tr>
-<td>HandlePromotionFailure</td>
-<td style="text-align:left">是否允许分配担保失败</td>
-</tr>
-<tr>
-<td>ParallelGCThreads</td>
-<td style="text-align:left">设置并行 GC 时进行内存回收的线程数</td>
-</tr>
-<tr>
-<td>GCTimeRatio</td>
-<td style="text-align:left">GC 时间站占时间的比率，默认值为99，只在 Parallel Scavenge 收集器的时候生效</td>
-</tr>
-<tr>
-<td>MaxGCPauseMillis</td>
-<td style="text-align:left">设置 GC 最大的停顿时间，只在 Parallel Scavenge 收集器的时候生效</td>
-</tr>
-<tr>
-<td>CMSInitiatingOccupancyFraction</td>
-<td style="text-align:left">设置 CMS 收集器在老年代空间被使用多少后触发垃圾收集，默认是 68%，仅在 CMS 收集器上生效</td>
-</tr>
-<tr>
-<td>CMSFullGCsBeforeCompaction</td>
-<td style="text-align:left">设置 CMS 收集器在进行多少次垃圾回收之后启动一次内存碎片整理</td>
+<td style="text-align:left">DELETE FROM <code>campaignmockqueue</code> 获取 next-key  锁 （阻塞）</td>
 </tr>
 </tbody>
 </table>
 </div>
-<blockquote>
-<p>注：上表摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”，稍有调整.</p>
-</blockquote>
-<h2 id="实验代码"><a href="#实验代码" class="headerlink" title="实验代码"></a>实验代码</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.coderbean.jvm;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Created by jacobchang on 2017/11/20.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestAllocation</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> _1MB = <span class="number">1024</span>*<span class="number">1024</span>;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * VM参数：（参数序号对应实验序号）</span></span><br><span class="line"><span class="comment">     *  1. -verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+UseParNewGC -XX:+PrintGCDetails -XX:SurvivorRatio=8</span></span><br><span class="line"><span class="comment">     *  2. -verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+UseParallelGC -XX:+PrintGCDetails -XX:SurvivorRatio=8</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testAllocation</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">byte</span>[] allocation1, allocation2, allocation3, allocation4;</span><br><span class="line">        allocation1 = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">2</span>*_1MB];</span><br><span class="line">        allocation2 = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">2</span>*_1MB];</span><br><span class="line">        allocation3 = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">2</span>*_1MB];</span><br><span class="line">        allocation4 = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span>*_1MB]; <span class="comment">//出现一次 Minor GC</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * VM参数：（参数序号对应实验序号）</span></span><br><span class="line"><span class="comment">     *  3. -verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+UseParNewGC -XX:+PrintGCDetails -XX:PretenureSizeThreshold=3145728</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testPreteureSizeThreshold</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">byte</span>[] allocation;</span><br><span class="line">        allocation = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * VM参数：（参数序号对应实验序号）</span></span><br><span class="line"><span class="comment">     *  4. -verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+UseSerialGC -XX:+PrintGCDetails -XX:MaxTenuringThreshold=1 -XX:+PrintTenuringDistribution</span></span><br><span class="line"><span class="comment">     *  5. -verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+UseSerialGC -XX:+PrintGCDetails -XX:MaxTenuringThreshold=4 -XX:+PrintTenuringDistribution</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@SuppressWarnings(&quot;unused&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testTenuringThredhold</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">byte</span>[] allocation1, allocation2, allocation3, allocation4;</span><br><span class="line">        allocation1 = <span class="keyword">new</span> <span class="keyword">byte</span>[_1MB / <span class="number">16</span>];</span><br><span class="line">        allocation3 = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">        allocation4 = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">        allocation4 = <span class="keyword">null</span>;</span><br><span class="line">        allocation4 = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * VM参数：（参数序号对应实验序号）</span></span><br><span class="line"><span class="comment">     *  6. -verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+UseSerialGC -XX:+PrintGCDetails -XX:MaxTenuringThreshold=4 -XX:+PrintTenuringDistribution</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     *  如果在Survivor空间中相同年龄所有对象大小的总和&gt;Survivor空间的一半（ -XX:TargetSurvivorRatio）时，年龄&gt;=该年龄的对象就可以直接进入年老代</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@SuppressWarnings(&quot;unused&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testTenuringThredhold2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">byte</span>[] allocation1, allocation2, allocation3, allocation4;</span><br><span class="line">        allocation1 = <span class="keyword">new</span> <span class="keyword">byte</span>[_1MB / <span class="number">4</span>];</span><br><span class="line">        allocation3 = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">        allocation4 = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">        allocation4 = <span class="keyword">null</span>;</span><br><span class="line">        allocation4 = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h2 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h2><h3 id="实验一：使用ParNew-Serial-Old的组合进行内存回收"><a href="#实验一：使用ParNew-Serial-Old的组合进行内存回收" class="headerlink" title="实验一：使用ParNew+Serial Old的组合进行内存回收"></a>实验一：使用<code>ParNew</code>+<code>Serial Old</code>的组合进行内存回收</h3><p><strong>对象优先在 Eden 区分配</strong></p>
-<h4 id="实验结果："><a href="#实验结果：" class="headerlink" title="实验结果："></a>实验结果：</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[GC (Allocation Failure) [ParNew: 7989K-&gt;424K(9216K), 0.0037834 secs] 7989K-&gt;6568K(19456K), 0.0038147 secs] [Times: user&#x3D;0.02 sys&#x3D;0.00, real&#x3D;0.00 secs]</span><br><span class="line">Heap</span><br><span class="line"> par new generation   total 9216K, used 4685K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)</span><br><span class="line">  eden space 8192K,  52% used [0x00000007bec00000, 0x00000007bf0290f0, 0x00000007bf400000)</span><br><span class="line">  from space 1024K,  41% used [0x00000007bf500000, 0x00000007bf56a3a8, 0x00000007bf600000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000007bf400000, 0x00000007bf400000, 0x00000007bf500000)</span><br><span class="line"> tenured generation   total 10240K, used 6144K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)</span><br><span class="line">   the space 10240K,  60% used [0x00000007bf600000, 0x00000007bfc00030, 0x00000007bfc00200, 0x00000007c0000000)</span><br><span class="line"> Metaspace       used 3242K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 359K, capacity 388K, committed 512K, reserved 1048576K</span><br><span class="line"></span><br><span class="line">Process finished with exit code 0</span><br></pre></td></tr></table></figure>
-<h4 id="实验分析："><a href="#实验分析：" class="headerlink" title="实验分析："></a>实验分析：</h4><p> 通过上面的GC日志我们可以看出一开始出现了 MinorGC, 引起GC的原因是 <code>内存分配失败</code>，因为分配allocation4的时候，Eden区已经没有足够的区域来分配了，所以发生了本次 MinorGC ，经过 MinorGC 之后新生代的已使用容量从7989K减少到了424K，然而整个堆的内存总量却几乎没有减少，原因就是，由于发现新生代没有可以回收的对象，所以不得不使用内存担保将allocation1～3 三个对象提前转移到老年代。此时再在 Eden 区域为 allocation4 分配 4MB 的空间，因此最后我们发现 Eden 区域占用了 4MB，老年代占用了 6MB</p>
-<h3 id="实验二：使用Parallel-Scavenge-Serial-Old的组合进行内存回收"><a href="#实验二：使用Parallel-Scavenge-Serial-Old的组合进行内存回收" class="headerlink" title="实验二：使用Parallel Scavenge+Serial Old的组合进行内存回收"></a>实验二：使用<code>Parallel Scavenge</code>+<code>Serial Old</code>的组合进行内存回收</h3><p><strong>对象优先在 Eden 区分配</strong></p>
-<h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4> <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Heap</span><br><span class="line">PSYoungGen      total 9216K, used 8192K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)</span><br><span class="line"> eden space 8192K, 100% used [0x00000007bf600000,0x00000007bfe00000,0x00000007bfe00000)</span><br><span class="line"> from space 1024K, 0% used [0x00000007bff00000,0x00000007bff00000,0x00000007c0000000)</span><br><span class="line"> to   space 1024K, 0% used [0x00000007bfe00000,0x00000007bfe00000,0x00000007bff00000)</span><br><span class="line">ParOldGen       total 10240K, used 4096K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)</span><br><span class="line"> object space 10240K, 40% used [0x00000007bec00000,0x00000007bf000010,0x00000007bf600000)</span><br><span class="line">Metaspace       used 3311K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line"> class space    used 369K, capacity 388K, committed 512K, reserved 1048576K</span><br></pre></td></tr></table></figure>
-<h4 id="实验分析"><a href="#实验分析" class="headerlink" title="实验分析"></a>实验分析</h4><p>  第一眼看到日志惊奇的发现居然没有发生任何类型的 GC， 起初看到日志的时候我也很惊奇，于是乎请出了Java内存分析工具<code>VisualVM</code>, JDK中会自带<code>JVisualVM</code> 效果类似，可以通过命令<code>jvisualvm</code>启动，具体分析方法可以参考我的另外一篇博客<a href="http://jacobchang.cn">VisualVM使用指南</a>。</p>
-<blockquote>
-<p>注： 如果想要重现下面的分析结果，除了JVM参数要和我一直外，在程序执行过程中务必设置几个断点，好让VisualVM能够出现这种阶梯图像，不然由于执行太快，看起来就像是一次性分配了内存一样。</p>
-</blockquote>
-<p>  <img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fltm4roaulj31am11g78a.jpg" alt="堆内存占用情况分析"></p>
-<p>  通过上图中我标出的五条线，可以看到在1位置的时候第一次在Eden中分配了 2MB 内存，然后在2，3，4 时刻分别又再次分配了 2MB 内存，此时 Eden 区域已经占用了 8MB 了，在 5 时刻当要分配 4MB 内存的时候，Eden 区域已经不够用了，直接分配到了<code>老年代</code>。这是因为<code>Parallel Scavenge</code>收集器为了保证吞吐量而直接将Eden区中无法存放的大对象直接放到了老年代。</p>
-<blockquote>
-<p>注： 虚拟机参数 <code>-XX：PretenureSizeThreshold</code> 并不是实验二中的大对象分配到老年代的直接控制参数，该参数只针对 <code>Serial</code> 和 <code>ParNew</code> 两个新生代收集器有作用。 该参数的作用在下一节大对象直接进入老年代的实验中讲解。</p>
-</blockquote>
-<h4 id="使用其他收集器组合探究对象的分配情况"><a href="#使用其他收集器组合探究对象的分配情况" class="headerlink" title="使用其他收集器组合探究对象的分配情况"></a>使用其他收集器组合探究对象的分配情况</h4><p> 由于<del>篇幅有限</del>，其实是我想偷懒了（＾∇＾），各位可以参考上面的垃圾收集器参数章节，自己去验证。</p>
-<h3 id="实验三：使用参数-XX-PretenureSizeThreshold来设置直接进入老年代的对象的大小"><a href="#实验三：使用参数-XX-PretenureSizeThreshold来设置直接进入老年代的对象的大小" class="headerlink" title="实验三：使用参数-XX:PretenureSizeThreshold来设置直接进入老年代的对象的大小"></a>实验三：使用参数<code>-XX:PretenureSizeThreshold</code>来设置直接进入老年代的对象的大小</h3><p><strong>大对象直接进入老年代</strong><br>虚拟机提供一个参数 <code>-XX:PretenureSizeThreshold</code> 用来设置直接在老年代分配的对象的大小，如果对象大于这个值就会直接在老年代分配。这样做的目的是避免在<code>Eden</code>区及两个<code>Survivor</code>区之间发生大量的内存复制。</p>
-<blockquote>
-<p>“比遇到一个大对象更加坏的消息就是遇到一群“朝生夕灭”的“短命大对象”，写程序的时候应当避免”</p>
-<p>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
-</blockquote>
-<h4 id="实验结果：-1"><a href="#实验结果：-1" class="headerlink" title="实验结果："></a>实验结果：</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Heap</span><br><span class="line"> par new generation   total 9216K, used 2936K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)</span><br><span class="line">  eden space 8192K,  35% used [0x00000007bec00000, 0x00000007beede130, 0x00000007bf400000)</span><br><span class="line">  from space 1024K,   0% used [0x00000007bf400000, 0x00000007bf400000, 0x00000007bf500000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000007bf500000, 0x00000007bf500000, 0x00000007bf600000)</span><br><span class="line"> tenured generation   total 10240K, used 4096K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)</span><br><span class="line">   the space 10240K,  40% used [0x00000007bf600000, 0x00000007bfa00010, 0x00000007bfa00200, 0x00000007c0000000)</span><br><span class="line"> Metaspace       used 3278K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 364K, capacity 388K, committed 512K, reserved 1048576K</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h4 id="实验分析-1"><a href="#实验分析-1" class="headerlink" title="实验分析"></a>实验分析</h4><p> 通过上面的堆的内存占用情况很容易看出我们分配的4MB大小的对象直接被放到了老年代</p>
-<h3 id="实验四：-使用参数-XX-MaxTenuringThreshold-1来设置进入老年代的对象年龄"><a href="#实验四：-使用参数-XX-MaxTenuringThreshold-1来设置进入老年代的对象年龄" class="headerlink" title="实验四： 使用参数-XX:MaxTenuringThreshold=1来设置进入老年代的对象年龄"></a>实验四： 使用参数<code>-XX:MaxTenuringThreshold=1</code>来设置进入老年代的对象年龄</h3><p> <strong>长期存活的对象将进入老年代</strong></p>
-<h4 id="实验结果：-2"><a href="#实验结果：-2" class="headerlink" title="实验结果："></a>实验结果：</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[GC (Allocation Failure) [DefNew</span><br><span class="line">Desired survivor size 524288 bytes, new threshold 1 (max 1)</span><br><span class="line">- age   1:     749112 bytes,     749112 total</span><br><span class="line">: 6868K-&gt;731K(9216K), 0.0039484 secs] 6868K-&gt;4827K(19456K), 0.0039697 secs] [Times: user&#x3D;0.00 sys&#x3D;0.00, real&#x3D;0.00 secs]</span><br><span class="line">[GC (Allocation Failure) [DefNew</span><br><span class="line">Desired survivor size 524288 bytes, new threshold 1 (max 1)</span><br><span class="line">- age   1:       1496 bytes,       1496 total</span><br><span class="line">: 4911K-&gt;1K(9216K), 0.0012023 secs] 9007K-&gt;4706K(19456K), 0.0012150 secs] [Times: user&#x3D;0.00 sys&#x3D;0.00, real&#x3D;0.00 secs]</span><br><span class="line">Heap</span><br><span class="line"> def new generation   total 9216K, used 4316K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)</span><br><span class="line">  eden space 8192K,  52% used [0x00000007bec00000, 0x00000007bf036cc8, 0x00000007bf400000)</span><br><span class="line">  from space 1024K,   0% used [0x00000007bf400000, 0x00000007bf4005d8, 0x00000007bf500000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000007bf500000, 0x00000007bf500000, 0x00000007bf600000)</span><br><span class="line"> tenured generation   total 10240K, used 4704K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)</span><br><span class="line">   the space 10240K,  45% used [0x00000007bf600000, 0x00000007bfa98328, 0x00000007bfa98400, 0x00000007c0000000)</span><br><span class="line"> Metaspace       used 3288K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 364K, capacity 388K, committed 512K, reserved 1048576K</span><br></pre></td></tr></table></figure>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1flzag9e7m8g30go04v1l7.gif" alt="实验4"></p>
-<p>  通过上面的堆内存分配和visualGC的分析图片可以看出，当执行到最后一句话的时候，也就是进行第二次GC的时候，原本在<code>S0区域</code>的一些对象被移动到了老年代，这是因为当发生<code>MinorGC</code>的时候发现该对象的年龄已经到达我们设置的<code>MaxTenuringThreshold</code>值。</p>
-<h3 id="实验五：-使用参数-XX-MaxTenuringThreshold-4来设置进入老年代的对象年龄"><a href="#实验五：-使用参数-XX-MaxTenuringThreshold-4来设置进入老年代的对象年龄" class="headerlink" title="实验五： 使用参数-XX:MaxTenuringThreshold=4来设置进入老年代的对象年龄"></a>实验五： 使用参数<code>-XX:MaxTenuringThreshold=4</code>来设置进入老年代的对象年龄</h3><h4 id="实验结果-1"><a href="#实验结果-1" class="headerlink" title="实验结果"></a>实验结果</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[GC (Allocation Failure) [DefNew</span><br><span class="line">Desired survivor size 524288 bytes, new threshold 1 (max 4)</span><br><span class="line">- age   1:     749320 bytes,     749320 total</span><br><span class="line">: 6868K-&gt;731K(9216K), 0.0040400 secs] 6868K-&gt;4827K(19456K), 0.0040616 secs] [Times: user&#x3D;0.00 sys&#x3D;0.01, real&#x3D;0.01 secs]</span><br><span class="line">[GC (Allocation Failure) [DefNew</span><br><span class="line">Desired survivor size 524288 bytes, new threshold 4 (max 4)</span><br><span class="line">- age   1:        808 bytes,        808 total</span><br><span class="line">: 4911K-&gt;0K(9216K), 0.0012952 secs] 9007K-&gt;4706K(19456K), 0.0013076 secs] [Times: user&#x3D;0.00 sys&#x3D;0.00, real&#x3D;0.00 secs]</span><br><span class="line">Heap</span><br><span class="line"> def new generation   total 9216K, used 4315K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)</span><br><span class="line">  eden space 8192K,  52% used [0x00000007bec00000, 0x00000007bf036ca8, 0x00000007bf400000)</span><br><span class="line">  from space 1024K,   0% used [0x00000007bf400000, 0x00000007bf400328, 0x00000007bf500000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000007bf500000, 0x00000007bf500000, 0x00000007bf600000)</span><br><span class="line"> tenured generation   total 10240K, used 4706K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)</span><br><span class="line">   the space 10240K,  45% used [0x00000007bf600000, 0x00000007bfa988a8, 0x00000007bfa98a00, 0x00000007c0000000)</span><br><span class="line"> Metaspace       used 3282K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 364K, capacity 388K, committed 512K, reserved 1048576K</span><br></pre></td></tr></table></figure>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1flzag1vzrjg30gn03yb2l.gif" alt="实验5"></p>
-<h4 id="实验分析-2"><a href="#实验分析-2" class="headerlink" title="实验分析"></a>实验分析</h4><p>通过上面的日志和图片，可以看出与实验四不同的是，这里执行到最后的时候<code>S0区域</code>中的对象并没有进入到老年代而是进入了<code>S1区域</code>,因为我们把进入老年代的年龄设置为了4.</p>
-<blockquote>
-<p>注：如果没有按照我的代码写的话，你可能会发现即使把<code>MaxTenuringThreshold</code>设置为了大于1的值，但还是有可能会在一次 GC 之后就进入了老年代，这是因为进入我们设置的只是一个最大值，真正的值可能比这个值更小，是动态变化的，这种情况会在下面的实验中介绍。</p>
-</blockquote>
-<h3 id="实验六：TenuringThreshold-是动态变化的"><a href="#实验六：TenuringThreshold-是动态变化的" class="headerlink" title="实验六：TenuringThreshold 是动态变化的"></a>实验六：TenuringThreshold 是动态变化的</h3><h4 id="实验结果-2"><a href="#实验结果-2" class="headerlink" title="实验结果"></a>实验结果</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[GC (Allocation Failure) [DefNew</span><br><span class="line">Desired survivor size 524288 bytes, new threshold 1 (max 4)</span><br><span class="line">- age   1:     948816 bytes,     948816 total</span><br><span class="line">: 7123K-&gt;926K(9216K), 0.0065933 secs] 7123K-&gt;5022K(19456K), 0.0066172 secs] [Times: user&#x3D;0.00 sys&#x3D;0.01, real&#x3D;0.01 secs]</span><br><span class="line">[GC (Allocation Failure) [DefNew</span><br><span class="line">Desired survivor size 524288 bytes, new threshold 4 (max 4)</span><br><span class="line">- age   1:        464 bytes,        464 total</span><br><span class="line">: 5270K-&gt;0K(9216K), 0.0013556 secs] 9366K-&gt;4900K(19456K), 0.0013708 secs] [Times: user&#x3D;0.00 sys&#x3D;0.00, real&#x3D;0.00 secs]</span><br><span class="line">Heap</span><br><span class="line"> def new generation   total 9216K, used 4233K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)</span><br><span class="line">  eden space 8192K,  51% used [0x00000007bec00000, 0x00000007bf022570, 0x00000007bf400000)</span><br><span class="line">  from space 1024K,   0% used [0x00000007bf400000, 0x00000007bf4001d0, 0x00000007bf500000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000007bf500000, 0x00000007bf500000, 0x00000007bf600000)</span><br><span class="line"> tenured generation   total 10240K, used 4899K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)</span><br><span class="line">   the space 10240K,  47% used [0x00000007bf600000, 0x00000007bfac8f38, 0x00000007bfac9000, 0x00000007c0000000)</span><br><span class="line"> Metaspace       used 3315K, capacity 4500K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 367K, capacity 388K, committed 512K, reserved 1048576K</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fm0dsme76og30bn060hdz.gif" alt="实验结果"></p>
-<h4 id="实验分析-3"><a href="#实验分析-3" class="headerlink" title="实验分析"></a>实验分析</h4><p> 看到上面的堆信息可以看到最后<code>from</code>和<code>to</code>两个<code>Survivor</code>区域占用情况都为0，原因就是在<code>allocation1</code>被放到<code>S1</code>区域之后，由于该对象和一些附加信息的和占用了<code>S1区域</code>一半以上的空间，因为此时<code>allocation1</code>对象的年龄为1，所以此时<code>TenuringThreshold</code>的值也就变成了1，在GC的时候进入了老年代。通过上图中VisualGC左下角的<code>TenuringThreshold</code>值一直在变化也能得到验证。</p>
+<h1 id="验证猜想"><a href="#验证猜想" class="headerlink" title="验证猜想"></a>验证猜想</h1><p>上面的情况仅仅是推测，如果我们能拿到 INSERT 语句角度的死锁日志就好了。搜寻了一下 InnoDB 日志，得到了下面的日志，通过交叉分析，可以验证了我们的猜想。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">------------------------</span><br><span class="line">LATEST DETECTED DEADLOCK</span><br><span class="line">------------------------</span><br><span class="line">2019-05-16 03:02:36 0x7f11eebd8700</span><br><span class="line">*** (1) TRANSACTION:</span><br><span class="line">TRANSACTION 161022641521, ACTIVE 0 sec inserting</span><br><span class="line">mysql tables in use 1, locked 1</span><br><span class="line">LOCK WAIT 5 lock struct(s), heap size 1136, 3 row lock(s), undo log entries 2</span><br><span class="line">MySQL thread id 42518313, OS thread handle 139715027216128, query id 40270385508 10.7.224.35 promotio_e0a1 update</span><br><span class="line">&#x2F;*id:dfdc4b66*&#x2F;INSERT INTO &#96;campaignmockqueue&#96;(</span><br><span class="line">&#96;campaignid&#96;, &#96;addtime&#96;</span><br><span class="line">)</span><br><span class="line">VALUES</span><br><span class="line"></span><br><span class="line">(52247612, 1557946956)</span><br><span class="line">, </span><br><span class="line">(52247612, 1557936000)</span><br><span class="line">, </span><br><span class="line">(52247612, 1558022399)</span><br><span class="line">*** (1) WAITING FOR THIS LOCK TO BE GRANTED:</span><br><span class="line">RECORD LOCKS space id 1975 page no 4904 n bits 1264 index addtime of table &#96;promotion&#96;.&#96;campaignmockqueue&#96; trx id 161022641521 lock_mode X locks gap before rec insert intention waiting</span><br><span class="line">*** (2) TRANSACTION:</span><br><span class="line">TRANSACTION 161022641523, ACTIVE 0 sec fetching rows</span><br><span class="line">mysql tables in use 1, locked 1</span><br><span class="line">4 lock struct(s), heap size 1136, 3 row lock(s), undo log entries 1</span><br><span class="line">MySQL thread id 42543917, OS thread handle 139714996569856, query id 40270385509 10.7.23.224 promotio_e0a1 updating</span><br><span class="line">&#x2F;*id:6d7cc9a7*&#x2F;DELETE FROM &#96;campaignmockqueue&#96; WHERE &#96;campaignid&#96;&#x3D;52247612 and &#96;addtime&#96; &lt;&#x3D; 1557946956</span><br><span class="line">*** (2) HOLDS THE LOCK(S):</span><br><span class="line">RECORD LOCKS space id 1975 page no 4904 n bits 1264 index addtime of table &#96;promotion&#96;.&#96;campaignmockqueue&#96; trx id 161022641523 lock_mode X</span><br><span class="line">*** (2) WAITING FOR THIS LOCK TO BE GRANTED:</span><br><span class="line">RECORD LOCKS space id 1975 page no 4904 n bits 1264 index addtime of table &#96;promotion&#96;.&#96;campaignmockqueue&#96; trx id 161022641523 lock_mode X waiting</span><br><span class="line">*** WE ROLL BACK TRANSACTION (2)</span><br></pre></td></tr></table></figure>
+<h1 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h1><p>DELETE FROM <code>campaignmockqueue</code> 不使用 <code>idx_campid</code> 这个索引加锁，而使用唯一主键来做操作，和 insert 操作使用不同的索引，来避免这个问题。</p>
+<h1 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h1><ol>
+<li><a href="http://hedengcheng.com/?p=771#_Toc374698311">何登成的技术博客 » MySQL 加锁处理分析</a></li>
+<li><a href="https://my.oschina.net/hebaodan/blog/1835966">mysql并发insert死锁问题——gap、插入意向锁冲突 - hebaodan的博客 - OSCHINA</a></li>
+<li><a href="https://jacobchang.cn/lock-of-mysql.html#%E8%AF%BB%E5%86%99%E6%84%8F%E5%90%91%E9%94%81">MySQL 中的锁 [ 黄小豆的博客 ]</a></li>
+<li><a href="https://www.aneasystone.com/archives/2018/06/insert-locks-via-mysql-source-code.html">读 MySQL 源码再看 INSERT 加锁流程 - aneasystone’s blog</a></li>
+<li><a href="https://blog.csdn.net/sun_ashe/article/details/88381576">Innodb死锁日志分段解读-如何阅读死锁日志 - 奎因&amp;华洛 - CSDN博客</a></li>
+<li><a href="http://www.fordba.com/lock-analyse-of-delete.html">MySQL DELETE 删除语句加锁分析 | | For DBA</a></li>
+</ol>
 ]]></content>
       <categories>
         <category>技术</category>
       </categories>
       <tags>
-        <tag>Java</tag>
-        <tag>JVM</tag>
         <tag>tech</tag>
+        <tag>MySQL</tag>
       </tags>
   </entry>
   <entry>
@@ -1982,6 +1825,163 @@ f(n-1)+f(n-2),\quad x>2
 <li>Document： <a href="https://visualvm.github.io/documentation.html">https://visualvm.github.io/documentation.html</a></li>
 <li>GitHub 主页：<a href="https://github.com/oracle/visualvm">https://github.com/oracle/visualvm</a></li>
 </ul>
+]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>JVM</tag>
+        <tag>tech</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>JVM-探究（二）：JVM实验和 GC 日志解读</title>
+    <url>/experiment-on-jvm.html</url>
+    <content><![CDATA[<p>本文用于记录在学习 JVM 过程中的实验，在完成《深入理解Java虚拟机》第二版第三章中的实验的基础上，同时保证在<code>JDK1.8</code>上实验的可重复性，并且针对不同的垃圾收集器做实验扩充。在对不能在<code>JDK8</code>上重现的实验代码做了修正，在实验结果中分析了JVM的部分特性, 介绍了GC日志的解读等。<br><span id="more"></span></p>
+<h2 id="GC-日志含义"><a href="#GC-日志含义" class="headerlink" title="GC 日志含义"></a>GC 日志含义</h2><p>GC 日志理解起来十分简单，因为日志本来就是要给开发人员看的，所以设计的很直观。</p>
+<p>举个例子，我们来分别说明各个部分所代表的含义：</p>
+<p><code>[GC (Allocation Failure) [ParNew: 7989K-&gt;424K(9216K), 0.0037834 secs] 7989K-&gt;6568K(19456K), 0.0038147 secs] [Times: user=0.02 sys=0.00, real=0.00 secs]</code></p>
+<p>将上面 GC 日志抽象为各个部分，然后我们再分别说明各个部分的含义</p>
+<p><code>[a(b)[c:d-&gt;e(f), g secs] h-&gt;i(j), k secs] [Times: user:l sys=m, real=n secs]</code></p>
+<p>a: GC 或者是 Full GC， 这里引用一句话</p>
+<blockquote>
+<p>“GC日志开头的“[GC”和“[Full GC”说明了这次垃圾收集的停顿类型，而不是用来区分新生代GC还是老年代GC的。如果有“Full”，说明这次GC是发生了Stop-The-World的”</p>
+<p>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
+</blockquote>
+<p>b: 用来说明发生这次 GC 的原因，我们例子中发生这次GC的原因是内存分配失败</p>
+<p>c: 表示发生GC的区域，这里表示是新生代发生了GC，上面那个例子是因为在新生代中内存不够给新对象分配了，然后触发了 GC  </p>
+<p>d: GC 之前该区域已使用的容量</p>
+<p>e: GC 之后该区域已使用的容量</p>
+<p>f: 该内存区域的总容量</p>
+<p>g: 表示该区域这次 GC 使用的时间</p>
+<p>h: 表示 GC 前整个堆的已使用容量</p>
+<p>i: 表示 GC 后整个堆的已使用容量</p>
+<p>j: 表示 Java 堆的总容量</p>
+<p>k: 表示 Java堆 这次 GC 使用的时间</p>
+<p>l: 代表用户态消耗的 CPU 时间</p>
+<p>m: 代表内核态消耗的 CPU 时间</p>
+<p>n: 整个 GC 事件从开始到结束的墙钟时间（Wall Clock Time）</p>
+<blockquote>
+<p>“CPU时间与墙钟时间的区别是，墙钟时间包括各种非运算的等待耗时，例如等待磁盘I/O、等待线程阻塞，而CPU时间不包括这些耗时，但当系统有多CPU或者多核的话，多线程操作会叠加这些CPU时间，所以读者看到user或sys时间超过real时间是完全正常的。”</p>
+<p>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
+</blockquote>
+<h2 id="名词解释"><a href="#名词解释" class="headerlink" title="名词解释"></a>名词解释</h2><blockquote>
+<p>“<strong>新生代GC（Minor GC)</strong>：指发生在新生代的垃圾收集动作，因为Java对象大多都具备朝生夕灭的特性，所以Minor GC非常频繁，一般回收速度也比较快。</p>
+<p><strong>老年代GC（Major GC/Full GC）</strong>：指发生在老年代的GC，出现了Major GC，经常会伴随至少一次的Minor GC（但非绝对的，在Parallel Scavenge收集器的收集策略里就有直接进行Major GC的策略选择过程）。Major GC的速度一般会比Minor GC慢10倍以上。”</p>
+<p>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
+</blockquote>
+<h2 id="常用垃圾收集器参数"><a href="#常用垃圾收集器参数" class="headerlink" title="常用垃圾收集器参数"></a>常用垃圾收集器参数</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UseSerialGC</td>
+<td style="text-align:left">虚拟机在运行在 Client 模式下的默认值，打开此开关后，使用 Serial+Serial Old 收集器组合进行内存回收</td>
+</tr>
+<tr>
+<td>UseParNewGC</td>
+<td style="text-align:left">使用 ParNew + Serial Old 收集器组合进行内存回收</td>
+</tr>
+<tr>
+<td>UseConcMarkSweepGC</td>
+<td style="text-align:left">使用 ParNew + CMS + Serial Old 的收集器组合进行内存回收，当 CMS 出现 Concurrent Mode Failure 失败后会使用 Serial Old 作为备用收集器</td>
+</tr>
+<tr>
+<td>UseParallelOldGC</td>
+<td style="text-align:left">使用 Parallel Scavenge + Parallel Old 的收集器组合</td>
+</tr>
+<tr>
+<td>UseParallelGC</td>
+<td style="text-align:left">使用 Parallel Scavenge + Serial Old （PS MarkSweep）的收集器组合</td>
+</tr>
+<tr>
+<td>SurvivorRatio</td>
+<td style="text-align:left">新生代中 Eden 和任何一个 Survivor 区域的容量比值，默认为 8</td>
+</tr>
+<tr>
+<td>PretenureSizeThreshold</td>
+<td style="text-align:left">直接晋升到老年代对象的大小，单位是Byte</td>
+</tr>
+<tr>
+<td>MaxTenuringThreshold</td>
+<td style="text-align:left">晋升到老年代的对象最大年龄</td>
+</tr>
+<tr>
+<td>UseAdaptiveSizePolicy</td>
+<td style="text-align:left">动态调整 Java 堆中各区域的大小以及进入老年代的年龄</td>
+</tr>
+<tr>
+<td>HandlePromotionFailure</td>
+<td style="text-align:left">是否允许分配担保失败</td>
+</tr>
+<tr>
+<td>ParallelGCThreads</td>
+<td style="text-align:left">设置并行 GC 时进行内存回收的线程数</td>
+</tr>
+<tr>
+<td>GCTimeRatio</td>
+<td style="text-align:left">GC 时间站占时间的比率，默认值为99，只在 Parallel Scavenge 收集器的时候生效</td>
+</tr>
+<tr>
+<td>MaxGCPauseMillis</td>
+<td style="text-align:left">设置 GC 最大的停顿时间，只在 Parallel Scavenge 收集器的时候生效</td>
+</tr>
+<tr>
+<td>CMSInitiatingOccupancyFraction</td>
+<td style="text-align:left">设置 CMS 收集器在老年代空间被使用多少后触发垃圾收集，默认是 68%，仅在 CMS 收集器上生效</td>
+</tr>
+<tr>
+<td>CMSFullGCsBeforeCompaction</td>
+<td style="text-align:left">设置 CMS 收集器在进行多少次垃圾回收之后启动一次内存碎片整理</td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p>注：上表摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”，稍有调整.</p>
+</blockquote>
+<h2 id="实验代码"><a href="#实验代码" class="headerlink" title="实验代码"></a>实验代码</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> com.coderbean.jvm;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Created by jacobchang on 2017/11/20.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestAllocation</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> _1MB = <span class="number">1024</span>*<span class="number">1024</span>;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * VM参数：（参数序号对应实验序号）</span></span><br><span class="line"><span class="comment">     *  1. -verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+UseParNewGC -XX:+PrintGCDetails -XX:SurvivorRatio=8</span></span><br><span class="line"><span class="comment">     *  2. -verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+UseParallelGC -XX:+PrintGCDetails -XX:SurvivorRatio=8</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testAllocation</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">byte</span>[] allocation1, allocation2, allocation3, allocation4;</span><br><span class="line">        allocation1 = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">2</span>*_1MB];</span><br><span class="line">        allocation2 = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">2</span>*_1MB];</span><br><span class="line">        allocation3 = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">2</span>*_1MB];</span><br><span class="line">        allocation4 = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span>*_1MB]; <span class="comment">//出现一次 Minor GC</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * VM参数：（参数序号对应实验序号）</span></span><br><span class="line"><span class="comment">     *  3. -verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+UseParNewGC -XX:+PrintGCDetails -XX:PretenureSizeThreshold=3145728</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testPreteureSizeThreshold</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">byte</span>[] allocation;</span><br><span class="line">        allocation = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * VM参数：（参数序号对应实验序号）</span></span><br><span class="line"><span class="comment">     *  4. -verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+UseSerialGC -XX:+PrintGCDetails -XX:MaxTenuringThreshold=1 -XX:+PrintTenuringDistribution</span></span><br><span class="line"><span class="comment">     *  5. -verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+UseSerialGC -XX:+PrintGCDetails -XX:MaxTenuringThreshold=4 -XX:+PrintTenuringDistribution</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@SuppressWarnings(&quot;unused&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testTenuringThredhold</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">byte</span>[] allocation1, allocation2, allocation3, allocation4;</span><br><span class="line">        allocation1 = <span class="keyword">new</span> <span class="keyword">byte</span>[_1MB / <span class="number">16</span>];</span><br><span class="line">        allocation3 = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">        allocation4 = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">        allocation4 = <span class="keyword">null</span>;</span><br><span class="line">        allocation4 = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * VM参数：（参数序号对应实验序号）</span></span><br><span class="line"><span class="comment">     *  6. -verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+UseSerialGC -XX:+PrintGCDetails -XX:MaxTenuringThreshold=4 -XX:+PrintTenuringDistribution</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     *  如果在Survivor空间中相同年龄所有对象大小的总和&gt;Survivor空间的一半（ -XX:TargetSurvivorRatio）时，年龄&gt;=该年龄的对象就可以直接进入年老代</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@SuppressWarnings(&quot;unused&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testTenuringThredhold2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">byte</span>[] allocation1, allocation2, allocation3, allocation4;</span><br><span class="line">        allocation1 = <span class="keyword">new</span> <span class="keyword">byte</span>[_1MB / <span class="number">4</span>];</span><br><span class="line">        allocation3 = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">        allocation4 = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">        allocation4 = <span class="keyword">null</span>;</span><br><span class="line">        allocation4 = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h2 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h2><h3 id="实验一：使用ParNew-Serial-Old的组合进行内存回收"><a href="#实验一：使用ParNew-Serial-Old的组合进行内存回收" class="headerlink" title="实验一：使用ParNew+Serial Old的组合进行内存回收"></a>实验一：使用<code>ParNew</code>+<code>Serial Old</code>的组合进行内存回收</h3><p><strong>对象优先在 Eden 区分配</strong></p>
+<h4 id="实验结果："><a href="#实验结果：" class="headerlink" title="实验结果："></a>实验结果：</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[GC (Allocation Failure) [ParNew: 7989K-&gt;424K(9216K), 0.0037834 secs] 7989K-&gt;6568K(19456K), 0.0038147 secs] [Times: user&#x3D;0.02 sys&#x3D;0.00, real&#x3D;0.00 secs]</span><br><span class="line">Heap</span><br><span class="line"> par new generation   total 9216K, used 4685K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)</span><br><span class="line">  eden space 8192K,  52% used [0x00000007bec00000, 0x00000007bf0290f0, 0x00000007bf400000)</span><br><span class="line">  from space 1024K,  41% used [0x00000007bf500000, 0x00000007bf56a3a8, 0x00000007bf600000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000007bf400000, 0x00000007bf400000, 0x00000007bf500000)</span><br><span class="line"> tenured generation   total 10240K, used 6144K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)</span><br><span class="line">   the space 10240K,  60% used [0x00000007bf600000, 0x00000007bfc00030, 0x00000007bfc00200, 0x00000007c0000000)</span><br><span class="line"> Metaspace       used 3242K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 359K, capacity 388K, committed 512K, reserved 1048576K</span><br><span class="line"></span><br><span class="line">Process finished with exit code 0</span><br></pre></td></tr></table></figure>
+<h4 id="实验分析："><a href="#实验分析：" class="headerlink" title="实验分析："></a>实验分析：</h4><p> 通过上面的GC日志我们可以看出一开始出现了 MinorGC, 引起GC的原因是 <code>内存分配失败</code>，因为分配allocation4的时候，Eden区已经没有足够的区域来分配了，所以发生了本次 MinorGC ，经过 MinorGC 之后新生代的已使用容量从7989K减少到了424K，然而整个堆的内存总量却几乎没有减少，原因就是，由于发现新生代没有可以回收的对象，所以不得不使用内存担保将allocation1～3 三个对象提前转移到老年代。此时再在 Eden 区域为 allocation4 分配 4MB 的空间，因此最后我们发现 Eden 区域占用了 4MB，老年代占用了 6MB</p>
+<h3 id="实验二：使用Parallel-Scavenge-Serial-Old的组合进行内存回收"><a href="#实验二：使用Parallel-Scavenge-Serial-Old的组合进行内存回收" class="headerlink" title="实验二：使用Parallel Scavenge+Serial Old的组合进行内存回收"></a>实验二：使用<code>Parallel Scavenge</code>+<code>Serial Old</code>的组合进行内存回收</h3><p><strong>对象优先在 Eden 区分配</strong></p>
+<h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4> <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Heap</span><br><span class="line">PSYoungGen      total 9216K, used 8192K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)</span><br><span class="line"> eden space 8192K, 100% used [0x00000007bf600000,0x00000007bfe00000,0x00000007bfe00000)</span><br><span class="line"> from space 1024K, 0% used [0x00000007bff00000,0x00000007bff00000,0x00000007c0000000)</span><br><span class="line"> to   space 1024K, 0% used [0x00000007bfe00000,0x00000007bfe00000,0x00000007bff00000)</span><br><span class="line">ParOldGen       total 10240K, used 4096K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)</span><br><span class="line"> object space 10240K, 40% used [0x00000007bec00000,0x00000007bf000010,0x00000007bf600000)</span><br><span class="line">Metaspace       used 3311K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line"> class space    used 369K, capacity 388K, committed 512K, reserved 1048576K</span><br></pre></td></tr></table></figure>
+<h4 id="实验分析"><a href="#实验分析" class="headerlink" title="实验分析"></a>实验分析</h4><p>  第一眼看到日志惊奇的发现居然没有发生任何类型的 GC， 起初看到日志的时候我也很惊奇，于是乎请出了Java内存分析工具<code>VisualVM</code>, JDK中会自带<code>JVisualVM</code> 效果类似，可以通过命令<code>jvisualvm</code>启动，具体分析方法可以参考我的另外一篇博客<a href="http://jacobchang.cn">VisualVM使用指南</a>。</p>
+<blockquote>
+<p>注： 如果想要重现下面的分析结果，除了JVM参数要和我一直外，在程序执行过程中务必设置几个断点，好让VisualVM能够出现这种阶梯图像，不然由于执行太快，看起来就像是一次性分配了内存一样。</p>
+</blockquote>
+<p>  <img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fltm4roaulj31am11g78a.jpg" alt="堆内存占用情况分析"></p>
+<p>  通过上图中我标出的五条线，可以看到在1位置的时候第一次在Eden中分配了 2MB 内存，然后在2，3，4 时刻分别又再次分配了 2MB 内存，此时 Eden 区域已经占用了 8MB 了，在 5 时刻当要分配 4MB 内存的时候，Eden 区域已经不够用了，直接分配到了<code>老年代</code>。这是因为<code>Parallel Scavenge</code>收集器为了保证吞吐量而直接将Eden区中无法存放的大对象直接放到了老年代。</p>
+<blockquote>
+<p>注： 虚拟机参数 <code>-XX：PretenureSizeThreshold</code> 并不是实验二中的大对象分配到老年代的直接控制参数，该参数只针对 <code>Serial</code> 和 <code>ParNew</code> 两个新生代收集器有作用。 该参数的作用在下一节大对象直接进入老年代的实验中讲解。</p>
+</blockquote>
+<h4 id="使用其他收集器组合探究对象的分配情况"><a href="#使用其他收集器组合探究对象的分配情况" class="headerlink" title="使用其他收集器组合探究对象的分配情况"></a>使用其他收集器组合探究对象的分配情况</h4><p> 由于<del>篇幅有限</del>，其实是我想偷懒了（＾∇＾），各位可以参考上面的垃圾收集器参数章节，自己去验证。</p>
+<h3 id="实验三：使用参数-XX-PretenureSizeThreshold来设置直接进入老年代的对象的大小"><a href="#实验三：使用参数-XX-PretenureSizeThreshold来设置直接进入老年代的对象的大小" class="headerlink" title="实验三：使用参数-XX:PretenureSizeThreshold来设置直接进入老年代的对象的大小"></a>实验三：使用参数<code>-XX:PretenureSizeThreshold</code>来设置直接进入老年代的对象的大小</h3><p><strong>大对象直接进入老年代</strong><br>虚拟机提供一个参数 <code>-XX:PretenureSizeThreshold</code> 用来设置直接在老年代分配的对象的大小，如果对象大于这个值就会直接在老年代分配。这样做的目的是避免在<code>Eden</code>区及两个<code>Survivor</code>区之间发生大量的内存复制。</p>
+<blockquote>
+<p>“比遇到一个大对象更加坏的消息就是遇到一群“朝生夕灭”的“短命大对象”，写程序的时候应当避免”</p>
+<p>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
+</blockquote>
+<h4 id="实验结果：-1"><a href="#实验结果：-1" class="headerlink" title="实验结果："></a>实验结果：</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Heap</span><br><span class="line"> par new generation   total 9216K, used 2936K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)</span><br><span class="line">  eden space 8192K,  35% used [0x00000007bec00000, 0x00000007beede130, 0x00000007bf400000)</span><br><span class="line">  from space 1024K,   0% used [0x00000007bf400000, 0x00000007bf400000, 0x00000007bf500000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000007bf500000, 0x00000007bf500000, 0x00000007bf600000)</span><br><span class="line"> tenured generation   total 10240K, used 4096K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)</span><br><span class="line">   the space 10240K,  40% used [0x00000007bf600000, 0x00000007bfa00010, 0x00000007bfa00200, 0x00000007c0000000)</span><br><span class="line"> Metaspace       used 3278K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 364K, capacity 388K, committed 512K, reserved 1048576K</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h4 id="实验分析-1"><a href="#实验分析-1" class="headerlink" title="实验分析"></a>实验分析</h4><p> 通过上面的堆的内存占用情况很容易看出我们分配的4MB大小的对象直接被放到了老年代</p>
+<h3 id="实验四：-使用参数-XX-MaxTenuringThreshold-1来设置进入老年代的对象年龄"><a href="#实验四：-使用参数-XX-MaxTenuringThreshold-1来设置进入老年代的对象年龄" class="headerlink" title="实验四： 使用参数-XX:MaxTenuringThreshold=1来设置进入老年代的对象年龄"></a>实验四： 使用参数<code>-XX:MaxTenuringThreshold=1</code>来设置进入老年代的对象年龄</h3><p> <strong>长期存活的对象将进入老年代</strong></p>
+<h4 id="实验结果：-2"><a href="#实验结果：-2" class="headerlink" title="实验结果："></a>实验结果：</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[GC (Allocation Failure) [DefNew</span><br><span class="line">Desired survivor size 524288 bytes, new threshold 1 (max 1)</span><br><span class="line">- age   1:     749112 bytes,     749112 total</span><br><span class="line">: 6868K-&gt;731K(9216K), 0.0039484 secs] 6868K-&gt;4827K(19456K), 0.0039697 secs] [Times: user&#x3D;0.00 sys&#x3D;0.00, real&#x3D;0.00 secs]</span><br><span class="line">[GC (Allocation Failure) [DefNew</span><br><span class="line">Desired survivor size 524288 bytes, new threshold 1 (max 1)</span><br><span class="line">- age   1:       1496 bytes,       1496 total</span><br><span class="line">: 4911K-&gt;1K(9216K), 0.0012023 secs] 9007K-&gt;4706K(19456K), 0.0012150 secs] [Times: user&#x3D;0.00 sys&#x3D;0.00, real&#x3D;0.00 secs]</span><br><span class="line">Heap</span><br><span class="line"> def new generation   total 9216K, used 4316K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)</span><br><span class="line">  eden space 8192K,  52% used [0x00000007bec00000, 0x00000007bf036cc8, 0x00000007bf400000)</span><br><span class="line">  from space 1024K,   0% used [0x00000007bf400000, 0x00000007bf4005d8, 0x00000007bf500000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000007bf500000, 0x00000007bf500000, 0x00000007bf600000)</span><br><span class="line"> tenured generation   total 10240K, used 4704K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)</span><br><span class="line">   the space 10240K,  45% used [0x00000007bf600000, 0x00000007bfa98328, 0x00000007bfa98400, 0x00000007c0000000)</span><br><span class="line"> Metaspace       used 3288K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 364K, capacity 388K, committed 512K, reserved 1048576K</span><br></pre></td></tr></table></figure>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1flzag9e7m8g30go04v1l7.gif" alt="实验4"></p>
+<p>  通过上面的堆内存分配和visualGC的分析图片可以看出，当执行到最后一句话的时候，也就是进行第二次GC的时候，原本在<code>S0区域</code>的一些对象被移动到了老年代，这是因为当发生<code>MinorGC</code>的时候发现该对象的年龄已经到达我们设置的<code>MaxTenuringThreshold</code>值。</p>
+<h3 id="实验五：-使用参数-XX-MaxTenuringThreshold-4来设置进入老年代的对象年龄"><a href="#实验五：-使用参数-XX-MaxTenuringThreshold-4来设置进入老年代的对象年龄" class="headerlink" title="实验五： 使用参数-XX:MaxTenuringThreshold=4来设置进入老年代的对象年龄"></a>实验五： 使用参数<code>-XX:MaxTenuringThreshold=4</code>来设置进入老年代的对象年龄</h3><h4 id="实验结果-1"><a href="#实验结果-1" class="headerlink" title="实验结果"></a>实验结果</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[GC (Allocation Failure) [DefNew</span><br><span class="line">Desired survivor size 524288 bytes, new threshold 1 (max 4)</span><br><span class="line">- age   1:     749320 bytes,     749320 total</span><br><span class="line">: 6868K-&gt;731K(9216K), 0.0040400 secs] 6868K-&gt;4827K(19456K), 0.0040616 secs] [Times: user&#x3D;0.00 sys&#x3D;0.01, real&#x3D;0.01 secs]</span><br><span class="line">[GC (Allocation Failure) [DefNew</span><br><span class="line">Desired survivor size 524288 bytes, new threshold 4 (max 4)</span><br><span class="line">- age   1:        808 bytes,        808 total</span><br><span class="line">: 4911K-&gt;0K(9216K), 0.0012952 secs] 9007K-&gt;4706K(19456K), 0.0013076 secs] [Times: user&#x3D;0.00 sys&#x3D;0.00, real&#x3D;0.00 secs]</span><br><span class="line">Heap</span><br><span class="line"> def new generation   total 9216K, used 4315K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)</span><br><span class="line">  eden space 8192K,  52% used [0x00000007bec00000, 0x00000007bf036ca8, 0x00000007bf400000)</span><br><span class="line">  from space 1024K,   0% used [0x00000007bf400000, 0x00000007bf400328, 0x00000007bf500000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000007bf500000, 0x00000007bf500000, 0x00000007bf600000)</span><br><span class="line"> tenured generation   total 10240K, used 4706K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)</span><br><span class="line">   the space 10240K,  45% used [0x00000007bf600000, 0x00000007bfa988a8, 0x00000007bfa98a00, 0x00000007c0000000)</span><br><span class="line"> Metaspace       used 3282K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 364K, capacity 388K, committed 512K, reserved 1048576K</span><br></pre></td></tr></table></figure>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1flzag1vzrjg30gn03yb2l.gif" alt="实验5"></p>
+<h4 id="实验分析-2"><a href="#实验分析-2" class="headerlink" title="实验分析"></a>实验分析</h4><p>通过上面的日志和图片，可以看出与实验四不同的是，这里执行到最后的时候<code>S0区域</code>中的对象并没有进入到老年代而是进入了<code>S1区域</code>,因为我们把进入老年代的年龄设置为了4.</p>
+<blockquote>
+<p>注：如果没有按照我的代码写的话，你可能会发现即使把<code>MaxTenuringThreshold</code>设置为了大于1的值，但还是有可能会在一次 GC 之后就进入了老年代，这是因为进入我们设置的只是一个最大值，真正的值可能比这个值更小，是动态变化的，这种情况会在下面的实验中介绍。</p>
+</blockquote>
+<h3 id="实验六：TenuringThreshold-是动态变化的"><a href="#实验六：TenuringThreshold-是动态变化的" class="headerlink" title="实验六：TenuringThreshold 是动态变化的"></a>实验六：TenuringThreshold 是动态变化的</h3><h4 id="实验结果-2"><a href="#实验结果-2" class="headerlink" title="实验结果"></a>实验结果</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[GC (Allocation Failure) [DefNew</span><br><span class="line">Desired survivor size 524288 bytes, new threshold 1 (max 4)</span><br><span class="line">- age   1:     948816 bytes,     948816 total</span><br><span class="line">: 7123K-&gt;926K(9216K), 0.0065933 secs] 7123K-&gt;5022K(19456K), 0.0066172 secs] [Times: user&#x3D;0.00 sys&#x3D;0.01, real&#x3D;0.01 secs]</span><br><span class="line">[GC (Allocation Failure) [DefNew</span><br><span class="line">Desired survivor size 524288 bytes, new threshold 4 (max 4)</span><br><span class="line">- age   1:        464 bytes,        464 total</span><br><span class="line">: 5270K-&gt;0K(9216K), 0.0013556 secs] 9366K-&gt;4900K(19456K), 0.0013708 secs] [Times: user&#x3D;0.00 sys&#x3D;0.00, real&#x3D;0.00 secs]</span><br><span class="line">Heap</span><br><span class="line"> def new generation   total 9216K, used 4233K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)</span><br><span class="line">  eden space 8192K,  51% used [0x00000007bec00000, 0x00000007bf022570, 0x00000007bf400000)</span><br><span class="line">  from space 1024K,   0% used [0x00000007bf400000, 0x00000007bf4001d0, 0x00000007bf500000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000007bf500000, 0x00000007bf500000, 0x00000007bf600000)</span><br><span class="line"> tenured generation   total 10240K, used 4899K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)</span><br><span class="line">   the space 10240K,  47% used [0x00000007bf600000, 0x00000007bfac8f38, 0x00000007bfac9000, 0x00000007c0000000)</span><br><span class="line"> Metaspace       used 3315K, capacity 4500K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 367K, capacity 388K, committed 512K, reserved 1048576K</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fm0dsme76og30bn060hdz.gif" alt="实验结果"></p>
+<h4 id="实验分析-3"><a href="#实验分析-3" class="headerlink" title="实验分析"></a>实验分析</h4><p> 看到上面的堆信息可以看到最后<code>from</code>和<code>to</code>两个<code>Survivor</code>区域占用情况都为0，原因就是在<code>allocation1</code>被放到<code>S1</code>区域之后，由于该对象和一些附加信息的和占用了<code>S1区域</code>一半以上的空间，因为此时<code>allocation1</code>对象的年龄为1，所以此时<code>TenuringThreshold</code>的值也就变成了1，在GC的时候进入了老年代。通过上图中VisualGC左下角的<code>TenuringThreshold</code>值一直在变化也能得到验证。</p>
 ]]></content>
       <categories>
         <category>技术</category>
