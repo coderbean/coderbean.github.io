@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://jacobchang.cn/OpenClash-AdguardHome-work-toghter.html</loc>
+    <lastmod>2021-11-12</lastmod>
+  </url>
+  <url>
     <loc>https://jacobchang.cn/about-git-dff.html</loc>
     <lastmod>2021-11-04</lastmod>
   </url>
@@ -17,11 +21,11 @@
     <lastmod>2020-01-02</lastmod>
   </url>
   <url>
-    <loc>https://jacobchang.cn/idempotence-design.html</loc>
+    <loc>https://jacobchang.cn/solve-dp-problems.html</loc>
     <lastmod>2020-01-02</lastmod>
   </url>
   <url>
-    <loc>https://jacobchang.cn/be-yourself.html</loc>
+    <loc>https://jacobchang.cn/idempotence-design.html</loc>
     <lastmod>2020-01-02</lastmod>
   </url>
   <url>
@@ -29,7 +33,7 @@
     <lastmod>2020-01-02</lastmod>
   </url>
   <url>
-    <loc>https://jacobchang.cn/solve-dp-problems.html</loc>
+    <loc>https://jacobchang.cn/be-yourself.html</loc>
     <lastmod>2020-01-02</lastmod>
   </url>
   <url>

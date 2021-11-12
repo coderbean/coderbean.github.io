@@ -80,49 +80,6 @@
       </tags>
   </entry>
   <entry>
-    <title>JVM 探究（一）：JVM内存模型概念模型</title>
-    <url>/jmm-of-jvm.html</url>
-    <content><![CDATA[<p>作为一个 Java 程序员，不了解 Java 内存模型就不能写出能够充分利用内存的代码。本文通过对 Java 内存模型的介绍，让读者能够了解 Java 的内存的分配情况，适合 Java 初学者或者对 JMM 不熟悉的同学。后面的博客会针对每个部分做更加深入的解释。<br><span id="more"></span></p>
-<h2 id="Java-内存模型"><a href="#Java-内存模型" class="headerlink" title="Java 内存模型"></a>Java 内存模型</h2><p>首先通过下图对于 Java 内存模型有一个整体的认识，然后针对不同的区域的作用和存储的内容做进一步的解释。</p>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnvc6jtby5j30r50l9wh2.jpg" alt="Java内存模型"></p>
-<h3 id="PC（程序计数器）"><a href="#PC（程序计数器）" class="headerlink" title="PC（程序计数器）"></a>PC（程序计数器）</h3><p>这里的 PC 不是 Personal Computer，而是 Program Counter Register，从名字就可以看出来，这是一个寄存器，用来存储需要执行的指令地址。</p>
-<blockquote>
-<p>程序计数器（Program Counter (PC)）是在电脑处理器中的一个寄存器，用来指示电脑下一步要运行的指令序列。—WikiPedia</p>
-</blockquote>
-<p>PC 和其他 JVM 内存区域最大的区别是：</p>
-<blockquote>
-<p><strong>“此内存区域是唯一一个在Java虚拟机规范中没有规定任何OutOfMemoryError情况的区域。</strong>”<br>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
-</blockquote>
-<p>像上面的图片一样，PC 是每个线程私有的，对于 Java 方法而言，PC 中存储的是正在执行的虚拟机字节码的内存地址；对于 Native 方法来说，PC 中的值为空（Undefined）。</p>
-<h3 id="Java-虚拟机栈和本地方法栈"><a href="#Java-虚拟机栈和本地方法栈" class="headerlink" title="Java 虚拟机栈和本地方法栈"></a>Java 虚拟机栈和本地方法栈</h3><h4 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h4><p>无论是在大学的 Java 编程课堂上，还是我们在学习过程编码过程，经常会出现 StackOverFlow，甚至目前最大的技术问答社区的名字也是 StackOverFlow。Java 语言中会产生栈溢出的就是这块内存区域，当你的程序中设置了超过 JVM 规定的递归深度的时候就会触发这个异常。类似 JMM 的其他内存区域，如果虚拟机栈在动态扩展的时候无法申请到足够的内存也会报OOM异常。</p>
-<p>Java 语言中每一个方法的执行都对应着一个栈帧（Stack Frame）的创建，栈帧中存储的是局部变量、方法出口等信息，因此对于一个方法的执行而言，所能够使用到的内存是在编译期间就能够完全确定的，在运行期间不会发生变化。在栈帧中，局部变量空间成为 Slot，除了 double 和 long 占有 2 个 slot 外，其他基本数据类型和对象引用都占用 1 个 slot 空间</p>
-<h4 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h4><p>本地方法栈和虚拟机栈最大的区别就是虚拟机栈是为执行 Java 字节码服务的，而本地方法栈是为了虚拟机使用到的 Native 方法服务的。除此之外，Java 虚拟机规范并没有针对本地方法栈的实现做具体规定。在 HotSpot 虚拟机中，本地方法栈和虚拟机栈是共用同一块内存的，不做具体区分。同样，本地方法栈也会产生 OOM 异常和 StackOverFlow 异常。</p>
-<h3 id="Java-堆"><a href="#Java-堆" class="headerlink" title="Java 堆"></a>Java 堆</h3><blockquote>
-<p>“The heap is the runtime data area from which memory for all class instances and arrays is allocated。” —Java虚拟机规范</p>
-</blockquote>
-<p>Java 虚拟机规范规定所有的实例对象和数组都应该分配到 Java 堆中。<br>说的通俗一点就是所有 new 出来的对象和数组都会放到该区域，由于现在的收集器都采用分代收集算法，所以在 Java 堆中又分了新生代和老年代，新生代有做了详细的区分。该区域的大小可以通过 JVM 参数 <code>-Xmx</code> 和 <code>-Xms</code> 来设置。</p>
-<h4 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h4><p>在 JDK1.4 中引入了 NIO，可以通过 Native 方法直接在堆外分配内存，然后通过在堆中存储的引用来对这块内存区域做操作。<strong>注意</strong> 这块区域并不会在 <code>-Xmx</code>和 <code>-Xms</code> 设置的大小之内，因此在设置 JVM 参数的时候要注意考虑这块内存区域，避免设置的内存区域总额大于物理内存</p>
-<h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3><p>Method Area 又叫 NonHeap，也是线程共有的内存区域，用来存：</p>
-<ul>
-<li>类信息</li>
-<li>常量</li>
-<li>静态变量</li>
-<li>字符串常量池</li>
-</ul>
-<p>在 JDK1.7 中已经将字符串常量池移出永久代，在 Java8 中更是之内取消了永久代，而是使用了元空间（MetaSpace）来存储这些信息，从而永久代的大小不需要再指定，只要不超出物理内存的限制就不会产生 OOM 异常</p>
-<h4 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h4><p>运行时常量池主要用来存储类的版本、字段、方法、接口等描述信息。常量池（Constant Pool Table）用来存储各种字面量和符号引用。String 的 <code>intern()</code> 方法就是在运行期间将对象放到常量池中的。此部分也会出现 OOM 异常。</p>
-<h2 id="JDK8-以及之后的模型"><a href="#JDK8-以及之后的模型" class="headerlink" title="JDK8 以及之后的模型"></a>JDK8 以及之后的模型</h2><p><img src="https://raw.githubusercontent.com/PicGoBed/PicBed/master/2019-07-26-NrXELZ.jpg" alt="pic"></p>
-]]></content>
-      <categories>
-        <category>技术</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>JVM</tag>
-        <tag>tech</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Atom插件和主题推荐</title>
     <url>/theme-and-plugin-of-atom.html</url>
     <content><![CDATA[<p>介绍本人使用<code>Atom</code>编辑器使用的插件和主题配置，推荐给大家使用，同时也给自己做个备份。 <span id="more"></span></p>
@@ -169,77 +126,46 @@
       </tags>
   </entry>
   <entry>
-    <title>Java 中的偏向锁、轻量级锁和重量级锁</title>
-    <url>/lock-of-synchronized.html</url>
-    <content><![CDATA[<p>今天我们来聊聊 Synchronized 里面的各种锁：偏向锁、轻量级锁、重量级锁，以及三个锁之间是如何进行锁膨胀的。</p>
-<span id="more"></span>
-<p><img src="../media/GodsGarden_ZH-CN3317703606_1920x1080.jpg" alt="GodsGarden_ZH-CN3317703606_1920x1080"></p>
-<p>众所周知，线程阻塞带来的上下文切换的代价是很大的，Java 为了尽量减少上下文的切换从而引入了更多的锁机制。在了解各种锁机制之前，先要学习一些前置知识。对于各种锁的获取和释放、以及锁升级的流程，在文末总结处有一张图，如果赶时间，直接看图吧。</p>
-<h2 id="Mark-Word"><a href="#Mark-Word" class="headerlink" title="Mark Word"></a>Mark Word</h2><p><img src="../media/image-20190719003918974.png" alt="image-20190719003918974"></p>
-<p>Java 对象头里面有一部分叫做 Mark Word，在32位虚拟机下面占有 32bit，在 64 位虚拟机下面占用 64 bit，本文以 32 位虚拟机为例子。</p>
-<h2 id="锁介绍"><a href="#锁介绍" class="headerlink" title="锁介绍"></a>锁介绍</h2><p><strong>偏向锁：</strong>一个线程反复的去获取/释放一个锁，如果这个锁是轻量级锁或者重量级锁，不断的加解锁显然是没有必要的，造成了资源的浪费。于是引入了偏向锁，偏向锁在获取资源的时候会在资源对象上记录该对象是偏向该线程的，偏向锁并不会主动释放，这样每次偏向锁进入的时候都会判断改资源是否是偏向自己的，如果是偏向自己的则不需要进行额外的操作，直接可以进入同步操作。</p>
-<p><strong>轻量级锁：</strong>轻量级锁是由偏向所升级来的，偏向锁运行在一个线程进入同步块的情况下，当第二个线程加入锁争用的时候，偏向锁就会升级为轻量级锁； 在轻量级锁中如果发生多线程竞争，未持有锁的线程会自旋等待。</p>
-<p><strong>重量级锁：</strong>由操作系统的 mutex 来实现，多线程竞争下，未持有锁的线程将被阻塞。</p>
-<h2 id="锁的流转"><a href="#锁的流转" class="headerlink" title="锁的流转"></a>锁的流转</h2><p><img src="../media/lock-of-jvm.jpeg" alt="锁转移"></p>
-<h3 id="对象分配"><a href="#对象分配" class="headerlink" title="对象分配"></a>对象分配</h3><p>首先确定该类的偏向锁是否可用（决定了在新建对象实例的时候倒数第三 bit 是 0 还是 1）；如果不可用，直接使用轻量锁。如果偏向锁可用，新建实例对象 obj，此时 obj 进入到未锁定、未偏向、可偏向的状态。</p>
-<h3 id="偏向锁-初始锁定"><a href="#偏向锁-初始锁定" class="headerlink" title="偏向锁 初始锁定"></a>偏向锁 初始锁定</h3><p>此时线程 A 想要获取对象 obj 的偏向锁，由于此时 obj 没有偏向任何线程（有可能是刚刚新建，也有可能是由锁定状态重偏向之后导致的未锁定状态），所以利用 CAS 操作将线程 ID 写入到 Mark Word 里面，此时 线程 A 获取了 obj 的偏向锁。obj 处于已偏向、锁定状态。</p>
-<h3 id="偏向锁-锁定-解锁"><a href="#偏向锁-锁定-解锁" class="headerlink" title="偏向锁 锁定/解锁"></a>偏向锁 锁定/解锁</h3><p>一旦 obj 第一次偏向了线程 A，A 就可以在没有竞争的情况下，也就是锁不升级的情况下，以极小的代价反复获取 obj 对象的锁。</p>
-<h3 id="偏向锁-重偏向（rebias）"><a href="#偏向锁-重偏向（rebias）" class="headerlink" title="偏向锁 重偏向（rebias）"></a>偏向锁 重偏向（rebias）</h3><p>如果 obj 先被线程 A 锁定，然后释放。然后线程 B 过来是否能重新获取偏向锁呐？在一定条件下，经过了重偏向可以重新获得偏向锁。</p>
-<p>通过上面的 mark word 我们可以看出，在偏向锁的时候有一个字段是 epoch，同时在 obj 的类 O 信息里面也有一个 epoch，每次系统到达安全点会对类的 epoch 加 1，变成 epoch_new，然后扫描所有的类 O 的实例，判断该偏向锁是否还被持有，如果被持有则将 epoch_new 复制给对象头的 epoch 字段。</p>
-<p>每次去获取偏向锁的时候回去判断对象实例的 epoch 和 类的 epoch 是否相等，如果不等代表对象是未锁定、可偏向、未偏向状态，可以偏向新的线程。</p>
-<h3 id="撤销偏向（revoke）"><a href="#撤销偏向（revoke）" class="headerlink" title="撤销偏向（revoke）"></a>撤销偏向（revoke）</h3><blockquote>
-<p> Once biased, that thread can subsequently lock and unlock the object without resorting to expensive atomic instructions. Obviously, an object can be biased toward at most one thread at any given time. (We refer to that thread as the bias holding thread). If another thread tries to acquire a biased object, however, we need to <em>revoke</em> the bias from the original thread. </p>
-</blockquote>
-<p>线程 B 来竞争，此时偏向锁会膨胀位轻量级锁。当 B 线程想利用 CAS 获取偏向锁失败， A 线程被暂停，然后检查 A 线程；</p>
-<ol>
-<li><p>A 线程已经退出了同步代码块，或者是已经不在存活了，如果是上面两种情况之一的，将 obj 的 Mark Word 后 3bit 改为 001（无锁状态），然后再去唤醒 A 线程。</p>
-</li>
-<li><p>A 线程还在同步代码块中，此时将 A 线程的偏向锁升级为轻量级锁。首先会 copy 一份 obj 对象的 mark word 内容，放到线程 A 当前栈帧的一个叫做 Lock Record 空间的 displace mark word 的位置，</p>
-<p><img src="../media/20170420102716139.jpeg" alt="20170420102716139"></p>
-<p>然后通过 CAS 将 obj 中 mark word 的内容替换为指向栈帧中 mark word 的位置，最后将 Lock Record 里面的 owner 指向 obj 对象。并且对象Mark Word的锁标志位设置为“00”，到此完成了锁的升级。</p>
-<p><img src="../media/20170420102754608.jpeg" alt="20170420102754608"></p>
-</li>
-</ol>
-<h3 id="Bulk-Revoke"><a href="#Bulk-Revoke" class="headerlink" title="Bulk Revoke"></a>Bulk Revoke</h3><p>Java 会在类信息里面维护一个计数器记录，记录该类发生偏向锁 revoke 的次数，一旦达到某个阈值，则认为这个类不适合偏向锁，将会禁用这个类的偏向锁功能。这个类新建的对象实例的最后 3bit 将是 001（无锁）。</p>
+    <title>JVM 探究（一）：JVM内存模型概念模型</title>
+    <url>/jmm-of-jvm.html</url>
+    <content><![CDATA[<p>作为一个 Java 程序员，不了解 Java 内存模型就不能写出能够充分利用内存的代码。本文通过对 Java 内存模型的介绍，让读者能够了解 Java 的内存的分配情况，适合 Java 初学者或者对 JMM 不熟悉的同学。后面的博客会针对每个部分做更加深入的解释。<br><span id="more"></span></p>
+<h2 id="Java-内存模型"><a href="#Java-内存模型" class="headerlink" title="Java 内存模型"></a>Java 内存模型</h2><p>首先通过下图对于 Java 内存模型有一个整体的认识，然后针对不同的区域的作用和存储的内容做进一步的解释。</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnvc6jtby5j30r50l9wh2.jpg" alt="Java内存模型"></p>
+<h3 id="PC（程序计数器）"><a href="#PC（程序计数器）" class="headerlink" title="PC（程序计数器）"></a>PC（程序计数器）</h3><p>这里的 PC 不是 Personal Computer，而是 Program Counter Register，从名字就可以看出来，这是一个寄存器，用来存储需要执行的指令地址。</p>
 <blockquote>
-<p>Objects that are explicitly designed to be shared between multiple threads, such as producer/consumer queues, are not suitable for biased locking. Therefore, biased locking is disabled for a class if revocations for its instances happened frequently in the past. This is called <em>bulk revocation</em>. If the locking code is invoked on an instance of a class for which biased locking was disabled, it performs the standard thin locking. Newly allocated instances of the class are marked as non-biasable.</p>
+<p>程序计数器（Program Counter (PC)）是在电脑处理器中的一个寄存器，用来指示电脑下一步要运行的指令序列。—WikiPedia</p>
 </blockquote>
-<h3 id="轻量级锁定"><a href="#轻量级锁定" class="headerlink" title="轻量级锁定"></a>轻量级锁定</h3><p>刚刚在上文中关于撤销偏向（revoke）中已经描述了锁定的流程。在此再总结一遍</p>
-<ol>
-<li>复制 mark word 到 displace mark word</li>
-<li>CAS 替换 mark word 中的信息为指针</li>
-<li>修改 锁 标志为 00</li>
-<li>将栈帧中的 owner 指向锁定的对象</li>
-</ol>
-<h3 id="轻量级锁-递归锁定"><a href="#轻量级锁-递归锁定" class="headerlink" title="轻量级锁 递归锁定"></a>轻量级锁 递归锁定</h3><p><img src="../media/image-20190719112951132.png" alt="image-20190719112951132"></p>
-<p>线程 A 在去获取轻量级锁的时候，会首先使用 CAS 操作，如果操作失败那么会在此时判断是不是该线程已经持有过该对象的锁了，通过判断对象的 mark word 是不是指向当前线程的栈帧，如果是则会在最新的栈帧处新建一个 displaced mark word 为 null 的 lock record。关于为什么要这么做，其实就是为了记录一下锁的重入，发生重入了需要记录，本来是记录到 mark word 里面最方便，可能是 mark word 没有足够的空间。如果是在 lock record里面记录的话，需要遍历 lock record 才可以获取这个数量。所以最终Hotspot选择每次获得锁都添加一个<code>Lock Record</code>来表示锁的重入。</p>
-<p>类似的递归的解锁只需要将栈帧中的 lock records 删除即可。</p>
-<h3 id="轻量级锁-膨胀"><a href="#轻量级锁-膨胀" class="headerlink" title="轻量级锁 膨胀"></a>轻量级锁 膨胀</h3><p>线程 A 持有对象 obj 的轻量级锁，线程 B 过来 CAS 失败，开始自旋等待，自旋到达一定次数之后如果还没有获取该轻量级锁，则会将该锁膨胀为重量级锁。会将 mark word 的的锁标志为改为10，同时经指针指向互斥量，然后线程 B 挂起。</p>
+<p>PC 和其他 JVM 内存区域最大的区别是：</p>
 <blockquote>
-<p>JDK1.6中 -XX:+UseSpinning开启； -XX:PreBlockSpin=10 为自旋次数。<br>JDK1.7后，去掉 -XX:PreBlockSpin 参数，由jvm控制。</p>
+<p><strong>“此内存区域是唯一一个在Java虚拟机规范中没有规定任何OutOfMemoryError情况的区域。</strong>”<br>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
 </blockquote>
-<h3 id="轻量级锁-解锁"><a href="#轻量级锁-解锁" class="headerlink" title="轻量级锁 解锁"></a>轻量级锁 解锁</h3><p>轻量级锁解锁也是理由 CAS 将 mark word 里面的指针替换为无锁的 mark word 信息。需要判断 mark word 里面是指向该线程的 lock record</p>
-<ol>
-<li>如果不是，说明已经锁膨胀了，CAS 失败，此时需要唤醒在等待重量级锁的线程</li>
-<li>如果是，说明锁没有膨胀，直接 CAS 操作将 mark word 改为 001（无锁）状态，为下一个线程获取轻量级锁做好准备。</li>
-</ol>
-<h3 id="重量级锁-解锁"><a href="#重量级锁-解锁" class="headerlink" title="重量级锁 解锁"></a>重量级锁 解锁</h3><p>释放 mutex，唤醒在等待的线程</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>新标签页打开图片可看大图</p>
-<p><img src="../media/v2-9db4211af1be81785f6cc51a58ae6054_r.jpg" alt="v2-9db4211af1be81785f6cc51a58ae6054_r"></p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://blog.csdn.net/zqz_zqz/article/details/70233767">java 中的锁 — 偏向锁、轻量级锁、自旋锁、重量级锁 - zqz_zqz的博客 - CSDN博客</a></p>
-<p><a href="https://zhuanlan.zhihu.com/p/34606653">Java 8 并发篇 - 冷静分析 Synchronized（下） - 知乎</a></p>
-<p><a href="https://blogs.oracle.com/dave/biased-locking-in-hotspot">Biased Locking in HotSpot | Oracle David Dice’s Blog</a>  //rebias</p>
-<p><a href="http://www.ishenping.com/ArtInfo/266444.html#Bulk_Rebias_192">Java中的偏向锁，轻量级锁， 重量级锁解析 - 神评网</a> //rebias</p>
-<p><a href="https://www.zhihu.com/question/56582060"> BiasedLocking模式下markOop中位域epoch的根本作用是什么？ - 知乎</a> //rebias</p>
-<p><a href="https://juejin.im/post/5bfffafc6fb9a049d37ed198">死磕Synchronized底层实现—轻量级锁 - 掘金</a></p>
+<p>像上面的图片一样，PC 是每个线程私有的，对于 Java 方法而言，PC 中存储的是正在执行的虚拟机字节码的内存地址；对于 Native 方法来说，PC 中的值为空（Undefined）。</p>
+<h3 id="Java-虚拟机栈和本地方法栈"><a href="#Java-虚拟机栈和本地方法栈" class="headerlink" title="Java 虚拟机栈和本地方法栈"></a>Java 虚拟机栈和本地方法栈</h3><h4 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h4><p>无论是在大学的 Java 编程课堂上，还是我们在学习过程编码过程，经常会出现 StackOverFlow，甚至目前最大的技术问答社区的名字也是 StackOverFlow。Java 语言中会产生栈溢出的就是这块内存区域，当你的程序中设置了超过 JVM 规定的递归深度的时候就会触发这个异常。类似 JMM 的其他内存区域，如果虚拟机栈在动态扩展的时候无法申请到足够的内存也会报OOM异常。</p>
+<p>Java 语言中每一个方法的执行都对应着一个栈帧（Stack Frame）的创建，栈帧中存储的是局部变量、方法出口等信息，因此对于一个方法的执行而言，所能够使用到的内存是在编译期间就能够完全确定的，在运行期间不会发生变化。在栈帧中，局部变量空间成为 Slot，除了 double 和 long 占有 2 个 slot 外，其他基本数据类型和对象引用都占用 1 个 slot 空间</p>
+<h4 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h4><p>本地方法栈和虚拟机栈最大的区别就是虚拟机栈是为执行 Java 字节码服务的，而本地方法栈是为了虚拟机使用到的 Native 方法服务的。除此之外，Java 虚拟机规范并没有针对本地方法栈的实现做具体规定。在 HotSpot 虚拟机中，本地方法栈和虚拟机栈是共用同一块内存的，不做具体区分。同样，本地方法栈也会产生 OOM 异常和 StackOverFlow 异常。</p>
+<h3 id="Java-堆"><a href="#Java-堆" class="headerlink" title="Java 堆"></a>Java 堆</h3><blockquote>
+<p>“The heap is the runtime data area from which memory for all class instances and arrays is allocated。” —Java虚拟机规范</p>
+</blockquote>
+<p>Java 虚拟机规范规定所有的实例对象和数组都应该分配到 Java 堆中。<br>说的通俗一点就是所有 new 出来的对象和数组都会放到该区域，由于现在的收集器都采用分代收集算法，所以在 Java 堆中又分了新生代和老年代，新生代有做了详细的区分。该区域的大小可以通过 JVM 参数 <code>-Xmx</code> 和 <code>-Xms</code> 来设置。</p>
+<h4 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h4><p>在 JDK1.4 中引入了 NIO，可以通过 Native 方法直接在堆外分配内存，然后通过在堆中存储的引用来对这块内存区域做操作。<strong>注意</strong> 这块区域并不会在 <code>-Xmx</code>和 <code>-Xms</code> 设置的大小之内，因此在设置 JVM 参数的时候要注意考虑这块内存区域，避免设置的内存区域总额大于物理内存</p>
+<h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3><p>Method Area 又叫 NonHeap，也是线程共有的内存区域，用来存：</p>
+<ul>
+<li>类信息</li>
+<li>常量</li>
+<li>静态变量</li>
+<li>字符串常量池</li>
+</ul>
+<p>在 JDK1.7 中已经将字符串常量池移出永久代，在 Java8 中更是之内取消了永久代，而是使用了元空间（MetaSpace）来存储这些信息，从而永久代的大小不需要再指定，只要不超出物理内存的限制就不会产生 OOM 异常</p>
+<h4 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h4><p>运行时常量池主要用来存储类的版本、字段、方法、接口等描述信息。常量池（Constant Pool Table）用来存储各种字面量和符号引用。String 的 <code>intern()</code> 方法就是在运行期间将对象放到常量池中的。此部分也会出现 OOM 异常。</p>
+<h2 id="JDK8-以及之后的模型"><a href="#JDK8-以及之后的模型" class="headerlink" title="JDK8 以及之后的模型"></a>JDK8 以及之后的模型</h2><p><img src="https://raw.githubusercontent.com/PicGoBed/PicBed/master/2019-07-26-NrXELZ.jpg" alt="pic"></p>
 ]]></content>
       <categories>
         <category>技术</category>
       </categories>
       <tags>
+        <tag>Java</tag>
         <tag>JVM</tag>
-        <tag>锁</tag>
-        <tag>偏向锁</tag>
+        <tag>tech</tag>
       </tags>
   </entry>
   <entry>
@@ -280,6 +206,22 @@
         <tag>Java</tag>
         <tag>tech</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>OpenClash 搭配 Adguard Home 使用</title>
+    <url>/OpenClash-AdguardHome-work-toghter.html</url>
+    <content><![CDATA[<p>openwrt 中 openclash 和 adguard home 搭配使用的配置教程。</p>
+<span id="more"></span>
+<h2 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h2><p><img src="https://raw.githubusercontent.com/PicGoBed/PicBed/master/uPic/V3zUUq.png" alt="V3zUUq"></p>
+<h2 id="Open-Clash-配置"><a href="#Open-Clash-配置" class="headerlink" title="Open Clash 配置"></a>Open Clash 配置</h2><p><img src="https://raw.githubusercontent.com/PicGoBed/PicBed/master/uPic/openclash.png" alt="openclash"></p>
+<h2 id="Adguard-Home-配置"><a href="#Adguard-Home-配置" class="headerlink" title="Adguard Home 配置"></a>Adguard Home 配置</h2><p><img src="https://raw.githubusercontent.com/PicGoBed/PicBed/master/uPic/adguardhome1.png" alt="adguardhome1"></p>
+<p><img src="https://raw.githubusercontent.com/PicGoBed/PicBed/master/uPic/adguardhome2.png" alt="adguardhome2"></p>
+<p>不用理会这个告警</p>
+<p><img src="https://raw.githubusercontent.com/PicGoBed/PicBed/master/uPic/vcdXo8.png" alt="vcdXo8"></p>
+]]></content>
+      <categories>
+        <category>瞎折腾</category>
+      </categories>
   </entry>
   <entry>
     <title>Spring 中 Transactional 注解原理</title>
@@ -449,6 +391,80 @@
       </tags>
   </entry>
   <entry>
+    <title>Java 中的偏向锁、轻量级锁和重量级锁</title>
+    <url>/lock-of-synchronized.html</url>
+    <content><![CDATA[<p>今天我们来聊聊 Synchronized 里面的各种锁：偏向锁、轻量级锁、重量级锁，以及三个锁之间是如何进行锁膨胀的。</p>
+<span id="more"></span>
+<p><img src="../media/GodsGarden_ZH-CN3317703606_1920x1080.jpg" alt="GodsGarden_ZH-CN3317703606_1920x1080"></p>
+<p>众所周知，线程阻塞带来的上下文切换的代价是很大的，Java 为了尽量减少上下文的切换从而引入了更多的锁机制。在了解各种锁机制之前，先要学习一些前置知识。对于各种锁的获取和释放、以及锁升级的流程，在文末总结处有一张图，如果赶时间，直接看图吧。</p>
+<h2 id="Mark-Word"><a href="#Mark-Word" class="headerlink" title="Mark Word"></a>Mark Word</h2><p><img src="../media/image-20190719003918974.png" alt="image-20190719003918974"></p>
+<p>Java 对象头里面有一部分叫做 Mark Word，在32位虚拟机下面占有 32bit，在 64 位虚拟机下面占用 64 bit，本文以 32 位虚拟机为例子。</p>
+<h2 id="锁介绍"><a href="#锁介绍" class="headerlink" title="锁介绍"></a>锁介绍</h2><p><strong>偏向锁：</strong>一个线程反复的去获取/释放一个锁，如果这个锁是轻量级锁或者重量级锁，不断的加解锁显然是没有必要的，造成了资源的浪费。于是引入了偏向锁，偏向锁在获取资源的时候会在资源对象上记录该对象是偏向该线程的，偏向锁并不会主动释放，这样每次偏向锁进入的时候都会判断改资源是否是偏向自己的，如果是偏向自己的则不需要进行额外的操作，直接可以进入同步操作。</p>
+<p><strong>轻量级锁：</strong>轻量级锁是由偏向所升级来的，偏向锁运行在一个线程进入同步块的情况下，当第二个线程加入锁争用的时候，偏向锁就会升级为轻量级锁； 在轻量级锁中如果发生多线程竞争，未持有锁的线程会自旋等待。</p>
+<p><strong>重量级锁：</strong>由操作系统的 mutex 来实现，多线程竞争下，未持有锁的线程将被阻塞。</p>
+<h2 id="锁的流转"><a href="#锁的流转" class="headerlink" title="锁的流转"></a>锁的流转</h2><p><img src="../media/lock-of-jvm.jpeg" alt="锁转移"></p>
+<h3 id="对象分配"><a href="#对象分配" class="headerlink" title="对象分配"></a>对象分配</h3><p>首先确定该类的偏向锁是否可用（决定了在新建对象实例的时候倒数第三 bit 是 0 还是 1）；如果不可用，直接使用轻量锁。如果偏向锁可用，新建实例对象 obj，此时 obj 进入到未锁定、未偏向、可偏向的状态。</p>
+<h3 id="偏向锁-初始锁定"><a href="#偏向锁-初始锁定" class="headerlink" title="偏向锁 初始锁定"></a>偏向锁 初始锁定</h3><p>此时线程 A 想要获取对象 obj 的偏向锁，由于此时 obj 没有偏向任何线程（有可能是刚刚新建，也有可能是由锁定状态重偏向之后导致的未锁定状态），所以利用 CAS 操作将线程 ID 写入到 Mark Word 里面，此时 线程 A 获取了 obj 的偏向锁。obj 处于已偏向、锁定状态。</p>
+<h3 id="偏向锁-锁定-解锁"><a href="#偏向锁-锁定-解锁" class="headerlink" title="偏向锁 锁定/解锁"></a>偏向锁 锁定/解锁</h3><p>一旦 obj 第一次偏向了线程 A，A 就可以在没有竞争的情况下，也就是锁不升级的情况下，以极小的代价反复获取 obj 对象的锁。</p>
+<h3 id="偏向锁-重偏向（rebias）"><a href="#偏向锁-重偏向（rebias）" class="headerlink" title="偏向锁 重偏向（rebias）"></a>偏向锁 重偏向（rebias）</h3><p>如果 obj 先被线程 A 锁定，然后释放。然后线程 B 过来是否能重新获取偏向锁呐？在一定条件下，经过了重偏向可以重新获得偏向锁。</p>
+<p>通过上面的 mark word 我们可以看出，在偏向锁的时候有一个字段是 epoch，同时在 obj 的类 O 信息里面也有一个 epoch，每次系统到达安全点会对类的 epoch 加 1，变成 epoch_new，然后扫描所有的类 O 的实例，判断该偏向锁是否还被持有，如果被持有则将 epoch_new 复制给对象头的 epoch 字段。</p>
+<p>每次去获取偏向锁的时候回去判断对象实例的 epoch 和 类的 epoch 是否相等，如果不等代表对象是未锁定、可偏向、未偏向状态，可以偏向新的线程。</p>
+<h3 id="撤销偏向（revoke）"><a href="#撤销偏向（revoke）" class="headerlink" title="撤销偏向（revoke）"></a>撤销偏向（revoke）</h3><blockquote>
+<p> Once biased, that thread can subsequently lock and unlock the object without resorting to expensive atomic instructions. Obviously, an object can be biased toward at most one thread at any given time. (We refer to that thread as the bias holding thread). If another thread tries to acquire a biased object, however, we need to <em>revoke</em> the bias from the original thread. </p>
+</blockquote>
+<p>线程 B 来竞争，此时偏向锁会膨胀位轻量级锁。当 B 线程想利用 CAS 获取偏向锁失败， A 线程被暂停，然后检查 A 线程；</p>
+<ol>
+<li><p>A 线程已经退出了同步代码块，或者是已经不在存活了，如果是上面两种情况之一的，将 obj 的 Mark Word 后 3bit 改为 001（无锁状态），然后再去唤醒 A 线程。</p>
+</li>
+<li><p>A 线程还在同步代码块中，此时将 A 线程的偏向锁升级为轻量级锁。首先会 copy 一份 obj 对象的 mark word 内容，放到线程 A 当前栈帧的一个叫做 Lock Record 空间的 displace mark word 的位置，</p>
+<p><img src="../media/20170420102716139.jpeg" alt="20170420102716139"></p>
+<p>然后通过 CAS 将 obj 中 mark word 的内容替换为指向栈帧中 mark word 的位置，最后将 Lock Record 里面的 owner 指向 obj 对象。并且对象Mark Word的锁标志位设置为“00”，到此完成了锁的升级。</p>
+<p><img src="../media/20170420102754608.jpeg" alt="20170420102754608"></p>
+</li>
+</ol>
+<h3 id="Bulk-Revoke"><a href="#Bulk-Revoke" class="headerlink" title="Bulk Revoke"></a>Bulk Revoke</h3><p>Java 会在类信息里面维护一个计数器记录，记录该类发生偏向锁 revoke 的次数，一旦达到某个阈值，则认为这个类不适合偏向锁，将会禁用这个类的偏向锁功能。这个类新建的对象实例的最后 3bit 将是 001（无锁）。</p>
+<blockquote>
+<p>Objects that are explicitly designed to be shared between multiple threads, such as producer/consumer queues, are not suitable for biased locking. Therefore, biased locking is disabled for a class if revocations for its instances happened frequently in the past. This is called <em>bulk revocation</em>. If the locking code is invoked on an instance of a class for which biased locking was disabled, it performs the standard thin locking. Newly allocated instances of the class are marked as non-biasable.</p>
+</blockquote>
+<h3 id="轻量级锁定"><a href="#轻量级锁定" class="headerlink" title="轻量级锁定"></a>轻量级锁定</h3><p>刚刚在上文中关于撤销偏向（revoke）中已经描述了锁定的流程。在此再总结一遍</p>
+<ol>
+<li>复制 mark word 到 displace mark word</li>
+<li>CAS 替换 mark word 中的信息为指针</li>
+<li>修改 锁 标志为 00</li>
+<li>将栈帧中的 owner 指向锁定的对象</li>
+</ol>
+<h3 id="轻量级锁-递归锁定"><a href="#轻量级锁-递归锁定" class="headerlink" title="轻量级锁 递归锁定"></a>轻量级锁 递归锁定</h3><p><img src="../media/image-20190719112951132.png" alt="image-20190719112951132"></p>
+<p>线程 A 在去获取轻量级锁的时候，会首先使用 CAS 操作，如果操作失败那么会在此时判断是不是该线程已经持有过该对象的锁了，通过判断对象的 mark word 是不是指向当前线程的栈帧，如果是则会在最新的栈帧处新建一个 displaced mark word 为 null 的 lock record。关于为什么要这么做，其实就是为了记录一下锁的重入，发生重入了需要记录，本来是记录到 mark word 里面最方便，可能是 mark word 没有足够的空间。如果是在 lock record里面记录的话，需要遍历 lock record 才可以获取这个数量。所以最终Hotspot选择每次获得锁都添加一个<code>Lock Record</code>来表示锁的重入。</p>
+<p>类似的递归的解锁只需要将栈帧中的 lock records 删除即可。</p>
+<h3 id="轻量级锁-膨胀"><a href="#轻量级锁-膨胀" class="headerlink" title="轻量级锁 膨胀"></a>轻量级锁 膨胀</h3><p>线程 A 持有对象 obj 的轻量级锁，线程 B 过来 CAS 失败，开始自旋等待，自旋到达一定次数之后如果还没有获取该轻量级锁，则会将该锁膨胀为重量级锁。会将 mark word 的的锁标志为改为10，同时经指针指向互斥量，然后线程 B 挂起。</p>
+<blockquote>
+<p>JDK1.6中 -XX:+UseSpinning开启； -XX:PreBlockSpin=10 为自旋次数。<br>JDK1.7后，去掉 -XX:PreBlockSpin 参数，由jvm控制。</p>
+</blockquote>
+<h3 id="轻量级锁-解锁"><a href="#轻量级锁-解锁" class="headerlink" title="轻量级锁 解锁"></a>轻量级锁 解锁</h3><p>轻量级锁解锁也是理由 CAS 将 mark word 里面的指针替换为无锁的 mark word 信息。需要判断 mark word 里面是指向该线程的 lock record</p>
+<ol>
+<li>如果不是，说明已经锁膨胀了，CAS 失败，此时需要唤醒在等待重量级锁的线程</li>
+<li>如果是，说明锁没有膨胀，直接 CAS 操作将 mark word 改为 001（无锁）状态，为下一个线程获取轻量级锁做好准备。</li>
+</ol>
+<h3 id="重量级锁-解锁"><a href="#重量级锁-解锁" class="headerlink" title="重量级锁 解锁"></a>重量级锁 解锁</h3><p>释放 mutex，唤醒在等待的线程</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>新标签页打开图片可看大图</p>
+<p><img src="../media/v2-9db4211af1be81785f6cc51a58ae6054_r.jpg" alt="v2-9db4211af1be81785f6cc51a58ae6054_r"></p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://blog.csdn.net/zqz_zqz/article/details/70233767">java 中的锁 — 偏向锁、轻量级锁、自旋锁、重量级锁 - zqz_zqz的博客 - CSDN博客</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/34606653">Java 8 并发篇 - 冷静分析 Synchronized（下） - 知乎</a></p>
+<p><a href="https://blogs.oracle.com/dave/biased-locking-in-hotspot">Biased Locking in HotSpot | Oracle David Dice’s Blog</a>  //rebias</p>
+<p><a href="http://www.ishenping.com/ArtInfo/266444.html#Bulk_Rebias_192">Java中的偏向锁，轻量级锁， 重量级锁解析 - 神评网</a> //rebias</p>
+<p><a href="https://www.zhihu.com/question/56582060"> BiasedLocking模式下markOop中位域epoch的根本作用是什么？ - 知乎</a> //rebias</p>
+<p><a href="https://juejin.im/post/5bfffafc6fb9a049d37ed198">死磕Synchronized底层实现—轻量级锁 - 掘金</a></p>
+]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>JVM</tag>
+        <tag>锁</tag>
+        <tag>偏向锁</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>分布式一致性协议学习笔记：2PC 和 3PC</title>
     <url>/2PC-and-3PC.html</url>
     <content><![CDATA[<p>了解分布式一致性的一些概念和理论，介绍简单常用的分布式一致性协议。主要介绍二阶段提交和三阶段提交的基本流程，并相互比较。</p>
@@ -550,24 +566,6 @@
       </tags>
   </entry>
   <entry>
-    <title>利用 JavaSE 创建简单 HTTP Server</title>
-    <url>/how-to-use-java-se-create-simple-httpserver.html</url>
-    <content><![CDATA[<p>在工作中经常会遇到简单实用 HTTP server 的场景，可是又不需要 Spring MVC 或者 web容器那样重的东西。这种情况下 JavaSE 就可以满足我们的要求了。<br><span id="more"></span></p>
-<h1 id="上代码"><a href="#上代码" class="headerlink" title="上代码"></a>上代码</h1><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> web;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.sun.net.httpserver.Headers;</span><br><span class="line"><span class="keyword">import</span> com.sun.net.httpserver.HttpExchange;</span><br><span class="line"><span class="keyword">import</span> com.sun.net.httpserver.HttpHandler;</span><br><span class="line"><span class="keyword">import</span> com.sun.net.httpserver.HttpServer;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Service;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.annotation.PostConstruct;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.OutputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.OutputStreamWriter;</span><br><span class="line"><span class="keyword">import</span> java.net.HttpURLConnection;</span><br><span class="line"><span class="keyword">import</span> java.net.InetSocketAddress;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Created by zhangbo54 on 2019-01-24.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimpleServer</span> </span>&#123;</span><br><span class="line">    <span class="meta">@PostConstruct</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initHttpServer</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        HttpServer server = HttpServer.create(<span class="keyword">new</span> InetSocketAddress(<span class="number">8418</span>), <span class="number">0</span>);</span><br><span class="line">        server.createContext(<span class="string">&quot;/test&quot;</span>, <span class="keyword">new</span> MyHandler());</span><br><span class="line">        server.setExecutor(<span class="keyword">null</span>); <span class="comment">// creates a default executor</span></span><br><span class="line">        server.start();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MyHandler</span> <span class="keyword">implements</span> <span class="title">HttpHandler</span> </span>&#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handle</span><span class="params">(HttpExchange httpExchange)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;receive&quot;</span>);</span><br><span class="line">            String requestMethod = httpExchange.getRequestMethod();</span><br><span class="line">            <span class="keyword">if</span> (requestMethod.equalsIgnoreCase(<span class="string">&quot;GET&quot;</span>)) &#123;<span class="comment">//客户端的请求是get方法</span></span><br><span class="line">                <span class="comment">//设置服务端响应的编码格式，否则在客户端收到的可能是乱码</span></span><br><span class="line">                Headers responseHeaders = httpExchange.getResponseHeaders();</span><br><span class="line">                responseHeaders.set(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;text/html;charset=utf-8&quot;</span>);</span><br><span class="line"></span><br><span class="line">                <span class="comment">//在这里通过httpExchange获取客户端发送过来的消息</span></span><br><span class="line">                <span class="comment">//URI url = httpExchange.getRequestURI();</span></span><br><span class="line">                <span class="comment">//InputStream requestBody = httpExchange.getRequestBody();</span></span><br><span class="line"></span><br><span class="line">                <span class="comment">// 这里获取get请求参数</span></span><br><span class="line">                <span class="comment">// will return string in format similar to this: &quot;field1=value1&amp;field2=value2&amp;field3=value3...&quot;</span></span><br><span class="line">                String queryParams = httpExchange.getRequestURI().getQuery();</span><br><span class="line">                System.out.println(queryParams);</span><br><span class="line"></span><br><span class="line">                String response = <span class="string">&quot;this is server&quot;</span>;</span><br><span class="line"></span><br><span class="line">                httpExchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, response.getBytes(<span class="string">&quot;UTF-8&quot;</span>).length);</span><br><span class="line"></span><br><span class="line">                <span class="keyword">try</span> (OutputStream responseBody = httpExchange.getResponseBody();</span><br><span class="line">                         OutputStreamWriter writer = <span class="keyword">new</span> OutputStreamWriter(responseBody, <span class="string">&quot;UTF-8&quot;</span>)) &#123;</span><br><span class="line">                        writer.write(response);</span><br><span class="line">                    &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
-<li><a href="https://blog.csdn.net/qq_29125669/article/details/77873923">CSDN</a></li>
-<li><a href="https://stackoverflow.com/questions/11640025/how-to-obtain-the-query-string-in-a-get-with-java-httpserver-httpexchange">stackoverflow</a></li>
-</ol>
-]]></content>
-      <categories>
-        <category>技术</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>tech</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>到底什么是 Git 三方对比</title>
     <url>/about-git-dff.html</url>
     <content><![CDATA[<p>问题： 为什么我在 gitlab 上提交的MR，代码diff不是两个分支的区别？</p>
@@ -591,42 +589,14 @@
       </tags>
   </entry>
   <entry>
-    <title>如何构建一个正确的单例</title>
-    <url>/create-right-singleton.html</url>
-    <content><![CDATA[<p>单例模式是设计模式里面最常见的，也是在面试过程中面试官最容易考到的，通过单例模式还可以引申到其他的一些并发问题。今天我们来聊聊如何正确的构建一个单例。</p>
-<span id="more"></span>
-<p><img src="../media/dragonboat_ZH-CN0697680986_1920x1080.jpg" alt="dragonboat_ZH-CN0697680986_1920x1080"></p>
-<p>首先我们来写一个最简单的单例，该单例只能使用在单线程的情况下。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UnsafeLazyInitialization</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> Resource resource;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Resource <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (resource == <span class="keyword">null</span>) &#123;</span><br><span class="line">      resource = <span class="keyword">new</span> Resource(); <span class="comment">// 多线程情况下是不安全的发布</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> resource;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>我们来分析一下这个单例如果放到多线程模式下会有什么问题，如果线程 A 和 B 同时到达 <code>if (resource == null)</code> 的时候（或者是由于可见性的原因，线程 B 没有看到线程 A 已经对引用赋值了），此时判断逻辑都为 <code>true</code>  于是就会创建 <code>Resource</code> 对象，两个线程创建了两个对象（如果有多个线程，可能会创建更多的对象），不符合单例的要求。相对这个问题而言，这里还隐藏了更危险的问题，由于指令的重排序的原因，可能导致一些线程能够获取这个单例，但是单例对象还在初始化，内部处于一个不确定的状态。</p>
-<h4 id="饿汉单例（静态类模式）"><a href="#饿汉单例（静态类模式）" class="headerlink" title="饿汉单例（静态类模式）"></a>饿汉单例（静态类模式）</h4><p>下面我们改进一下这个单例，让其变为一个线程安全的单例。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EagerInitialization</span> </span>&#123; <span class="comment">// 饿汉模式</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> Resource resource = <span class="keyword">new</span> Resource(); <span class="comment">// 通过类加载过程，提前加载单例，避免线程竞争</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Resource <span class="title">getResource</span><span class="params">()</span> </span>&#123; </span><br><span class="line">    <span class="keyword">return</span> resource;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>上面的代码如何做到的线程安全，是由于利用了静态初始化器。</p>
-<blockquote>
-<p>静态初始化器是由 JVM 再类的初始化阶段执行，即在类被加载后并且被线程使用之前。由于 JVM 将在初始化期间获得一个锁，并且每个线程都至少获取一次这个锁以确保这个累已经加载，因此在静态初始化期间，内存写入操作将自动对所有线程可见。</p>
-</blockquote>
-<h4 id="懒汉单例-（静态类模式）"><a href="#懒汉单例-（静态类模式）" class="headerlink" title="懒汉单例 （静态类模式）"></a>懒汉单例 （静态类模式）</h4><p>上面的模式展示了如何使用 Java 本身类加载的机制来保证单例的，使用同样的方式也可以构建一种懒汉模式的单例。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ResourceFactory</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ResourceHolder</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Resource resource = <span class="keyword">new</span> Resource();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Resource <span class="title">getResource</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> ResourceHolder.resource;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="双重检测锁-Double-Checked-Locking"><a href="#双重检测锁-Double-Checked-Locking" class="headerlink" title="双重检测锁 Double Checked Locking"></a>双重检测锁 Double Checked Locking</h4><p>在江湖上还传说着一种既高效又线程安全的单例写法：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 不要这么做</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DoubleCheckedLocking</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> Resource resource;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (resource == <span class="keyword">null</span>) &#123;</span><br><span class="line">      <span class="keyword">synchronized</span>(DoubleCheckedLocking.class) &#123;</span><br><span class="line">        <span class="keyword">if</span> (resource == <span class="keyword">null</span>) &#123;</span><br><span class="line">          resource = <span class="keyword">new</span> Resource();</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> resource;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>上面的 DCL 真正的问题在于在没有同步的情况下读取一个共享对象。可见性问题会造成有些线程可能看到失效的值，这个值可能是一个 <code>null</code> ，更加糟糕的情况下，这个值可能是一个不确定的值，因为该对象还没有初始化完成就发布了。</p>
-<p>上面的例子可以改写成以下代码，通过使用 <code>volatile</code> 来保证共享对象的可见性</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DoubleCheckedLocking</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> Resource resource;</span><br><span class="line">  .....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>然而，DCL 的这种使用方法已经被广泛地废弃了——促使该模式出现的驱动力（无竞争同步的执行速度很慢，以及 JVM 启动很慢）已经不复存在了，因此它不是一种高效的优化措施。延迟初始化能带来同样的优势，并且更容易理解。</p>
-</blockquote>
-<h4 id="枚举类模式实现枚举"><a href="#枚举类模式实现枚举" class="headerlink" title="枚举类模式实现枚举"></a>枚举类模式实现枚举</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MySingleton</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">enum</span> <span class="title">Singleton</span> <span class="keyword">implements</span> <span class="title">MySingleton</span> </span>&#123;</span><br><span class="line">  INSTANCE &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;complete singleton&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> MySingleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Singleton.INSTANCE;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>effective java 推荐使用枚举来做单例</p>
-<blockquote>
-<p>使用枚举实现单例的方法虽然还没有广泛采用，但是单元素的枚举类型已经成为实现Singleton的最佳方法。</p>
-</blockquote>
-<p>使用枚举来做单例的优势是：写法简单，单例线程安全由 JMM 提供、反序列化得到的对象也能保证是同一个。</p>
-<p>单例线程安全：如果反编译单例的代码之后，会发现是一些 static 的属性和代码块。</p>
-<p>反序列化的保障：</p>
-<blockquote>
-<p>Java的序列化机制针对枚举类型是特殊处理的。简单来讲，在序列化枚举类型时，只会存储枚举类的引用和枚举常量的名称。随后的反序列化的过程中，这些信息被用来在运行时环境中查找存在的枚举类型对象。</p>
-</blockquote>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>推荐使用枚举去实现单例模式！</p>
+    <title>利用 JavaSE 创建简单 HTTP Server</title>
+    <url>/how-to-use-java-se-create-simple-httpserver.html</url>
+    <content><![CDATA[<p>在工作中经常会遇到简单实用 HTTP server 的场景，可是又不需要 Spring MVC 或者 web容器那样重的东西。这种情况下 JavaSE 就可以满足我们的要求了。<br><span id="more"></span></p>
+<h1 id="上代码"><a href="#上代码" class="headerlink" title="上代码"></a>上代码</h1><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> web;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.sun.net.httpserver.Headers;</span><br><span class="line"><span class="keyword">import</span> com.sun.net.httpserver.HttpExchange;</span><br><span class="line"><span class="keyword">import</span> com.sun.net.httpserver.HttpHandler;</span><br><span class="line"><span class="keyword">import</span> com.sun.net.httpserver.HttpServer;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Service;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.annotation.PostConstruct;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.OutputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.OutputStreamWriter;</span><br><span class="line"><span class="keyword">import</span> java.net.HttpURLConnection;</span><br><span class="line"><span class="keyword">import</span> java.net.InetSocketAddress;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Created by zhangbo54 on 2019-01-24.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimpleServer</span> </span>&#123;</span><br><span class="line">    <span class="meta">@PostConstruct</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initHttpServer</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        HttpServer server = HttpServer.create(<span class="keyword">new</span> InetSocketAddress(<span class="number">8418</span>), <span class="number">0</span>);</span><br><span class="line">        server.createContext(<span class="string">&quot;/test&quot;</span>, <span class="keyword">new</span> MyHandler());</span><br><span class="line">        server.setExecutor(<span class="keyword">null</span>); <span class="comment">// creates a default executor</span></span><br><span class="line">        server.start();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MyHandler</span> <span class="keyword">implements</span> <span class="title">HttpHandler</span> </span>&#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handle</span><span class="params">(HttpExchange httpExchange)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;receive&quot;</span>);</span><br><span class="line">            String requestMethod = httpExchange.getRequestMethod();</span><br><span class="line">            <span class="keyword">if</span> (requestMethod.equalsIgnoreCase(<span class="string">&quot;GET&quot;</span>)) &#123;<span class="comment">//客户端的请求是get方法</span></span><br><span class="line">                <span class="comment">//设置服务端响应的编码格式，否则在客户端收到的可能是乱码</span></span><br><span class="line">                Headers responseHeaders = httpExchange.getResponseHeaders();</span><br><span class="line">                responseHeaders.set(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;text/html;charset=utf-8&quot;</span>);</span><br><span class="line"></span><br><span class="line">                <span class="comment">//在这里通过httpExchange获取客户端发送过来的消息</span></span><br><span class="line">                <span class="comment">//URI url = httpExchange.getRequestURI();</span></span><br><span class="line">                <span class="comment">//InputStream requestBody = httpExchange.getRequestBody();</span></span><br><span class="line"></span><br><span class="line">                <span class="comment">// 这里获取get请求参数</span></span><br><span class="line">                <span class="comment">// will return string in format similar to this: &quot;field1=value1&amp;field2=value2&amp;field3=value3...&quot;</span></span><br><span class="line">                String queryParams = httpExchange.getRequestURI().getQuery();</span><br><span class="line">                System.out.println(queryParams);</span><br><span class="line"></span><br><span class="line">                String response = <span class="string">&quot;this is server&quot;</span>;</span><br><span class="line"></span><br><span class="line">                httpExchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, response.getBytes(<span class="string">&quot;UTF-8&quot;</span>).length);</span><br><span class="line"></span><br><span class="line">                <span class="keyword">try</span> (OutputStream responseBody = httpExchange.getResponseBody();</span><br><span class="line">                         OutputStreamWriter writer = <span class="keyword">new</span> OutputStreamWriter(responseBody, <span class="string">&quot;UTF-8&quot;</span>)) &#123;</span><br><span class="line">                        writer.write(response);</span><br><span class="line">                    &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a href="https://blog.csdn.net/qq_29125669/article/details/77873923">CSDN</a></li>
+<li><a href="https://stackoverflow.com/questions/11640025/how-to-obtain-the-query-string-in-a-get-with-java-httpserver-httpexchange">stackoverflow</a></li>
+</ol>
 ]]></content>
       <categories>
         <category>技术</category>
@@ -634,6 +604,60 @@
       <tags>
         <tag>Java</tag>
         <tag>tech</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>如何解决动态规划问题</title>
+    <url>/solve-dp-problems.html</url>
+    <content><![CDATA[<p>曾经的我以为动态规划很神秘，很难理解。后来随着刷的动态规划相关的题越来越多，对于动态规划也就驾轻就熟了。我一开始来认识动态规划是通过概念来理解的，这对于我来说总是显得晦涩。我不是一个善于死记理论的人，反而是通过多刷题，回头再去看动态规划的使用情况则是有一种恍然大悟感。这样的获得想必也不会轻易忘记。刷题并不能让人变得聪明，但确实能够锻炼一个人的思维。</p>
+<span id="more"></span>
+<p><img src="../media/fe310b0e3c026f78.jpg" alt="img"></p>
+<h2 id="递归-数组-动态规划"><a href="#递归-数组-动态规划" class="headerlink" title="递归 + 数组 = 动态规划"></a>递归 + 数组 = 动态规划</h2><blockquote>
+<p>先看一眼概念也未必是坏事：<a href="https://zh.wikipedia.org/wiki/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92">动态规划 - 维基百科，自由的百科全书</a></p>
+</blockquote>
+<p>动态规划的所有题目，在不考虑性能的情况下，都可以使用简单的递归来解决。</p>
+<h3 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h3><p>下面来看一道 LeetCode 经典动态规划题目：<a href="https://leetcode.com/problems/climbing-stairs/">(70) Climbing Stairs - LeetCode</a></p>
+<p>You are climbing a stair case. It takes <em>n</em> steps to reach to the top.</p>
+<p>Each time you can either climb 1 or 2 steps. In how many distinct ways can you climb to the top?</p>
+<p><strong>Note:</strong> Given <em>n</em> will be a positive integer.</p>
+<p><strong>Example 1:</strong></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Input: 2</span><br><span class="line">Output: 2</span><br><span class="line">Explanation: There are two ways to climb to the top.</span><br><span class="line">1. 1 step + 1 step</span><br><span class="line">2. 2 steps</span><br></pre></td></tr></table></figure>
+<p><strong>Example 2:</strong></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Input: 3</span><br><span class="line">Output: 3</span><br><span class="line">Explanation: There are three ways to climb to the top.</span><br><span class="line">1. 1 step + 1 step + 1 step</span><br><span class="line">2. 1 step + 2 steps</span><br><span class="line">3. 2 steps + 1 step</span><br></pre></td></tr></table></figure>
+<h3 id="递归"><a href="#递归" class="headerlink" title="递归"></a>递归</h3><p>公式如下（这个也是做动态规划必须要列出的公式）</p>
+<script type="math/tex; mode=display">
+f(n)=\begin{cases}
+n,\quad n\leq 2 \\\\
+f(n-1)+f(n-2),\quad x>2
+\end{cases}</script><p>我们来试试用简单的递归来解决这个问题：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Created by jacob on 2019-08-20.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">climbStairs</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (n &lt;= <span class="number">2</span>) &#123; <span class="comment">// 递归终结点</span></span><br><span class="line">            <span class="keyword">return</span> n;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> climbStairs(n - <span class="number">1</span>) + climbStairs(n - <span class="number">2</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果我们这时候计算的是 <code>climbStairs(5)</code>，通过下图可以看到我们一共计算 <code>f(3)</code> 2次、 <code>f(2)</code> 3次、 <code>f(1)</code> 2次。这是在台阶数 n 很小的情况下，如果 n 很大的话，重复计算的模块会变的更多。</p>
+<p><img src="../media/DP.png" alt="DP"></p>
+<h3 id="数组记录中间结果"><a href="#数组记录中间结果" class="headerlink" title="数组记录中间结果"></a>数组记录中间结果</h3><p>这个时候如果我们能够通过一个数组来记录中间结果就好了，当上图中的每一个节点如果已经计算过，就不再重复计算了。</p>
+<p><img src="../media/DP2.png" alt="DP2"></p>
+<p>代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">climbStairs</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span>[] dp = <span class="keyword">new</span> <span class="keyword">int</span>[n + <span class="number">1</span>];</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.climbStairs(dp, n);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">climbStairs</span><span class="params">(<span class="keyword">int</span>[] dp, <span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (n &lt;= <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (dp[n] &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> dp[n];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">int</span> num = climbStairs(dp, n - <span class="number">1</span>) + climbStairs(dp, n - <span class="number">2</span>);</span><br><span class="line">        dp[n] = num;</span><br><span class="line">        <span class="keyword">return</span> num;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="去掉递归"><a href="#去掉递归" class="headerlink" title="去掉递归"></a>去掉递归</h3><p>递归会新建很多局部变量，建立很多栈帧，带来很多不必要的消耗，如果能够去除递归效率会有进一步的提升。</p>
+<script type="math/tex; mode=display">
+f(n)=\begin{cases}
+n,\quad n\leq 2 \\\\
+f(n-1)+f(n-2),\quad x>2
+\end{cases}</script><p>上面我们都是从图中的根结点一步一步向下计算，是一个深度优先搜索的过程，如果我们从根节点向上算就能去掉递归了。</p>
+<p><img src="../media/DP-3.png" alt="DP-3"></p>
+<p>代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Created by jacob on 2019-08-20.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Solution2</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">climbStairs</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span>[] dp = <span class="keyword">new</span> <span class="keyword">int</span>[n + <span class="number">1</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i &lt;= <span class="number">2</span>) &#123;</span><br><span class="line">                dp[i] = i;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                dp[i] = dp[i - <span class="number">1</span>] + dp[i - <span class="number">2</span>];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[n];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="动态规划题目"><a href="#动态规划题目" class="headerlink" title="动态规划题目"></a>动态规划题目</h2><p>多刷点题，就啥都明白了。</p>
+<ul>
+<li><a href="https://leetcode.com/problems/fibonacci-number/">(746) Fibonacci Number - LeetCode</a></li>
+<li><a href="https://leetcode.com/problems/n-th-tribonacci-number/">(1137) N-th Tribonacci Number - LeetCode</a></li>
+<li><a href="https://blog.csdn.net/hrn1216/article/details/51534607">动态规划 最长公共子序列 过程图解 - hrn1216的博客 - CSDN博客</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>算法</tag>
       </tags>
   </entry>
   <entry>
@@ -667,18 +691,6 @@
       </categories>
       <tags>
         <tag>Java</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>愿你做你自己</title>
-    <url>/be-yourself.html</url>
-    <content><![CDATA[<p>希望你永远都会是你自己，少年！</p>
-]]></content>
-      <categories>
-        <category>随笔</category>
-      </categories>
-      <tags>
-        <tag>think</tag>
       </tags>
   </entry>
   <entry>
@@ -788,57 +800,49 @@
       </tags>
   </entry>
   <entry>
-    <title>如何解决动态规划问题</title>
-    <url>/solve-dp-problems.html</url>
-    <content><![CDATA[<p>曾经的我以为动态规划很神秘，很难理解。后来随着刷的动态规划相关的题越来越多，对于动态规划也就驾轻就熟了。我一开始来认识动态规划是通过概念来理解的，这对于我来说总是显得晦涩。我不是一个善于死记理论的人，反而是通过多刷题，回头再去看动态规划的使用情况则是有一种恍然大悟感。这样的获得想必也不会轻易忘记。刷题并不能让人变得聪明，但确实能够锻炼一个人的思维。</p>
+    <title>如何构建一个正确的单例</title>
+    <url>/create-right-singleton.html</url>
+    <content><![CDATA[<p>单例模式是设计模式里面最常见的，也是在面试过程中面试官最容易考到的，通过单例模式还可以引申到其他的一些并发问题。今天我们来聊聊如何正确的构建一个单例。</p>
 <span id="more"></span>
-<p><img src="../media/fe310b0e3c026f78.jpg" alt="img"></p>
-<h2 id="递归-数组-动态规划"><a href="#递归-数组-动态规划" class="headerlink" title="递归 + 数组 = 动态规划"></a>递归 + 数组 = 动态规划</h2><blockquote>
-<p>先看一眼概念也未必是坏事：<a href="https://zh.wikipedia.org/wiki/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92">动态规划 - 维基百科，自由的百科全书</a></p>
+<p><img src="../media/dragonboat_ZH-CN0697680986_1920x1080.jpg" alt="dragonboat_ZH-CN0697680986_1920x1080"></p>
+<p>首先我们来写一个最简单的单例，该单例只能使用在单线程的情况下。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UnsafeLazyInitialization</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> Resource resource;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Resource <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (resource == <span class="keyword">null</span>) &#123;</span><br><span class="line">      resource = <span class="keyword">new</span> Resource(); <span class="comment">// 多线程情况下是不安全的发布</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> resource;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们来分析一下这个单例如果放到多线程模式下会有什么问题，如果线程 A 和 B 同时到达 <code>if (resource == null)</code> 的时候（或者是由于可见性的原因，线程 B 没有看到线程 A 已经对引用赋值了），此时判断逻辑都为 <code>true</code>  于是就会创建 <code>Resource</code> 对象，两个线程创建了两个对象（如果有多个线程，可能会创建更多的对象），不符合单例的要求。相对这个问题而言，这里还隐藏了更危险的问题，由于指令的重排序的原因，可能导致一些线程能够获取这个单例，但是单例对象还在初始化，内部处于一个不确定的状态。</p>
+<h4 id="饿汉单例（静态类模式）"><a href="#饿汉单例（静态类模式）" class="headerlink" title="饿汉单例（静态类模式）"></a>饿汉单例（静态类模式）</h4><p>下面我们改进一下这个单例，让其变为一个线程安全的单例。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EagerInitialization</span> </span>&#123; <span class="comment">// 饿汉模式</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> Resource resource = <span class="keyword">new</span> Resource(); <span class="comment">// 通过类加载过程，提前加载单例，避免线程竞争</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Resource <span class="title">getResource</span><span class="params">()</span> </span>&#123; </span><br><span class="line">    <span class="keyword">return</span> resource;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的代码如何做到的线程安全，是由于利用了静态初始化器。</p>
+<blockquote>
+<p>静态初始化器是由 JVM 再类的初始化阶段执行，即在类被加载后并且被线程使用之前。由于 JVM 将在初始化期间获得一个锁，并且每个线程都至少获取一次这个锁以确保这个累已经加载，因此在静态初始化期间，内存写入操作将自动对所有线程可见。</p>
 </blockquote>
-<p>动态规划的所有题目，在不考虑性能的情况下，都可以使用简单的递归来解决。</p>
-<h3 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h3><p>下面来看一道 LeetCode 经典动态规划题目：<a href="https://leetcode.com/problems/climbing-stairs/">(70) Climbing Stairs - LeetCode</a></p>
-<p>You are climbing a stair case. It takes <em>n</em> steps to reach to the top.</p>
-<p>Each time you can either climb 1 or 2 steps. In how many distinct ways can you climb to the top?</p>
-<p><strong>Note:</strong> Given <em>n</em> will be a positive integer.</p>
-<p><strong>Example 1:</strong></p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Input: 2</span><br><span class="line">Output: 2</span><br><span class="line">Explanation: There are two ways to climb to the top.</span><br><span class="line">1. 1 step + 1 step</span><br><span class="line">2. 2 steps</span><br></pre></td></tr></table></figure>
-<p><strong>Example 2:</strong></p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Input: 3</span><br><span class="line">Output: 3</span><br><span class="line">Explanation: There are three ways to climb to the top.</span><br><span class="line">1. 1 step + 1 step + 1 step</span><br><span class="line">2. 1 step + 2 steps</span><br><span class="line">3. 2 steps + 1 step</span><br></pre></td></tr></table></figure>
-<h3 id="递归"><a href="#递归" class="headerlink" title="递归"></a>递归</h3><p>公式如下（这个也是做动态规划必须要列出的公式）</p>
-<script type="math/tex; mode=display">
-f(n)=\begin{cases}
-n,\quad n\leq 2 \\\\
-f(n-1)+f(n-2),\quad x>2
-\end{cases}</script><p>我们来试试用简单的递归来解决这个问题：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Created by jacob on 2019-08-20.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">climbStairs</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (n &lt;= <span class="number">2</span>) &#123; <span class="comment">// 递归终结点</span></span><br><span class="line">            <span class="keyword">return</span> n;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> climbStairs(n - <span class="number">1</span>) + climbStairs(n - <span class="number">2</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>如果我们这时候计算的是 <code>climbStairs(5)</code>，通过下图可以看到我们一共计算 <code>f(3)</code> 2次、 <code>f(2)</code> 3次、 <code>f(1)</code> 2次。这是在台阶数 n 很小的情况下，如果 n 很大的话，重复计算的模块会变的更多。</p>
-<p><img src="../media/DP.png" alt="DP"></p>
-<h3 id="数组记录中间结果"><a href="#数组记录中间结果" class="headerlink" title="数组记录中间结果"></a>数组记录中间结果</h3><p>这个时候如果我们能够通过一个数组来记录中间结果就好了，当上图中的每一个节点如果已经计算过，就不再重复计算了。</p>
-<p><img src="../media/DP2.png" alt="DP2"></p>
-<p>代码如下：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">climbStairs</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span>[] dp = <span class="keyword">new</span> <span class="keyword">int</span>[n + <span class="number">1</span>];</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.climbStairs(dp, n);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">climbStairs</span><span class="params">(<span class="keyword">int</span>[] dp, <span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (n &lt;= <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (dp[n] &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> dp[n];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">int</span> num = climbStairs(dp, n - <span class="number">1</span>) + climbStairs(dp, n - <span class="number">2</span>);</span><br><span class="line">        dp[n] = num;</span><br><span class="line">        <span class="keyword">return</span> num;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="去掉递归"><a href="#去掉递归" class="headerlink" title="去掉递归"></a>去掉递归</h3><p>递归会新建很多局部变量，建立很多栈帧，带来很多不必要的消耗，如果能够去除递归效率会有进一步的提升。</p>
-<script type="math/tex; mode=display">
-f(n)=\begin{cases}
-n,\quad n\leq 2 \\\\
-f(n-1)+f(n-2),\quad x>2
-\end{cases}</script><p>上面我们都是从图中的根结点一步一步向下计算，是一个深度优先搜索的过程，如果我们从根节点向上算就能去掉递归了。</p>
-<p><img src="../media/DP-3.png" alt="DP-3"></p>
-<p>代码如下：</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Created by jacob on 2019-08-20.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Solution2</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">climbStairs</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span>[] dp = <span class="keyword">new</span> <span class="keyword">int</span>[n + <span class="number">1</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i &lt;= <span class="number">2</span>) &#123;</span><br><span class="line">                dp[i] = i;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                dp[i] = dp[i - <span class="number">1</span>] + dp[i - <span class="number">2</span>];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[n];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="动态规划题目"><a href="#动态规划题目" class="headerlink" title="动态规划题目"></a>动态规划题目</h2><p>多刷点题，就啥都明白了。</p>
-<ul>
-<li><a href="https://leetcode.com/problems/fibonacci-number/">(746) Fibonacci Number - LeetCode</a></li>
-<li><a href="https://leetcode.com/problems/n-th-tribonacci-number/">(1137) N-th Tribonacci Number - LeetCode</a></li>
-<li><a href="https://blog.csdn.net/hrn1216/article/details/51534607">动态规划 最长公共子序列 过程图解 - hrn1216的博客 - CSDN博客</a></li>
-</ul>
+<h4 id="懒汉单例-（静态类模式）"><a href="#懒汉单例-（静态类模式）" class="headerlink" title="懒汉单例 （静态类模式）"></a>懒汉单例 （静态类模式）</h4><p>上面的模式展示了如何使用 Java 本身类加载的机制来保证单例的，使用同样的方式也可以构建一种懒汉模式的单例。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ResourceFactory</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ResourceHolder</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Resource resource = <span class="keyword">new</span> Resource();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Resource <span class="title">getResource</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> ResourceHolder.resource;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="双重检测锁-Double-Checked-Locking"><a href="#双重检测锁-Double-Checked-Locking" class="headerlink" title="双重检测锁 Double Checked Locking"></a>双重检测锁 Double Checked Locking</h4><p>在江湖上还传说着一种既高效又线程安全的单例写法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 不要这么做</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DoubleCheckedLocking</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> Resource resource;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (resource == <span class="keyword">null</span>) &#123;</span><br><span class="line">      <span class="keyword">synchronized</span>(DoubleCheckedLocking.class) &#123;</span><br><span class="line">        <span class="keyword">if</span> (resource == <span class="keyword">null</span>) &#123;</span><br><span class="line">          resource = <span class="keyword">new</span> Resource();</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> resource;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的 DCL 真正的问题在于在没有同步的情况下读取一个共享对象。可见性问题会造成有些线程可能看到失效的值，这个值可能是一个 <code>null</code> ，更加糟糕的情况下，这个值可能是一个不确定的值，因为该对象还没有初始化完成就发布了。</p>
+<p>上面的例子可以改写成以下代码，通过使用 <code>volatile</code> 来保证共享对象的可见性</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DoubleCheckedLocking</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> Resource resource;</span><br><span class="line">  .....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>然而，DCL 的这种使用方法已经被广泛地废弃了——促使该模式出现的驱动力（无竞争同步的执行速度很慢，以及 JVM 启动很慢）已经不复存在了，因此它不是一种高效的优化措施。延迟初始化能带来同样的优势，并且更容易理解。</p>
+</blockquote>
+<h4 id="枚举类模式实现枚举"><a href="#枚举类模式实现枚举" class="headerlink" title="枚举类模式实现枚举"></a>枚举类模式实现枚举</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MySingleton</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">enum</span> <span class="title">Singleton</span> <span class="keyword">implements</span> <span class="title">MySingleton</span> </span>&#123;</span><br><span class="line">  INSTANCE &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;complete singleton&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> MySingleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Singleton.INSTANCE;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>effective java 推荐使用枚举来做单例</p>
+<blockquote>
+<p>使用枚举实现单例的方法虽然还没有广泛采用，但是单元素的枚举类型已经成为实现Singleton的最佳方法。</p>
+</blockquote>
+<p>使用枚举来做单例的优势是：写法简单，单例线程安全由 JMM 提供、反序列化得到的对象也能保证是同一个。</p>
+<p>单例线程安全：如果反编译单例的代码之后，会发现是一些 static 的属性和代码块。</p>
+<p>反序列化的保障：</p>
+<blockquote>
+<p>Java的序列化机制针对枚举类型是特殊处理的。简单来讲，在序列化枚举类型时，只会存储枚举类的引用和枚举常量的名称。随后的反序列化的过程中，这些信息被用来在运行时环境中查找存在的枚举类型对象。</p>
+</blockquote>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>推荐使用枚举去实现单例模式！</p>
 ]]></content>
       <categories>
         <category>技术</category>
       </categories>
       <tags>
-        <tag>算法</tag>
+        <tag>Java</tag>
+        <tag>tech</tag>
       </tags>
   </entry>
   <entry>
@@ -912,6 +916,136 @@ f(n-1)+f(n-2),\quad x>2
         <tag>阿里</tag>
         <tag>蚂蚁金服</tag>
         <tag>面经</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>愿你做你自己</title>
+    <url>/be-yourself.html</url>
+    <content><![CDATA[<p>希望你永远都会是你自己，少年！</p>
+]]></content>
+      <categories>
+        <category>随笔</category>
+      </categories>
+      <tags>
+        <tag>think</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>JVM 探究（三）：垃圾回收算法和垃圾回收器</title>
+    <url>/gc-algorithms-and-garbage-collector.html</url>
+    <content><![CDATA[<p>通过介绍当前的垃圾回收器和垃圾回收算法的对比和不同的优势，来帮助读者选择适合自己的垃圾回收器。主要涉及对象存活的判断、三种垃圾回收算法以及新生代和老年代的几种传统的收集器，最后会介绍一下比较火热的<code>Garbage First(G1)收集器</code>。<br><span id="more"></span></p>
+<h2 id="JVM-内存分配方式"><a href="#JVM-内存分配方式" class="headerlink" title="JVM 内存分配方式"></a>JVM 内存分配方式</h2><p>在 Java 虚拟机需要一种方式来分配对象，就像操作系统需要管理内存一样，Java 虚拟机也需要一种方式来管理 Java 虚拟机的内存，现在管理 Java 虚拟机的方式主要有两种，一种被称为<code>指针碰撞(Bump the Point)</code>，另外一种被称为<code>空闲列表(Free List)</code>.</p>
+<h3 id="指针碰撞"><a href="#指针碰撞" class="headerlink" title="指针碰撞"></a>指针碰撞</h3><p>这种内存分配方式需要配合拥有内存整理过程的垃圾收集器。简单来说，这种方式的内存管理方式就是在空闲内存和已用内存之间设置一个指针，如果有新的内存被分配，就需要将指针向空闲区域移动对应的大小。然而由于这种方式简单粗暴，就必须要对应的垃圾收集器能够将存活的对象占用的内存整理在指针的一侧。使用这种分配算法的垃圾收集器是<code>Serial</code>,<code>ParNew</code>等带有内存整理的垃圾收集器。</p>
+<h3 id="空闲列表"><a href="#空闲列表" class="headerlink" title="空闲列表"></a>空闲列表</h3><p>通过在虚拟机中维护一个列表来记录那些内存空间是能够使用的。如果需要分配新的对象，将会在空闲的列表中寻找一个足够大的空闲内存来分配对象，然后更新这个空闲列表。采用<code>标记-清除</code>算法的垃圾收集器（eg：CMS）会采用这种分配方式。但是这种分配方式很容易造成很多外部碎片，在一定程度上会造成内存的浪费。</p>
+<h2 id="如何定位需要访问的对象"><a href="#如何定位需要访问的对象" class="headerlink" title="如何定位需要访问的对象"></a>如何定位需要访问的对象</h2><p>如何通过变量表引用到需要用到的对象，通过引用我们要找到具体的对象，然后才能够对对象做一些列的操作。引用方式主要有一下两种方式</p>
+<h3 id="句柄方式"><a href="#句柄方式" class="headerlink" title="句柄方式"></a>句柄方式</h3><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fndxgjtgb8j31kw0phkjl.jpg" alt="句柄方式访问对象"><br>句柄方式通过在 Java 堆中维护一个句柄池，池中的维护了对象实例和对象类型的引用，然后在根据这两个信息分别找到对应的存储信息，但是这样做的一个确定是实例对象的类型和数据都是通过两次寻址的方式来找到的。</p>
+<h3 id="直接引用"><a href="#直接引用" class="headerlink" title="直接引用"></a>直接引用</h3><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fndxohdm1rj31kw0qqb29.jpg" alt="直接引用方式访问对象"><br>直接引用的方式相较于句柄的方式，在第一次寻址的时候就能够找到对象的实例数据，对象类型数据的指针和对象实例放到了一起，从而一次寻址就能够找到对象的实例数据。</p>
+<h2 id="垃圾回收算法"><a href="#垃圾回收算法" class="headerlink" title="垃圾回收算法"></a>垃圾回收算法</h2><p>介绍常用的垃圾回收算法，针对<code>HotSpot</code>虚拟机做一些深入的介绍。</p>
+<h3 id="Mark-Sweep算法"><a href="#Mark-Sweep算法" class="headerlink" title="Mark-Sweep算法"></a>Mark-Sweep算法</h3><p><code>标记-清除（Mark-Sweep）</code>算法回收前后内存占用情况如下：</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fndzgovb5ij311s0hsjs7.jpg" alt="标记-清除算法图示"><br><code>标记-清除（Mark-Sweep）</code>算法是通过可以回收的内存进行标记后做清除操作，这样做的缺点就是会产生很多的内存碎片，可能的结果就是空闲内存总量是能够进行新对象的分配的，但是由于这些空闲的空间都不连续，一个对象放不下。就必须进行另外一次垃圾回收，垃圾回收又会引起服务的暂时停顿。</p>
+<h3 id="Mark-Compact-算法"><a href="#Mark-Compact-算法" class="headerlink" title="Mark-Compact 算法"></a>Mark-Compact 算法</h3><p><code>标记-整理(Mark-Compact)</code>算法回收前后内存占用情况如下：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnnglisy2mj310u0ik754.jpg" alt="标记-整理算法图示"></p>
+<p><code>标记-整理(Mark-Compact)</code>算法解决了<code>标记-清除（Mark-Sweep）</code>算法会产生很多不连续的空闲空间做出了改进，具体的方法就是在进行标记之后不是将对象直接清理掉，而是将存活的对象进行整理，使得存活的对象占用一块连续的内存空间，因为存活对象和可回收空间有明显的分割，所以可以直接对边界之外的内存进行直接的清理。这样的清理无疑更加有效率，虽然增加了移动对象的开支，但是整体上会比<code>标记-清除（Mark-Sweep）</code>算法更有效率。</p>
+<h3 id="Copying-算法"><a href="#Copying-算法" class="headerlink" title="Copying 算法"></a>Copying 算法</h3><p><code>复制(Copying)</code>算法回收前后内存占用情况如下：</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnngl3n0qxj31120kimy3.jpg" alt="复制算法图示"></p>
+<p><code>复制(Copying)</code>算法将内存区域分为大小相同的两个区域，当需要内存回收的时候，只需要将存活的对象复制到另外一块空闲区域，然后将原来的区域一次清理干净，什么都不留。相较于<code>标记-清除（Mark-Sweep）</code>算法的优势就是在解决了在标记和清除阶段的低效率和内存碎片问题，相较于<code>标记-整理(Mark-Compact)</code>算法的优势则是有着固定的内存分割线，而不是动态的调整，同时由于有两块相同大小的内存区域，存活的对象的复制和内存的回收会更有效率。缺点也十分明显，就是需要的内存空间是可用空间的2倍，内存的使用率永远不会超过50%。（现代虚拟机根据经验优化了这个比例，在后面介绍收集器的时候会介绍）</p>
+<h2 id="聊聊HotSpot"><a href="#聊聊HotSpot" class="headerlink" title="聊聊HotSpot"></a>聊聊HotSpot</h2><p><code>HotSpot</code> 是现在最广泛使用的虚拟机，拥有出色的性能。</p>
+<h3 id="判断对象是否存活"><a href="#判断对象是否存活" class="headerlink" title="判断对象是否存活"></a>判断对象是否存活</h3><p>目前针对对象的判断生存状态的的算法主要有引用计数法和可达性分析两种。在<code>Object-C</code>等语言中使用的是引用计数法，在<code>HotSpot</code>中，是使用可达性分析来判断的。</p>
+<h4 id="引用计数法-Reference-Counting"><a href="#引用计数法-Reference-Counting" class="headerlink" title="引用计数法(Reference Counting)"></a>引用计数法(Reference Counting)</h4><p>引用计数法是想要解决引用问题最容易想到的一种算法，既然需要知道对象是否存活，那就在对象上加个计数器来表示自己被引用的次数呗，每有一次新的引用，这个计数器就加1，每少一次引用，计数器就减1。这样看来，事情似乎出奇的简单，因为当该对象的计数器为0的时候，这就是这个对象的死期了。这种方式十分高效，而且简单。</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnhj99v7b8j31hm0c4dh6.jpg" alt="引用计数方法对象的的数据结构"></p>
+<center>*引用计数方法对象的的数据结构*</center>
+
+<p>事情到此看起来都很美好。然而，却有一种循环引用的问题让想使用这种算法的 GC 退缩。那便是<code>循环引用</code>问题，像下图这种，两个对象相互引用，但是没有其他对象引用这两个对象的情况，实际上这两个对象已经都没有利用价值了，应该让 GC 回收。可是由于两个对象互相都持有对方的一个引用，让 GC 以为他们都还需要继续生存以服务另外的对象。长期下去会造成很严重的内存泄露。</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnhjjr6atzj31ko0f4q5k.jpg" alt="循环引用对象"></p>
+<center>*循环引用对象*</center>
+
+<p>除了上面这种最简单的引用计数法，还有<code>延迟引用计数法</code>和<code>Sticky引用计数法</code>。这里不再深入讨论，可以参考 <a href="http://kklin.farbox.com/post/cao-zuo-xi-tong/xu-ni-ji/2-gcyin-yong-ji-shu-suan-fa">GC引用计数算法</a> ，或者直接阅读<a href="https://www.amazon.cn/dp/B01JZS0AO8/ref=sr_1_1?ie=UTF8&amp;qid=1516017889&amp;sr=8-1&amp;keywords=%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%9A%84%E7%AE%97%E6%B3%95%E4%B8%8E%E5%AE%9E%E7%8E%B0">《垃圾回收的算法与实现》</a>。</p>
+<h4 id="可达性分析（Reachablity-Analysis）"><a href="#可达性分析（Reachablity-Analysis）" class="headerlink" title="可达性分析（Reachablity Analysis）"></a>可达性分析（Reachablity Analysis）</h4><p>与<code>引用计数法</code>相比，可达性分析就显得更加复杂了。可达性分析是通过<code>GC Root</code>开始搜索整个对象池，如果某些对象无法搜索到，在图论中我们称之为不可达，那么这些不可达的对象就会成为<code>GC</code>的刀下鬼了。通过这种方式就能够实现回收循环引用的对象。</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnhkmkwjq0j31kw15fwt3.jpg" alt=""></p>
+<center>*可达性分析判断对象是否可回收*</center>
+
+<p>在<code>HotSpot</code>中<code>GC Root</code>主要有</p>
+<ul>
+<li>虚拟机栈（栈帧中的本地变量表）中引用的对象。</li>
+<li>方法区中类静态属性引用的对象。</li>
+<li>方法区中常量引用的对象</li>
+<li>本地方法栈中<code>JNI</code>（即一般说的<code>Native</code>方法）引用的对象</li>
+</ul>
+<h5 id="HotSpot-的可达性分析实现"><a href="#HotSpot-的可达性分析实现" class="headerlink" title="HotSpot 的可达性分析实现"></a>HotSpot 的可达性分析实现</h5><p>在使用<code>可达性分析</code>算法的时候，不可避免地会引起<code>GC 停顿</code>，因为必须保证在进行可达性分析的时候对象之间的引用关系是不变的，我们无法针对一个在不断变化的图分析他的可达性。因此在进行可达性分析的时候难免要停止所有的用户线程。我们通常称之为<code>STW(Stop The Word)</code>. 有些收集器通过一些手段可以减少<code>STW</code>的时间（例如<code>CMS</code>），但是无法跳过这个过程。</p>
+<p>目前主流的 Java 虚拟机使用的都是<code>准确式GC</code>，就是说当<code>STW</code>发生的时候，并不需要检查全部的变量从而确定那些变量是引用类型，而是在类加载完成之后会将引用类型的变量存在一个数据结构中，在<code>HotSpot</code>虚拟机中使用<code>OopMap</code>来记录。</p>
+<p><code>准确式GC</code>解决了引用类型的定位问题，但是引用类型之间的关系错综复杂，如果为每一条指令都生成对应<code>OopMap</code>，那么<code>GC</code>的空间成本就会很大。为了解决这问题，引入了<code>安全点（Safepoint）</code>和<code>安全区域（Safe Region）</code>两个概念。<code>HotSpot</code>只有在<code>安全点（Safepoint）</code>和<code>安全区域（Safe Region）</code>这两个位置才会生成相应的<code>OopMap</code>，这两个区域的选择标准是能够让程序长时间执行（也就是这段时间内不会发生引用关系的改变）的指令。</p>
+<p><code>安全点</code>一般设置在循环的末尾（防止大循环的时候一直不进入safepoint，而其他线程在等待它进入safepoint)、方法返回前、调用方法的call之后、抛出异常的位置。如何让程序在安全点上停下里等待GC也有两种方式，分别是<code>抢先式中断(Preemptive Suspension)</code>和<code>主动式中断(Voluntary Suspension)</code>. 抢先式中断不需要程序配合，当 GC 发生时会中断所有的线程，然后找出不在安全点上的线程让其继续执行到最近的安全点；主动式中断需要程序进行配合，设置一个标识位，当GC开始后这个标识位置位，所有的进程到达安全点之后会主动的去查询这个标识位，如果为真时就会自动中断挂起自己。</p>
+<p><code>安全区域</code>是配合安全点的一种机制，因为有些指令程序是“不执行”的，例如线程处在 Sleep 状态或者 Blocked 状态，如果在 GC 的时候一直等待进入安全点，会使 GC 停顿变得十分长。 当线程执行到安全区域的开始位置的时候，会标识自己已经进入安全区域了，而在离开的时候会主动检查系统是否已经完成了根结点的枚举，如果没有就继续等待，如果完成当前线程才可以继续执行后面的代码。</p>
+<h2 id="垃圾收集器简介"><a href="#垃圾收集器简介" class="headerlink" title="垃圾收集器简介"></a>垃圾收集器简介</h2><p>按照使用场景介绍常用的垃圾收集器，介绍他们的适用场景。让读者能够根据自己的应用场景来选择合适的收集器。</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuas1qofj30f70aeaar.jpg" alt="垃圾收集器组合"></p>
+<center>*垃圾收集器组合和分类*</center>
+
+<p>上图中展示了各种收集器是新生代收集器还是老年代收集器，如果上面两种收集器时间有连线，则表示可以配合使用。具体的GC配置参数可以参照 <a href="/experiment-on-JVM.html">常用垃圾收集器参数</a></p>
+<p>首先说明两个名词的含义，以免在下面的阅读中产生歧义：</p>
+<ul>
+<li><code>并行（Parallel）</code>：指多条垃圾收集线程并行工作，但此时用户线程仍然处于等待状态</li>
+<li><code>并发(Concurrent)</code>：用户线程与垃圾收集线程同时执行（并行执行，或者交替执行）</li>
+</ul>
+<h3 id="新生代收集器"><a href="#新生代收集器" class="headerlink" title="新生代收集器"></a>新生代收集器</h3><p>本文介绍的新生代收集器都是使用的<code>复制算法</code></p>
+<h4 id="Serial-收集器"><a href="#Serial-收集器" class="headerlink" title="Serial 收集器"></a>Serial 收集器</h4><p>串行垃圾收集器，采用复制算法，Serial 说明他是单线程工作的，他只会使用一个CPU，使用一个线程去完成垃圾回收工作，同时这也意味着当<code>Serial GC</code>进行垃圾回收的时候，用户线程也不得不暂停（STW）。<code>Serial 收集器</code>+<code>Serial Old 收集器</code>垃圾回收的时间线如下图所示：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuxtkhfmj30ja06xdgi.jpg" alt="Serial/Serial Old"><br>这样的用户线程对于现在的服务来说基本是不可接受的，减少 GC 停顿也一直是很多垃圾收集器的努力目标。看似十分“无能”的<code>Serial GC</code>只能在客户端中发挥作用，因为一般客户端应用需要的内存并不是很大，因此停顿几十毫秒就可以完成内存回收，这样也是可以接受了，同时省去了并行 GC 切换线程的开销。</p>
+<h4 id="ParNew-收集器"><a href="#ParNew-收集器" class="headerlink" title="ParNew 收集器"></a>ParNew 收集器</h4><p><code>ParNew 收集器</code>基本上就是<code>Serial 收集器</code>的升级版本，在新生代中收集的时候采用了并行的方案。其他部分与<code>Serial 收集器</code>基本一样。该收集器在单 CPU 的环境下并不会有优于<code>Serial</code>的表现，，反而会由于线程的频繁切换而降低性能，而对于多核CPU就会有较好的表现了。因此比较适合服务端程序。<code>ParNew 收集器</code>+<code>Serial Old 收集器</code>的 GC 过程如下图所示：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjv10ohmwj30j206vaas.jpg" alt=""><br>虽然<code>ParNew 收集器</code>只是针对<code>Serial 收集器</code>的简单升级，但是有着十分广泛的使用，原因就是能和<code>CMS收集器</code>搭配使用的只有<code>Serial 收集器</code>和<code>ParNew 收集器</code>两种。<code>CMS</code>的广泛使用就带来了<code>ParNew</code>的广泛使用。</p>
+<h4 id="Parallel-Scavenge-收集器"><a href="#Parallel-Scavenge-收集器" class="headerlink" title="Parallel Scavenge 收集器"></a>Parallel Scavenge 收集器</h4><p><code>Parallel Scavenge 收集器</code>也是一个新生代收集器，他也是并行的、使用复制算法的。和<code>ParNew收集器</code>非常相似，GC过程图也与<code>ParNew收集器</code>相同。然而该收集器的关注点与其他收集器不同，其他收集器关注点都是如何缩短GC停顿时间，而<code>Parallel Scavenge 收集器</code>关注的确实如何保持系统一个较高的吞吐量（吞吐量 = 运行用户代码的时间/（运行用户代码时间+垃圾收集时间））。因此该收集器主要适合那些交互较少，运算较多的服务。该收集器允许用户设置极少的参数就能保证一个较高的吞吐量。</p>
+<p>该收集器提供两个参数用于精确控制吞吐量<code>-XX:MaxGCPauseMillis</code>和<code>-XX:GCTimeRatio</code>两个参数，含义分别是最大GC停顿时间和直接设置吞吐量。GC的处理优先级是<code>MaxGCPauseMillis</code>最高，<code>GCTimeRatio</code>次之，其他的空间大小配置优先级最低。除了上面的两个参数之外，还有一个参数<code>-XX:+UseAdaptiveSizePolicy</code>，当设置了这个参数之后，就不需要再配置新生代的大小、Eden 和 Survivor 区域的比例、晋升老年代对象年龄等参数（设置了也没用），虚拟机会根据当前系统运行状况来动态调整上面的几个参数。</p>
+<p><code>Parallel Scavenge</code>（-XX:+UseParallelGC）框架下，默认是在要触发full GC前先执行一次young GC，并且两次GC之间能让应用程序稍微运行一小下，以期降低full GC的暂停时间（因为young GC会尽量清理了young gen的死对象，减少了full GC的工作量）。控制这个行为的VM参数是<code>-XX:+ScavengeBeforeFullGC</code></p>
+<h3 id="老年代收集器"><a href="#老年代收集器" class="headerlink" title="老年代收集器"></a>老年代收集器</h3><h4 id="Serial-Old-收集器"><a href="#Serial-Old-收集器" class="headerlink" title="Serial Old 收集器"></a>Serial Old 收集器</h4><p><code>Serial Old 收集器</code>就是<code>Serial 收集器</code>的老年代版本，主要也是给Client模式下的虚拟机使用。在 Server 应用中用于和 PS 收集器搭配使用，还有就是在 CMS 失败后，作为后备方案来进行垃圾收集。<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuxtkhfmj30ja06xdgi.jpg" alt="Serial/Serial Old"></p>
+<h4 id="Parallel-Old-收集器"><a href="#Parallel-Old-收集器" class="headerlink" title="Parallel Old 收集器"></a>Parallel Old 收集器</h4><p><code>Parallel Old 收集器</code>是在<code>JDK1.6</code>中推出的，在此之前<code>Parallel Scavenge 收集器</code>只能和<code>Serial Old 收集器</code>搭配使用，由于<code>Serial Old 收集器</code>的拖累，导致高吞吐量的优势无法体现出来，这种组合的吞度量甚至不如<code>ParNew 收集器</code>+<code>CMS收集器</code>的组合。而<code>Parallel Old 收集器</code>的正式推出表示在需要关注高吞吐量的服务中可以使用<code>Parallel Scavenge 收集器</code>+<code>Parallel Old 收集器</code>的组合。这种组合的 GC 回收过程线程运行情况如下图：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuy6qgsrj30j606ugmd.jpg" alt=""></p>
+<h4 id="Concurrent-Mark-Sweep-收集器"><a href="#Concurrent-Mark-Sweep-收集器" class="headerlink" title="Concurrent Mark Sweep 收集器"></a>Concurrent Mark Sweep 收集器</h4><p><code>CMS 收集器</code>收集器是以最短的停顿时间为目标的收集器，这样的目标可以保证服务的高可用性，因此也成为了各种以交互为目的的服务的首选收集器。该收集器采用的是<code>标记-清除算法</code>，而前面介绍的收集器都是采用的<code>标记-整理算法</code>。该收集器 GC 过程相对复杂一些。分为以下四个步骤：</p>
+<ul>
+<li>初始标记(CMS initial mark)</li>
+<li>并发标记(CMS concurrent mark)</li>
+<li>重新标记(CMS final remark)</li>
+<li>并发清除(CMS concurrent sweep)</li>
+<li>重置线程(CMS concurrent reset）</li>
+</ul>
+<p>这里截取一段 GC 日志<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">2017-11-07T16:20:41.582+0800: 2.119: [GC (CMS Initial Mark) [1 CMS-initial-mark: 0K(3670016K)] 26854K(4141888K), 0.0036737 secs] [Times: user&#x3D;0.01 sys&#x3D;0.00, real&#x3D;0.01 secs]</span><br><span class="line">2017-11-07T16:20:41.585+0800: 2.123: [CMS-concurrent-mark-start]</span><br><span class="line">2017-11-07T16:20:41.587+0800: 2.125: [CMS-concurrent-mark: 0.002&#x2F;0.002 secs] [Times: user&#x3D;0.01 sys&#x3D;0.00, real&#x3D;0.00 secs]</span><br><span class="line">2017-11-07T16:20:41.587+0800: 2.125: [CMS-concurrent-preclean-start]</span><br><span class="line">2017-11-07T16:20:41.595+0800: 2.133: [CMS-concurrent-preclean: 0.008&#x2F;0.008 secs] [Times: user&#x3D;0.05 sys&#x3D;0.00, real&#x3D;0.01 secs]</span><br><span class="line">2017-11-07T16:20:41.595+0800: 2.133: [CMS-concurrent-abortable-preclean-start]</span><br><span class="line">2017-11-07T16:20:43.996+0800: 4.534: [CMS-concurrent-abortable-preclean: 1.514&#x2F;2.401 secs] [Times: user&#x3D;5.75 sys&#x3D;0.28, real&#x3D;2.40 secs]</span><br><span class="line">2017-11-07T16:20:43.996+0800: 4.534: [GC (CMS Final Remark) [YG occupancy: 241272 K (471872 K)]4.534: [Rescan (parallel) , 0.0123556 secs]4.546: [weak refs processing, 0.0000203 secs]4.546: [class unloading, 0.0059852 secs]4.552: [scrub symbol table, 0.0055144 secs]4.558: [scrub string table, 0.0006434 secs][1 CMS-remark: 0K(3670016K)] 241272K(4141888K), 0.0260691 secs] [Times: user&#x3D;0.11 sys&#x3D;0.00, real&#x3D;0.02 secs]</span><br><span class="line">2017-11-07T16:20:44.023+0800: 4.560: [CMS-concurrent-sweep-start]</span><br><span class="line">2017-11-07T16:20:44.023+0800: 4.560: [CMS-concurrent-sweep: 0.000&#x2F;0.000 secs] [Times: user&#x3D;0.00 sys&#x3D;0.00, real&#x3D;0.00 secs]</span><br><span class="line">2017-11-07T16:20:44.023+0800: 4.560: [CMS-concurrent-reset-start]</span><br><span class="line">2017-11-07T16:20:44.041+0800: 4.578: [CMS-concurrent-reset: 0.018&#x2F;0.018 secs] [Times: user&#x3D;0.07 sys&#x3D;0.02, real&#x3D;0.02 secs]</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>real是程序的实际运行时间，sys是内核态的时间，user是用户态的时间，单核情况，real远远大于user和sys之和。real，从程序开始到程序执行结束时所消耗的时间，包括CPU的用时和所有延迟程序执行的因素的总和。CPU用时被划分为user和sys两块。user表示程序本身，以及它所调用的库中的子例程使用的时间。sys是由程序直接或间接调用的系统调用执行的时间。<code>real=cpu用时+其他因素时间</code>,<code>cpu 用时=user+sys</code>,所以： real&gt; user + sys （单核情况）</p>
+</blockquote>
+<p>GC 过程中各个阶段 GC 线程和用户线程的运行关系如下图：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuyc1e48j30jj06hjsa.jpg" alt=""></p>
+<p>初始标记、重新标记这两个步骤需要 STW, 初始标记仅仅是标记以下 <code>GC Roots</code> 能够直接关联到的对象，速度很快，并发标记阶段就是进行<code>GC RootsTracing</code>的过程。重新标记是为了修正并发标记期间由于用户线程还在继续执行而产生变动的那一部分对象，这个阶段相比初始标记要长一点，但是远比并发标记短。整体来看用时最多的几个阶段：并发标记、并发清理、重置线程都会都是并发的，这样可以让应用程序尽可能的减少停顿。</p>
+<blockquote>
+<p>【关于CMS-concurrent-abortable-preclean】：从日志中我们还发现了一个细节叫做CMS-concurrent-abortable-preclean，这就要从Concurrent precleaning阶段说起了。Concurrent precleaning阶段的实际行为是：针对新生代做抽样，等待新生代在某个时间段（默认5秒，可以通过CMSMaxAbortablePrecleanTime参数设置）执行一次Minor GC，如果这个时间段内GC没有发生，那么就继续进行下一阶段（Remark）；如果时间段内触发了Minor GC，则可能会执行一些优化（具体可以参考<a href="https://blogs.oracle.com/jonthecollector/entry/did_you_know">https://blogs.oracle.com/jonthecollector/entry/did_you_know</a> ）</p>
+<p>并发可中止的预清理阶段。这个阶段其实跟上一个阶段做的东西一样，也是为了减少下一个STW重新标记阶段的工作量。增加这一阶段是为了让我们可以控制这个阶段的结束时机，比如扫描多长时间（默认5秒）或者Eden区使用占比达到期望比例（默认50%）就结束本阶段。</p>
+</blockquote>
+<p><code>CMS 收集器</code>也有明显的几个缺点：一是 CMS 默认启动的回收线程数是<code>（CPU数量+3）/4</code>，也就是当 CPU 在 4 个以上时，并发垃圾回收时 GC线程占用不少于 25% 的 CPU 资源，当 CPU 不足 4 个时，情况就变得更加严峻了。第二个缺点就是 CMS 无法处理<code>浮动垃圾(Floating Garbage)</code>，浮动垃圾是指在并发清理阶段新产生的垃圾，由于 CMS 垃圾回收线程要和用户线程并发，因此必须要保留一部分内存在回收期间供用户线程使用，增额比例通过参数<code>CMSInitiatingOccupancyFraction</code>设置，表示老年代空间占用比例达到多少的时候会出发CMS GC，这个值在<code>JDK1.6</code>中默认值是<code>68</code>，在<code>JDK1.7</code>和<code>JDK1.8</code>中都是<code>92</code>。如果在 CMS GC 期间剩余的老年代内存空间不足已支持程序继续执行，就是触发GC降级，也就是<code>Concurrent Mode Failure</code>,这个时候就需要使用<code>Serial Old收集器</code>来完成老年代回收的任务，效率可想而知。最后一个缺点就是<code>标记-清除算法</code>带来的内存碎片问题，这个问题可以通过参数<code>-XX：+UseCMSCompactAtFullCollection</code>来缓解（默认开启），用于在CMS进行Full GC的时候进行碎片的合并整理，但是内存整理并不是并发的，会造成的应用程序的停顿，所以通常配合<code>-XX：CMSFullGCsBeforeCompaction</code>参数一起使用，该参数表示在允许连续几次的不整理碎片的CMS GC。</p>
+<h3 id="G1收集器"><a href="#G1收集器" class="headerlink" title="G1收集器"></a>G1收集器</h3><p><code>Garbage First 收集器</code>应该是当今最前沿的垃圾收集器了，它的优点是：</p>
+<blockquote>
+<p>并行与并发：G1能充分利用多CPU、多核环境下的硬件优势，使用多个CPU（CPU或者CPU核心）来缩短Stop-The-World停顿的时间，部分其他收集器原本需要停顿Java线程执行的GC动作，G1收集器仍然可以通过并发的方式让Java程序继续执行。</p>
+<p>分代收集：与其他收集器一样，分代概念在G1中依然得以保留。虽然G1可以不需要其他收集器配合就能独立管理整个GC堆，但它能够采用不同的方式去处理新创建的对象和已经存活了一段时间、熬过多次GC的旧对象以获取更好的收集效果。</p>
+<p>空间整合：与CMS的“标记—清理”算法不同，G1从整体来看是基于“标记—整理”算法实现的收集器，从局部（两个Region之间）上来看是基于“复制”算法实现的，但无论如何，这两种算法都意味着G1运作期间不会产生内存空间碎片，收集后能提供规整的可用内存。这种特性有利于程序长时间运行,分配大对象时不会因为无法找到连续内存空间而提前触发下一次GC。</p>
+<p>可预测的停顿：这是G1相对于CMS的另一大优势，降低停顿时间是G1和CMS共同的关注点，但G1除了追求低停顿外，还能建立可预测的停顿时间模型，能让使用者明确指定在一个长度为M毫秒的时间片段内，消耗在垃圾收集上的时间不得超过N毫秒，这几乎已经是实时Java（RTSJ）的垃圾收集器的特征了。</p>
+<p>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
+</blockquote>
+<p>G1 收集器虽然还有老年代和新生代的感念，但是内存布局上却没有为其划定单独的物理隔离的区域，而是分给它们不同数量（无需连续）的<code>Region</code>。G1 能够预测停顿的功能就是依赖于 Region 这个东西实现的，因为将内存分割成多个大小相等的区域，然后在后台维护一个垃圾回收价值列表，每次根据允许的回收时间（使用参数<code>-XX:MaxGCPauseMillis</code>设定，默认值为<code>200</code>）来确定那些 Region 进行回收。理解起来很简单的 Region 回收，实现起来却很困难，其中一个主要的原因就是 Region 之间的对象相互引用，如果到回收时才进行可达性分析要扫描整个Java堆才能完成分析，同样的问题也存在于其他分代收集器新生代和老年代相互引用的关系中。虚拟机使用<code>Remembered Set</code>来避免扫描全堆，程序在对 Reference 类型进行写操作的时候会检测引用的对象是否存在于不同的 Region（或者是不同年代）中，如果是就将应用信息记录到 <strong>被引用对象</strong> 的 Remembered Set 中，在内存回收时，将 Remembered Set 加入 GC Roots 即可避免全堆扫描。</p>
+<p>G1 收集器的运作大致可以分为以下几个步骤：</p>
+<ol>
+<li>初始标记（Initial Marking）：仅仅标记 GC Roots直接关联的对象</li>
+<li>并发标记（Concurrent Marking）：从 GC Roots开始做可达性分析</li>
+<li>最终标记（Final Marking）：修正在并发标记阶段变动的标记</li>
+<li>筛选回收 （Live Data Counting and Evacuation）：根据回收机制和成本排序，根据用户期望的停顿时间制定回收计划</li>
+</ol>
+<p>线程运行情况如下图：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuyko6aij30jj06ddgp.jpg" alt=""></p>
+<p>更多可参考Oracle关于G1调优的官方文档：<a href="http://www.oracle.com/technetwork/cn/articles/java/g1gc-1984535.html">Garbage First Garbage Collector Tuning
+</a></p>
+<h2 id="参考内容"><a href="#参考内容" class="headerlink" title="参考内容"></a>参考内容</h2><ol>
+<li><a href="http://kklin.farbox.com/post/cao-zuo-xi-tong/xu-ni-ji/2-gcyin-yong-ji-shu-suan-fa">GC引用计数算法</a></li>
+<li><a href="https://www.amazon.cn/dp/B01JZS0AO8/">《垃圾回收的算法与实现》</a></li>
+<li><a href="https://www.amazon.cn/dp/B00D2ID4PK/">《深入理解Java虚拟机:JVM高级特性与最佳实践(第2版)》</a></li>
+<li>部分图片来源：<a href="https://crowhawk.github.io/2017/08/15/jvm_3/">深入理解JVM(3)——7种垃圾收集器</a></li>
+<li><a href="https://docs.oracle.com/javase/8/docs/technotes/guides/vm/gctuning/cms.html">Concurrent Mark Sweep (CMS) Collector</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>JVM</tag>
+        <tag>tech</tag>
       </tags>
   </entry>
   <entry>
@@ -1061,124 +1195,6 @@ f(n-1)+f(n-2),\quad x>2
 <h3 id="实验六：TenuringThreshold-是动态变化的"><a href="#实验六：TenuringThreshold-是动态变化的" class="headerlink" title="实验六：TenuringThreshold 是动态变化的"></a>实验六：TenuringThreshold 是动态变化的</h3><h4 id="实验结果-2"><a href="#实验结果-2" class="headerlink" title="实验结果"></a>实验结果</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[GC (Allocation Failure) [DefNew</span><br><span class="line">Desired survivor size 524288 bytes, new threshold 1 (max 4)</span><br><span class="line">- age   1:     948816 bytes,     948816 total</span><br><span class="line">: 7123K-&gt;926K(9216K), 0.0065933 secs] 7123K-&gt;5022K(19456K), 0.0066172 secs] [Times: user&#x3D;0.00 sys&#x3D;0.01, real&#x3D;0.01 secs]</span><br><span class="line">[GC (Allocation Failure) [DefNew</span><br><span class="line">Desired survivor size 524288 bytes, new threshold 4 (max 4)</span><br><span class="line">- age   1:        464 bytes,        464 total</span><br><span class="line">: 5270K-&gt;0K(9216K), 0.0013556 secs] 9366K-&gt;4900K(19456K), 0.0013708 secs] [Times: user&#x3D;0.00 sys&#x3D;0.00, real&#x3D;0.00 secs]</span><br><span class="line">Heap</span><br><span class="line"> def new generation   total 9216K, used 4233K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)</span><br><span class="line">  eden space 8192K,  51% used [0x00000007bec00000, 0x00000007bf022570, 0x00000007bf400000)</span><br><span class="line">  from space 1024K,   0% used [0x00000007bf400000, 0x00000007bf4001d0, 0x00000007bf500000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000007bf500000, 0x00000007bf500000, 0x00000007bf600000)</span><br><span class="line"> tenured generation   total 10240K, used 4899K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)</span><br><span class="line">   the space 10240K,  47% used [0x00000007bf600000, 0x00000007bfac8f38, 0x00000007bfac9000, 0x00000007c0000000)</span><br><span class="line"> Metaspace       used 3315K, capacity 4500K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 367K, capacity 388K, committed 512K, reserved 1048576K</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fm0dsme76og30bn060hdz.gif" alt="实验结果"></p>
 <h4 id="实验分析-3"><a href="#实验分析-3" class="headerlink" title="实验分析"></a>实验分析</h4><p> 看到上面的堆信息可以看到最后<code>from</code>和<code>to</code>两个<code>Survivor</code>区域占用情况都为0，原因就是在<code>allocation1</code>被放到<code>S1</code>区域之后，由于该对象和一些附加信息的和占用了<code>S1区域</code>一半以上的空间，因为此时<code>allocation1</code>对象的年龄为1，所以此时<code>TenuringThreshold</code>的值也就变成了1，在GC的时候进入了老年代。通过上图中VisualGC左下角的<code>TenuringThreshold</code>值一直在变化也能得到验证。</p>
-]]></content>
-      <categories>
-        <category>技术</category>
-      </categories>
-      <tags>
-        <tag>Java</tag>
-        <tag>JVM</tag>
-        <tag>tech</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>JVM 探究（三）：垃圾回收算法和垃圾回收器</title>
-    <url>/gc-algorithms-and-garbage-collector.html</url>
-    <content><![CDATA[<p>通过介绍当前的垃圾回收器和垃圾回收算法的对比和不同的优势，来帮助读者选择适合自己的垃圾回收器。主要涉及对象存活的判断、三种垃圾回收算法以及新生代和老年代的几种传统的收集器，最后会介绍一下比较火热的<code>Garbage First(G1)收集器</code>。<br><span id="more"></span></p>
-<h2 id="JVM-内存分配方式"><a href="#JVM-内存分配方式" class="headerlink" title="JVM 内存分配方式"></a>JVM 内存分配方式</h2><p>在 Java 虚拟机需要一种方式来分配对象，就像操作系统需要管理内存一样，Java 虚拟机也需要一种方式来管理 Java 虚拟机的内存，现在管理 Java 虚拟机的方式主要有两种，一种被称为<code>指针碰撞(Bump the Point)</code>，另外一种被称为<code>空闲列表(Free List)</code>.</p>
-<h3 id="指针碰撞"><a href="#指针碰撞" class="headerlink" title="指针碰撞"></a>指针碰撞</h3><p>这种内存分配方式需要配合拥有内存整理过程的垃圾收集器。简单来说，这种方式的内存管理方式就是在空闲内存和已用内存之间设置一个指针，如果有新的内存被分配，就需要将指针向空闲区域移动对应的大小。然而由于这种方式简单粗暴，就必须要对应的垃圾收集器能够将存活的对象占用的内存整理在指针的一侧。使用这种分配算法的垃圾收集器是<code>Serial</code>,<code>ParNew</code>等带有内存整理的垃圾收集器。</p>
-<h3 id="空闲列表"><a href="#空闲列表" class="headerlink" title="空闲列表"></a>空闲列表</h3><p>通过在虚拟机中维护一个列表来记录那些内存空间是能够使用的。如果需要分配新的对象，将会在空闲的列表中寻找一个足够大的空闲内存来分配对象，然后更新这个空闲列表。采用<code>标记-清除</code>算法的垃圾收集器（eg：CMS）会采用这种分配方式。但是这种分配方式很容易造成很多外部碎片，在一定程度上会造成内存的浪费。</p>
-<h2 id="如何定位需要访问的对象"><a href="#如何定位需要访问的对象" class="headerlink" title="如何定位需要访问的对象"></a>如何定位需要访问的对象</h2><p>如何通过变量表引用到需要用到的对象，通过引用我们要找到具体的对象，然后才能够对对象做一些列的操作。引用方式主要有一下两种方式</p>
-<h3 id="句柄方式"><a href="#句柄方式" class="headerlink" title="句柄方式"></a>句柄方式</h3><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fndxgjtgb8j31kw0phkjl.jpg" alt="句柄方式访问对象"><br>句柄方式通过在 Java 堆中维护一个句柄池，池中的维护了对象实例和对象类型的引用，然后在根据这两个信息分别找到对应的存储信息，但是这样做的一个确定是实例对象的类型和数据都是通过两次寻址的方式来找到的。</p>
-<h3 id="直接引用"><a href="#直接引用" class="headerlink" title="直接引用"></a>直接引用</h3><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fndxohdm1rj31kw0qqb29.jpg" alt="直接引用方式访问对象"><br>直接引用的方式相较于句柄的方式，在第一次寻址的时候就能够找到对象的实例数据，对象类型数据的指针和对象实例放到了一起，从而一次寻址就能够找到对象的实例数据。</p>
-<h2 id="垃圾回收算法"><a href="#垃圾回收算法" class="headerlink" title="垃圾回收算法"></a>垃圾回收算法</h2><p>介绍常用的垃圾回收算法，针对<code>HotSpot</code>虚拟机做一些深入的介绍。</p>
-<h3 id="Mark-Sweep算法"><a href="#Mark-Sweep算法" class="headerlink" title="Mark-Sweep算法"></a>Mark-Sweep算法</h3><p><code>标记-清除（Mark-Sweep）</code>算法回收前后内存占用情况如下：</p>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fndzgovb5ij311s0hsjs7.jpg" alt="标记-清除算法图示"><br><code>标记-清除（Mark-Sweep）</code>算法是通过可以回收的内存进行标记后做清除操作，这样做的缺点就是会产生很多的内存碎片，可能的结果就是空闲内存总量是能够进行新对象的分配的，但是由于这些空闲的空间都不连续，一个对象放不下。就必须进行另外一次垃圾回收，垃圾回收又会引起服务的暂时停顿。</p>
-<h3 id="Mark-Compact-算法"><a href="#Mark-Compact-算法" class="headerlink" title="Mark-Compact 算法"></a>Mark-Compact 算法</h3><p><code>标记-整理(Mark-Compact)</code>算法回收前后内存占用情况如下：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnnglisy2mj310u0ik754.jpg" alt="标记-整理算法图示"></p>
-<p><code>标记-整理(Mark-Compact)</code>算法解决了<code>标记-清除（Mark-Sweep）</code>算法会产生很多不连续的空闲空间做出了改进，具体的方法就是在进行标记之后不是将对象直接清理掉，而是将存活的对象进行整理，使得存活的对象占用一块连续的内存空间，因为存活对象和可回收空间有明显的分割，所以可以直接对边界之外的内存进行直接的清理。这样的清理无疑更加有效率，虽然增加了移动对象的开支，但是整体上会比<code>标记-清除（Mark-Sweep）</code>算法更有效率。</p>
-<h3 id="Copying-算法"><a href="#Copying-算法" class="headerlink" title="Copying 算法"></a>Copying 算法</h3><p><code>复制(Copying)</code>算法回收前后内存占用情况如下：</p>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fnngl3n0qxj31120kimy3.jpg" alt="复制算法图示"></p>
-<p><code>复制(Copying)</code>算法将内存区域分为大小相同的两个区域，当需要内存回收的时候，只需要将存活的对象复制到另外一块空闲区域，然后将原来的区域一次清理干净，什么都不留。相较于<code>标记-清除（Mark-Sweep）</code>算法的优势就是在解决了在标记和清除阶段的低效率和内存碎片问题，相较于<code>标记-整理(Mark-Compact)</code>算法的优势则是有着固定的内存分割线，而不是动态的调整，同时由于有两块相同大小的内存区域，存活的对象的复制和内存的回收会更有效率。缺点也十分明显，就是需要的内存空间是可用空间的2倍，内存的使用率永远不会超过50%。（现代虚拟机根据经验优化了这个比例，在后面介绍收集器的时候会介绍）</p>
-<h2 id="聊聊HotSpot"><a href="#聊聊HotSpot" class="headerlink" title="聊聊HotSpot"></a>聊聊HotSpot</h2><p><code>HotSpot</code> 是现在最广泛使用的虚拟机，拥有出色的性能。</p>
-<h3 id="判断对象是否存活"><a href="#判断对象是否存活" class="headerlink" title="判断对象是否存活"></a>判断对象是否存活</h3><p>目前针对对象的判断生存状态的的算法主要有引用计数法和可达性分析两种。在<code>Object-C</code>等语言中使用的是引用计数法，在<code>HotSpot</code>中，是使用可达性分析来判断的。</p>
-<h4 id="引用计数法-Reference-Counting"><a href="#引用计数法-Reference-Counting" class="headerlink" title="引用计数法(Reference Counting)"></a>引用计数法(Reference Counting)</h4><p>引用计数法是想要解决引用问题最容易想到的一种算法，既然需要知道对象是否存活，那就在对象上加个计数器来表示自己被引用的次数呗，每有一次新的引用，这个计数器就加1，每少一次引用，计数器就减1。这样看来，事情似乎出奇的简单，因为当该对象的计数器为0的时候，这就是这个对象的死期了。这种方式十分高效，而且简单。</p>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnhj99v7b8j31hm0c4dh6.jpg" alt="引用计数方法对象的的数据结构"></p>
-<center>*引用计数方法对象的的数据结构*</center>
-
-<p>事情到此看起来都很美好。然而，却有一种循环引用的问题让想使用这种算法的 GC 退缩。那便是<code>循环引用</code>问题，像下图这种，两个对象相互引用，但是没有其他对象引用这两个对象的情况，实际上这两个对象已经都没有利用价值了，应该让 GC 回收。可是由于两个对象互相都持有对方的一个引用，让 GC 以为他们都还需要继续生存以服务另外的对象。长期下去会造成很严重的内存泄露。</p>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnhjjr6atzj31ko0f4q5k.jpg" alt="循环引用对象"></p>
-<center>*循环引用对象*</center>
-
-<p>除了上面这种最简单的引用计数法，还有<code>延迟引用计数法</code>和<code>Sticky引用计数法</code>。这里不再深入讨论，可以参考 <a href="http://kklin.farbox.com/post/cao-zuo-xi-tong/xu-ni-ji/2-gcyin-yong-ji-shu-suan-fa">GC引用计数算法</a> ，或者直接阅读<a href="https://www.amazon.cn/dp/B01JZS0AO8/ref=sr_1_1?ie=UTF8&amp;qid=1516017889&amp;sr=8-1&amp;keywords=%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%9A%84%E7%AE%97%E6%B3%95%E4%B8%8E%E5%AE%9E%E7%8E%B0">《垃圾回收的算法与实现》</a>。</p>
-<h4 id="可达性分析（Reachablity-Analysis）"><a href="#可达性分析（Reachablity-Analysis）" class="headerlink" title="可达性分析（Reachablity Analysis）"></a>可达性分析（Reachablity Analysis）</h4><p>与<code>引用计数法</code>相比，可达性分析就显得更加复杂了。可达性分析是通过<code>GC Root</code>开始搜索整个对象池，如果某些对象无法搜索到，在图论中我们称之为不可达，那么这些不可达的对象就会成为<code>GC</code>的刀下鬼了。通过这种方式就能够实现回收循环引用的对象。</p>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnhkmkwjq0j31kw15fwt3.jpg" alt=""></p>
-<center>*可达性分析判断对象是否可回收*</center>
-
-<p>在<code>HotSpot</code>中<code>GC Root</code>主要有</p>
-<ul>
-<li>虚拟机栈（栈帧中的本地变量表）中引用的对象。</li>
-<li>方法区中类静态属性引用的对象。</li>
-<li>方法区中常量引用的对象</li>
-<li>本地方法栈中<code>JNI</code>（即一般说的<code>Native</code>方法）引用的对象</li>
-</ul>
-<h5 id="HotSpot-的可达性分析实现"><a href="#HotSpot-的可达性分析实现" class="headerlink" title="HotSpot 的可达性分析实现"></a>HotSpot 的可达性分析实现</h5><p>在使用<code>可达性分析</code>算法的时候，不可避免地会引起<code>GC 停顿</code>，因为必须保证在进行可达性分析的时候对象之间的引用关系是不变的，我们无法针对一个在不断变化的图分析他的可达性。因此在进行可达性分析的时候难免要停止所有的用户线程。我们通常称之为<code>STW(Stop The Word)</code>. 有些收集器通过一些手段可以减少<code>STW</code>的时间（例如<code>CMS</code>），但是无法跳过这个过程。</p>
-<p>目前主流的 Java 虚拟机使用的都是<code>准确式GC</code>，就是说当<code>STW</code>发生的时候，并不需要检查全部的变量从而确定那些变量是引用类型，而是在类加载完成之后会将引用类型的变量存在一个数据结构中，在<code>HotSpot</code>虚拟机中使用<code>OopMap</code>来记录。</p>
-<p><code>准确式GC</code>解决了引用类型的定位问题，但是引用类型之间的关系错综复杂，如果为每一条指令都生成对应<code>OopMap</code>，那么<code>GC</code>的空间成本就会很大。为了解决这问题，引入了<code>安全点（Safepoint）</code>和<code>安全区域（Safe Region）</code>两个概念。<code>HotSpot</code>只有在<code>安全点（Safepoint）</code>和<code>安全区域（Safe Region）</code>这两个位置才会生成相应的<code>OopMap</code>，这两个区域的选择标准是能够让程序长时间执行（也就是这段时间内不会发生引用关系的改变）的指令。</p>
-<p><code>安全点</code>一般设置在循环的末尾（防止大循环的时候一直不进入safepoint，而其他线程在等待它进入safepoint)、方法返回前、调用方法的call之后、抛出异常的位置。如何让程序在安全点上停下里等待GC也有两种方式，分别是<code>抢先式中断(Preemptive Suspension)</code>和<code>主动式中断(Voluntary Suspension)</code>. 抢先式中断不需要程序配合，当 GC 发生时会中断所有的线程，然后找出不在安全点上的线程让其继续执行到最近的安全点；主动式中断需要程序进行配合，设置一个标识位，当GC开始后这个标识位置位，所有的进程到达安全点之后会主动的去查询这个标识位，如果为真时就会自动中断挂起自己。</p>
-<p><code>安全区域</code>是配合安全点的一种机制，因为有些指令程序是“不执行”的，例如线程处在 Sleep 状态或者 Blocked 状态，如果在 GC 的时候一直等待进入安全点，会使 GC 停顿变得十分长。 当线程执行到安全区域的开始位置的时候，会标识自己已经进入安全区域了，而在离开的时候会主动检查系统是否已经完成了根结点的枚举，如果没有就继续等待，如果完成当前线程才可以继续执行后面的代码。</p>
-<h2 id="垃圾收集器简介"><a href="#垃圾收集器简介" class="headerlink" title="垃圾收集器简介"></a>垃圾收集器简介</h2><p>按照使用场景介绍常用的垃圾收集器，介绍他们的适用场景。让读者能够根据自己的应用场景来选择合适的收集器。</p>
-<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuas1qofj30f70aeaar.jpg" alt="垃圾收集器组合"></p>
-<center>*垃圾收集器组合和分类*</center>
-
-<p>上图中展示了各种收集器是新生代收集器还是老年代收集器，如果上面两种收集器时间有连线，则表示可以配合使用。具体的GC配置参数可以参照 <a href="/experiment-on-JVM.html">常用垃圾收集器参数</a></p>
-<p>首先说明两个名词的含义，以免在下面的阅读中产生歧义：</p>
-<ul>
-<li><code>并行（Parallel）</code>：指多条垃圾收集线程并行工作，但此时用户线程仍然处于等待状态</li>
-<li><code>并发(Concurrent)</code>：用户线程与垃圾收集线程同时执行（并行执行，或者交替执行）</li>
-</ul>
-<h3 id="新生代收集器"><a href="#新生代收集器" class="headerlink" title="新生代收集器"></a>新生代收集器</h3><p>本文介绍的新生代收集器都是使用的<code>复制算法</code></p>
-<h4 id="Serial-收集器"><a href="#Serial-收集器" class="headerlink" title="Serial 收集器"></a>Serial 收集器</h4><p>串行垃圾收集器，采用复制算法，Serial 说明他是单线程工作的，他只会使用一个CPU，使用一个线程去完成垃圾回收工作，同时这也意味着当<code>Serial GC</code>进行垃圾回收的时候，用户线程也不得不暂停（STW）。<code>Serial 收集器</code>+<code>Serial Old 收集器</code>垃圾回收的时间线如下图所示：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuxtkhfmj30ja06xdgi.jpg" alt="Serial/Serial Old"><br>这样的用户线程对于现在的服务来说基本是不可接受的，减少 GC 停顿也一直是很多垃圾收集器的努力目标。看似十分“无能”的<code>Serial GC</code>只能在客户端中发挥作用，因为一般客户端应用需要的内存并不是很大，因此停顿几十毫秒就可以完成内存回收，这样也是可以接受了，同时省去了并行 GC 切换线程的开销。</p>
-<h4 id="ParNew-收集器"><a href="#ParNew-收集器" class="headerlink" title="ParNew 收集器"></a>ParNew 收集器</h4><p><code>ParNew 收集器</code>基本上就是<code>Serial 收集器</code>的升级版本，在新生代中收集的时候采用了并行的方案。其他部分与<code>Serial 收集器</code>基本一样。该收集器在单 CPU 的环境下并不会有优于<code>Serial</code>的表现，，反而会由于线程的频繁切换而降低性能，而对于多核CPU就会有较好的表现了。因此比较适合服务端程序。<code>ParNew 收集器</code>+<code>Serial Old 收集器</code>的 GC 过程如下图所示：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjv10ohmwj30j206vaas.jpg" alt=""><br>虽然<code>ParNew 收集器</code>只是针对<code>Serial 收集器</code>的简单升级，但是有着十分广泛的使用，原因就是能和<code>CMS收集器</code>搭配使用的只有<code>Serial 收集器</code>和<code>ParNew 收集器</code>两种。<code>CMS</code>的广泛使用就带来了<code>ParNew</code>的广泛使用。</p>
-<h4 id="Parallel-Scavenge-收集器"><a href="#Parallel-Scavenge-收集器" class="headerlink" title="Parallel Scavenge 收集器"></a>Parallel Scavenge 收集器</h4><p><code>Parallel Scavenge 收集器</code>也是一个新生代收集器，他也是并行的、使用复制算法的。和<code>ParNew收集器</code>非常相似，GC过程图也与<code>ParNew收集器</code>相同。然而该收集器的关注点与其他收集器不同，其他收集器关注点都是如何缩短GC停顿时间，而<code>Parallel Scavenge 收集器</code>关注的确实如何保持系统一个较高的吞吐量（吞吐量 = 运行用户代码的时间/（运行用户代码时间+垃圾收集时间））。因此该收集器主要适合那些交互较少，运算较多的服务。该收集器允许用户设置极少的参数就能保证一个较高的吞吐量。</p>
-<p>该收集器提供两个参数用于精确控制吞吐量<code>-XX:MaxGCPauseMillis</code>和<code>-XX:GCTimeRatio</code>两个参数，含义分别是最大GC停顿时间和直接设置吞吐量。GC的处理优先级是<code>MaxGCPauseMillis</code>最高，<code>GCTimeRatio</code>次之，其他的空间大小配置优先级最低。除了上面的两个参数之外，还有一个参数<code>-XX:+UseAdaptiveSizePolicy</code>，当设置了这个参数之后，就不需要再配置新生代的大小、Eden 和 Survivor 区域的比例、晋升老年代对象年龄等参数（设置了也没用），虚拟机会根据当前系统运行状况来动态调整上面的几个参数。</p>
-<p><code>Parallel Scavenge</code>（-XX:+UseParallelGC）框架下，默认是在要触发full GC前先执行一次young GC，并且两次GC之间能让应用程序稍微运行一小下，以期降低full GC的暂停时间（因为young GC会尽量清理了young gen的死对象，减少了full GC的工作量）。控制这个行为的VM参数是<code>-XX:+ScavengeBeforeFullGC</code></p>
-<h3 id="老年代收集器"><a href="#老年代收集器" class="headerlink" title="老年代收集器"></a>老年代收集器</h3><h4 id="Serial-Old-收集器"><a href="#Serial-Old-收集器" class="headerlink" title="Serial Old 收集器"></a>Serial Old 收集器</h4><p><code>Serial Old 收集器</code>就是<code>Serial 收集器</code>的老年代版本，主要也是给Client模式下的虚拟机使用。在 Server 应用中用于和 PS 收集器搭配使用，还有就是在 CMS 失败后，作为后备方案来进行垃圾收集。<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuxtkhfmj30ja06xdgi.jpg" alt="Serial/Serial Old"></p>
-<h4 id="Parallel-Old-收集器"><a href="#Parallel-Old-收集器" class="headerlink" title="Parallel Old 收集器"></a>Parallel Old 收集器</h4><p><code>Parallel Old 收集器</code>是在<code>JDK1.6</code>中推出的，在此之前<code>Parallel Scavenge 收集器</code>只能和<code>Serial Old 收集器</code>搭配使用，由于<code>Serial Old 收集器</code>的拖累，导致高吞吐量的优势无法体现出来，这种组合的吞度量甚至不如<code>ParNew 收集器</code>+<code>CMS收集器</code>的组合。而<code>Parallel Old 收集器</code>的正式推出表示在需要关注高吞吐量的服务中可以使用<code>Parallel Scavenge 收集器</code>+<code>Parallel Old 收集器</code>的组合。这种组合的 GC 回收过程线程运行情况如下图：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuy6qgsrj30j606ugmd.jpg" alt=""></p>
-<h4 id="Concurrent-Mark-Sweep-收集器"><a href="#Concurrent-Mark-Sweep-收集器" class="headerlink" title="Concurrent Mark Sweep 收集器"></a>Concurrent Mark Sweep 收集器</h4><p><code>CMS 收集器</code>收集器是以最短的停顿时间为目标的收集器，这样的目标可以保证服务的高可用性，因此也成为了各种以交互为目的的服务的首选收集器。该收集器采用的是<code>标记-清除算法</code>，而前面介绍的收集器都是采用的<code>标记-整理算法</code>。该收集器 GC 过程相对复杂一些。分为以下四个步骤：</p>
-<ul>
-<li>初始标记(CMS initial mark)</li>
-<li>并发标记(CMS concurrent mark)</li>
-<li>重新标记(CMS final remark)</li>
-<li>并发清除(CMS concurrent sweep)</li>
-<li>重置线程(CMS concurrent reset）</li>
-</ul>
-<p>这里截取一段 GC 日志<br><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">2017-11-07T16:20:41.582+0800: 2.119: [GC (CMS Initial Mark) [1 CMS-initial-mark: 0K(3670016K)] 26854K(4141888K), 0.0036737 secs] [Times: user&#x3D;0.01 sys&#x3D;0.00, real&#x3D;0.01 secs]</span><br><span class="line">2017-11-07T16:20:41.585+0800: 2.123: [CMS-concurrent-mark-start]</span><br><span class="line">2017-11-07T16:20:41.587+0800: 2.125: [CMS-concurrent-mark: 0.002&#x2F;0.002 secs] [Times: user&#x3D;0.01 sys&#x3D;0.00, real&#x3D;0.00 secs]</span><br><span class="line">2017-11-07T16:20:41.587+0800: 2.125: [CMS-concurrent-preclean-start]</span><br><span class="line">2017-11-07T16:20:41.595+0800: 2.133: [CMS-concurrent-preclean: 0.008&#x2F;0.008 secs] [Times: user&#x3D;0.05 sys&#x3D;0.00, real&#x3D;0.01 secs]</span><br><span class="line">2017-11-07T16:20:41.595+0800: 2.133: [CMS-concurrent-abortable-preclean-start]</span><br><span class="line">2017-11-07T16:20:43.996+0800: 4.534: [CMS-concurrent-abortable-preclean: 1.514&#x2F;2.401 secs] [Times: user&#x3D;5.75 sys&#x3D;0.28, real&#x3D;2.40 secs]</span><br><span class="line">2017-11-07T16:20:43.996+0800: 4.534: [GC (CMS Final Remark) [YG occupancy: 241272 K (471872 K)]4.534: [Rescan (parallel) , 0.0123556 secs]4.546: [weak refs processing, 0.0000203 secs]4.546: [class unloading, 0.0059852 secs]4.552: [scrub symbol table, 0.0055144 secs]4.558: [scrub string table, 0.0006434 secs][1 CMS-remark: 0K(3670016K)] 241272K(4141888K), 0.0260691 secs] [Times: user&#x3D;0.11 sys&#x3D;0.00, real&#x3D;0.02 secs]</span><br><span class="line">2017-11-07T16:20:44.023+0800: 4.560: [CMS-concurrent-sweep-start]</span><br><span class="line">2017-11-07T16:20:44.023+0800: 4.560: [CMS-concurrent-sweep: 0.000&#x2F;0.000 secs] [Times: user&#x3D;0.00 sys&#x3D;0.00, real&#x3D;0.00 secs]</span><br><span class="line">2017-11-07T16:20:44.023+0800: 4.560: [CMS-concurrent-reset-start]</span><br><span class="line">2017-11-07T16:20:44.041+0800: 4.578: [CMS-concurrent-reset: 0.018&#x2F;0.018 secs] [Times: user&#x3D;0.07 sys&#x3D;0.02, real&#x3D;0.02 secs]</span><br></pre></td></tr></table></figure></p>
-<blockquote>
-<p>real是程序的实际运行时间，sys是内核态的时间，user是用户态的时间，单核情况，real远远大于user和sys之和。real，从程序开始到程序执行结束时所消耗的时间，包括CPU的用时和所有延迟程序执行的因素的总和。CPU用时被划分为user和sys两块。user表示程序本身，以及它所调用的库中的子例程使用的时间。sys是由程序直接或间接调用的系统调用执行的时间。<code>real=cpu用时+其他因素时间</code>,<code>cpu 用时=user+sys</code>,所以： real&gt; user + sys （单核情况）</p>
-</blockquote>
-<p>GC 过程中各个阶段 GC 线程和用户线程的运行关系如下图：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuyc1e48j30jj06hjsa.jpg" alt=""></p>
-<p>初始标记、重新标记这两个步骤需要 STW, 初始标记仅仅是标记以下 <code>GC Roots</code> 能够直接关联到的对象，速度很快，并发标记阶段就是进行<code>GC RootsTracing</code>的过程。重新标记是为了修正并发标记期间由于用户线程还在继续执行而产生变动的那一部分对象，这个阶段相比初始标记要长一点，但是远比并发标记短。整体来看用时最多的几个阶段：并发标记、并发清理、重置线程都会都是并发的，这样可以让应用程序尽可能的减少停顿。</p>
-<blockquote>
-<p>【关于CMS-concurrent-abortable-preclean】：从日志中我们还发现了一个细节叫做CMS-concurrent-abortable-preclean，这就要从Concurrent precleaning阶段说起了。Concurrent precleaning阶段的实际行为是：针对新生代做抽样，等待新生代在某个时间段（默认5秒，可以通过CMSMaxAbortablePrecleanTime参数设置）执行一次Minor GC，如果这个时间段内GC没有发生，那么就继续进行下一阶段（Remark）；如果时间段内触发了Minor GC，则可能会执行一些优化（具体可以参考<a href="https://blogs.oracle.com/jonthecollector/entry/did_you_know">https://blogs.oracle.com/jonthecollector/entry/did_you_know</a> ）</p>
-<p>并发可中止的预清理阶段。这个阶段其实跟上一个阶段做的东西一样，也是为了减少下一个STW重新标记阶段的工作量。增加这一阶段是为了让我们可以控制这个阶段的结束时机，比如扫描多长时间（默认5秒）或者Eden区使用占比达到期望比例（默认50%）就结束本阶段。</p>
-</blockquote>
-<p><code>CMS 收集器</code>也有明显的几个缺点：一是 CMS 默认启动的回收线程数是<code>（CPU数量+3）/4</code>，也就是当 CPU 在 4 个以上时，并发垃圾回收时 GC线程占用不少于 25% 的 CPU 资源，当 CPU 不足 4 个时，情况就变得更加严峻了。第二个缺点就是 CMS 无法处理<code>浮动垃圾(Floating Garbage)</code>，浮动垃圾是指在并发清理阶段新产生的垃圾，由于 CMS 垃圾回收线程要和用户线程并发，因此必须要保留一部分内存在回收期间供用户线程使用，增额比例通过参数<code>CMSInitiatingOccupancyFraction</code>设置，表示老年代空间占用比例达到多少的时候会出发CMS GC，这个值在<code>JDK1.6</code>中默认值是<code>68</code>，在<code>JDK1.7</code>和<code>JDK1.8</code>中都是<code>92</code>。如果在 CMS GC 期间剩余的老年代内存空间不足已支持程序继续执行，就是触发GC降级，也就是<code>Concurrent Mode Failure</code>,这个时候就需要使用<code>Serial Old收集器</code>来完成老年代回收的任务，效率可想而知。最后一个缺点就是<code>标记-清除算法</code>带来的内存碎片问题，这个问题可以通过参数<code>-XX：+UseCMSCompactAtFullCollection</code>来缓解（默认开启），用于在CMS进行Full GC的时候进行碎片的合并整理，但是内存整理并不是并发的，会造成的应用程序的停顿，所以通常配合<code>-XX：CMSFullGCsBeforeCompaction</code>参数一起使用，该参数表示在允许连续几次的不整理碎片的CMS GC。</p>
-<h3 id="G1收集器"><a href="#G1收集器" class="headerlink" title="G1收集器"></a>G1收集器</h3><p><code>Garbage First 收集器</code>应该是当今最前沿的垃圾收集器了，它的优点是：</p>
-<blockquote>
-<p>并行与并发：G1能充分利用多CPU、多核环境下的硬件优势，使用多个CPU（CPU或者CPU核心）来缩短Stop-The-World停顿的时间，部分其他收集器原本需要停顿Java线程执行的GC动作，G1收集器仍然可以通过并发的方式让Java程序继续执行。</p>
-<p>分代收集：与其他收集器一样，分代概念在G1中依然得以保留。虽然G1可以不需要其他收集器配合就能独立管理整个GC堆，但它能够采用不同的方式去处理新创建的对象和已经存活了一段时间、熬过多次GC的旧对象以获取更好的收集效果。</p>
-<p>空间整合：与CMS的“标记—清理”算法不同，G1从整体来看是基于“标记—整理”算法实现的收集器，从局部（两个Region之间）上来看是基于“复制”算法实现的，但无论如何，这两种算法都意味着G1运作期间不会产生内存空间碎片，收集后能提供规整的可用内存。这种特性有利于程序长时间运行,分配大对象时不会因为无法找到连续内存空间而提前触发下一次GC。</p>
-<p>可预测的停顿：这是G1相对于CMS的另一大优势，降低停顿时间是G1和CMS共同的关注点，但G1除了追求低停顿外，还能建立可预测的停顿时间模型，能让使用者明确指定在一个长度为M毫秒的时间片段内，消耗在垃圾收集上的时间不得超过N毫秒，这几乎已经是实时Java（RTSJ）的垃圾收集器的特征了。</p>
-<p>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
-</blockquote>
-<p>G1 收集器虽然还有老年代和新生代的感念，但是内存布局上却没有为其划定单独的物理隔离的区域，而是分给它们不同数量（无需连续）的<code>Region</code>。G1 能够预测停顿的功能就是依赖于 Region 这个东西实现的，因为将内存分割成多个大小相等的区域，然后在后台维护一个垃圾回收价值列表，每次根据允许的回收时间（使用参数<code>-XX:MaxGCPauseMillis</code>设定，默认值为<code>200</code>）来确定那些 Region 进行回收。理解起来很简单的 Region 回收，实现起来却很困难，其中一个主要的原因就是 Region 之间的对象相互引用，如果到回收时才进行可达性分析要扫描整个Java堆才能完成分析，同样的问题也存在于其他分代收集器新生代和老年代相互引用的关系中。虚拟机使用<code>Remembered Set</code>来避免扫描全堆，程序在对 Reference 类型进行写操作的时候会检测引用的对象是否存在于不同的 Region（或者是不同年代）中，如果是就将应用信息记录到 <strong>被引用对象</strong> 的 Remembered Set 中，在内存回收时，将 Remembered Set 加入 GC Roots 即可避免全堆扫描。</p>
-<p>G1 收集器的运作大致可以分为以下几个步骤：</p>
-<ol>
-<li>初始标记（Initial Marking）：仅仅标记 GC Roots直接关联的对象</li>
-<li>并发标记（Concurrent Marking）：从 GC Roots开始做可达性分析</li>
-<li>最终标记（Final Marking）：修正在并发标记阶段变动的标记</li>
-<li>筛选回收 （Live Data Counting and Evacuation）：根据回收机制和成本排序，根据用户期望的停顿时间制定回收计划</li>
-</ol>
-<p>线程运行情况如下图：<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnjuyko6aij30jj06ddgp.jpg" alt=""></p>
-<p>更多可参考Oracle关于G1调优的官方文档：<a href="http://www.oracle.com/technetwork/cn/articles/java/g1gc-1984535.html">Garbage First Garbage Collector Tuning
-</a></p>
-<h2 id="参考内容"><a href="#参考内容" class="headerlink" title="参考内容"></a>参考内容</h2><ol>
-<li><a href="http://kklin.farbox.com/post/cao-zuo-xi-tong/xu-ni-ji/2-gcyin-yong-ji-shu-suan-fa">GC引用计数算法</a></li>
-<li><a href="https://www.amazon.cn/dp/B01JZS0AO8/">《垃圾回收的算法与实现》</a></li>
-<li><a href="https://www.amazon.cn/dp/B00D2ID4PK/">《深入理解Java虚拟机:JVM高级特性与最佳实践(第2版)》</a></li>
-<li>部分图片来源：<a href="https://crowhawk.github.io/2017/08/15/jvm_3/">深入理解JVM(3)——7种垃圾收集器</a></li>
-<li><a href="https://docs.oracle.com/javase/8/docs/technotes/guides/vm/gctuning/cms.html">Concurrent Mark Sweep (CMS) Collector</a></li>
-</ol>
 ]]></content>
       <categories>
         <category>技术</category>
