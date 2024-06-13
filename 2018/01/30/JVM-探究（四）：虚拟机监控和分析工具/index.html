@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="文章用来介绍常用的虚拟机内存监控和虚拟机相关的故障排除工具。 包括JDK自带的命令行工具、和一些可视化工具，如jvisualvm。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM-探究（四）：虚拟机监控和分析工具">
+<meta property="og:url" content="https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="文章用来介绍常用的虚拟机内存监控和虚拟机相关的故障排除工具。 包括JDK自带的命令行工具、和一些可视化工具，如jvisualvm。">
+<meta property="og:locale">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fo167dq18uj30rs058gm3.jpg">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fo168vo9vfj30x80sodnb.jpg">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fo169qe498j30xc05emxy.jpg">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fo16a52f55j30x6146tl3.jpg">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fo16alsly8j30x605adgc.jpg">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fo282a6klrj30xc03a3yy.jpg">
+<meta property="article:published_time" content="2018-01-30T13:15:58.000Z">
+<meta property="article:modified_time" content="2024-06-13T12:56:22.287Z">
+<meta property="article:author" content="ZHANG, BO">
+<meta property="article:tag" content="JVM">
+<meta property="article:tag" content="tech">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fo167dq18uj30rs058gm3.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>JVM-探究（四）：虚拟机监控和分析工具</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2018/04/19/%E3%80%90%E8%AF%91%E3%80%91Python%20Curses%20%E7%BC%96%E7%A8%8B/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2018/01/23/Atom%E6%8F%92%E4%BB%B6%E5%92%8C%E4%B8%BB%E9%A2%98%E6%8E%A8%E8%8D%90/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/&text=JVM-探究（四）：虚拟机监控和分析工具"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/&title=JVM-探究（四）：虚拟机监控和分析工具"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/&is_video=false&description=JVM-探究（四）：虚拟机监控和分析工具"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=JVM-探究（四）：虚拟机监控和分析工具&body=Check out this article: https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/&title=JVM-探究（四）：虚拟机监控和分析工具"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/&title=JVM-探究（四）：虚拟机监控和分析工具"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/&title=JVM-探究（四）：虚拟机监控和分析工具"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/&title=JVM-探究（四）：虚拟机监控和分析工具"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/&name=JVM-探究（四）：虚拟机监控和分析工具&description=&lt;p&gt;文章用来介绍常用的虚拟机内存监控和虚拟机相关的故障排除工具。 包括&lt;code&gt;JDK&lt;/code&gt;自带的命令行工具、和一些可视化工具，如&lt;code&gt;jvisualvm&lt;/code&gt;。"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/&t=JVM-探究（四）：虚拟机监控和分析工具"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7"><span class="toc-number">1.</span> <span class="toc-text">命令行工具</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#jps"><span class="toc-number">1.1.</span> <span class="toc-text">jps</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E8%A6%81%E9%80%89%E9%A1%B9"><span class="toc-number">1.1.1.</span> <span class="toc-text">主要选项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B"><span class="toc-number">1.1.2.</span> <span class="toc-text">使用示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jstat"><span class="toc-number">1.2.</span> <span class="toc-text">jstat</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E8%A6%81%E9%80%89%E9%A1%B9-1"><span class="toc-number">1.2.1.</span> <span class="toc-text">主要选项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B-1"><span class="toc-number">1.2.2.</span> <span class="toc-text">使用示例</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-class"><span class="toc-number">1.2.2.1.</span> <span class="toc-text">jstat -class</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-compiler"><span class="toc-number">1.2.2.2.</span> <span class="toc-text">jstat -compiler</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-gc"><span class="toc-number">1.2.2.3.</span> <span class="toc-text">jstat -gc</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-gccapacity"><span class="toc-number">1.2.2.4.</span> <span class="toc-text">jstat -gccapacity</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-gcutil"><span class="toc-number">1.2.2.5.</span> <span class="toc-text">jstat -gcutil</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-gccause"><span class="toc-number">1.2.2.6.</span> <span class="toc-text">jstat -gccause</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-gcnew"><span class="toc-number">1.2.2.7.</span> <span class="toc-text">jstat -gcnew</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-gcnewcapacity"><span class="toc-number">1.2.2.8.</span> <span class="toc-text">jstat -gcnewcapacity</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-gcold"><span class="toc-number">1.2.2.9.</span> <span class="toc-text">jstat -gcold</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-gcoldcapacity"><span class="toc-number">1.2.2.10.</span> <span class="toc-text">jstat -gcoldcapacity</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-printcompilation"><span class="toc-number">1.2.2.11.</span> <span class="toc-text">jstat -printcompilation</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-%E7%9A%84%E9%A2%9D%E5%A4%96%E5%8F%82%E6%95%B0"><span class="toc-number">1.2.2.12.</span> <span class="toc-text">jstat 的额外参数</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jinfo"><span class="toc-number">1.3.</span> <span class="toc-text">jinfo</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jmap"><span class="toc-number">1.4.</span> <span class="toc-text">jmap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jhat"><span class="toc-number">1.5.</span> <span class="toc-text">jhat</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jstack"><span class="toc-number">1.6.</span> <span class="toc-text">jstack</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#visualVM"><span class="toc-number">2.</span> <span class="toc-text">visualVM</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        JVM-探究（四）：虚拟机监控和分析工具
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">ZHANG, BO</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-01-30T13:15:58.000Z" class="dt-published" itemprop="datePublished">2018-01-30</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/JVM/" rel="tag">JVM</a>, <a class="p-category" href="/tags/Java/" rel="tag">Java</a>, <a class="p-category" href="/tags/tech/" rel="tag">tech</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>文章用来介绍常用的虚拟机内存监控和虚拟机相关的故障排除工具。 包括<code>JDK</code>自带的命令行工具、和一些可视化工具，如<code>jvisualvm</code>。 <span id="more"></span></p>
+<h1 id="命令行工具"><a href="#命令行工具" class="headerlink" title="命令行工具"></a>命令行工具</h1><p><code>JDK</code>一些常用的命令行工具，能够让你不安装、不需要在服务器输出文件拷贝到本地的在进行分析，从而能够快速地查看虚拟机参数，了解虚拟机当前的运行状况，十分实用。本问介绍的命令都需要在 JDK8 或以上的环境运行，如果在低于 JDK8 可能会有部分指标乱码。</p>
+<p>命令一览</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>主要作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>jps</td>
+<td>JVM Process Status Tool， 显示系统内所有的 HotSpot 进程。 <strong>注意</strong>：只显示当前用户的</td>
+</tr>
+<tr>
+<td>jstat</td>
+<td>JVM Statistics Monitoring Tool， 用于收集 HotSpot 虚拟机各方面的参数</td>
+</tr>
+<tr>
+<td>jinfo</td>
+<td>Configuration Info for Java， 显示虚拟机配置信息</td>
+</tr>
+<tr>
+<td>jmap</td>
+<td>Memory Map for Java，生成虚拟机的内存转储快照片</td>
+</tr>
+<tr>
+<td>jhat</td>
+<td>JVM Heap Dump Browser，用于分析heapdump文件，他会建立一个 HTTP&#x2F;HTML 服务器，让用户可以在榴浏览器上查看分析结果</td>
+</tr>
+<tr>
+<td>jstack</td>
+<td>Stack Trace for Java， 显示虚拟机的线程快照</td>
+</tr>
+</tbody></table>
+<h2 id="jps"><a href="#jps" class="headerlink" title="jps"></a>jps</h2><p>全名：Java Virtual Machine Process Status Tool</p>
+<h3 id="主要选项"><a href="#主要选项" class="headerlink" title="主要选项"></a>主要选项</h3><table>
+<thead>
+<tr>
+<th>选项</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-q</td>
+<td>忽略主类名称，只输出 LVMID（一般和进程号相同</td>
+</tr>
+<tr>
+<td>-m</td>
+<td>打印被传入到 main() 方法的参数</td>
+</tr>
+<tr>
+<td>-l</td>
+<td>打印 main 方法的包名，或者运行的 JAR 包的全路径名</td>
+</tr>
+<tr>
+<td>-v</td>
+<td>打印传递给 JVM 的参数</td>
+</tr>
+<tr>
+<td>-V</td>
+<td>打印通过 flags file 传递给 JVM 的参数</td>
+</tr>
+<tr>
+<td>-Joption</td>
+<td>因为jps也是运行在 JVM 之上的，这就是传递给运行jps的JVM的参数。eg:<code>-J-Xms48m</code></td>
+</tr>
+</tbody></table>
+<h3 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h3><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fo167dq18uj30rs058gm3.jpg"></p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fo168vo9vfj30x80sodnb.jpg"></p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fo169qe498j30xc05emxy.jpg"></p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fo16a52f55j30x6146tl3.jpg"></p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fo16alsly8j30x605adgc.jpg"></p>
+<h2 id="jstat"><a href="#jstat" class="headerlink" title="jstat"></a>jstat</h2><p>全名：Java Virtual Machine statistics monitoring tool</p>
+<h3 id="主要选项-1"><a href="#主要选项-1" class="headerlink" title="主要选项"></a>主要选项</h3><table>
+<thead>
+<tr>
+<th>选项</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-class</td>
+<td>监视类装载、卸载数量、总空间以及类装载所耗费的时间</td>
+</tr>
+<tr>
+<td>-gc</td>
+<td>监视Java堆状况，包括Eden区域、两个survivor区、老年代、元空间等的容量、已用空间、GC 时间合计等信息</td>
+</tr>
+<tr>
+<td>-compiler</td>
+<td>输出 JIT 编译器编译过的方法、耗时等信息</td>
+</tr>
+<tr>
+<td>-gccapacity</td>
+<td>监视内容与-gc基本相同，但输出主要关注Java堆各个区域使用到的最大、最小空间</td>
+</tr>
+<tr>
+<td>-gcutil</td>
+<td>监视内容与-gc基本相同，但输出主要关注已使用空间占总空间百分比</td>
+</tr>
+<tr>
+<td>-gccause</td>
+<td>与 -gcutil 功能一样，但是会额外输出导致上一次GC产生的原因</td>
+</tr>
+<tr>
+<td>-gcnew</td>
+<td>监视新生代 GC 状况</td>
+</tr>
+<tr>
+<td>-gcnewcapacity</td>
+<td>监视内容与 -gcnew 基本相同，输出主要关注使用到的最大、最小空间</td>
+</tr>
+<tr>
+<td>-gcold</td>
+<td>监视老年代 GC 情况</td>
+</tr>
+<tr>
+<td>-gcoldcapacity</td>
+<td>监视内容与 -gcold 基本相同，输出主要关注使用到的最大、最小空间</td>
+</tr>
+<tr>
+<td>-gcpermcapacity</td>
+<td>输出永久代使用到的最大、最小空间（JDK8中已经没有了，并且暂时没有找到查看metaspace的大小的命令，可以直接使用-gc）</td>
+</tr>
+<tr>
+<td>-printcompilation</td>
+<td>输出已经被 JIT 编译过的方法</td>
+</tr>
+</tbody></table>
+<h3 id="使用示例-1"><a href="#使用示例-1" class="headerlink" title="使用示例"></a>使用示例</h3><h4 id="jstat-class"><a href="#jstat-class" class="headerlink" title="jstat -class"></a>jstat -class</h4><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fo282a6klrj30xc03a3yy.jpg"></p>
+<p>从左到右的含义分别是：</p>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Loaded</td>
+<td>已经加载的类数量</td>
+</tr>
+<tr>
+<td>Bytes</td>
+<td>已经加载类大小</td>
+</tr>
+<tr>
+<td>Unloaded</td>
+<td>卸载的类数量</td>
+</tr>
+<tr>
+<td>Bytes</td>
+<td>卸载的类大小</td>
+</tr>
+<tr>
+<td>Time</td>
+<td>类加载和卸载操作消耗的时间</td>
+</tr>
+</tbody></table>
+<h4 id="jstat-compiler"><a href="#jstat-compiler" class="headerlink" title="jstat -compiler"></a>jstat -compiler</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">~ jstat -compiler  50674</span><br><span class="line">Compiled Failed Invalid   Time   FailedType FailedMethod</span><br><span class="line">   1248      0       0     1.36          0</span><br></pre></td></tr></table></figure>
+
+<p>从左到右的含义分别是：</p>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Compiled</td>
+<td>JIT 编译任务的数量</td>
+</tr>
+<tr>
+<td>Failed</td>
+<td>JIT 失败的编译任务</td>
+</tr>
+<tr>
+<td>Invalid</td>
+<td>无效的 JIT 编译任务</td>
+</tr>
+<tr>
+<td>Time</td>
+<td>编译需要的时间</td>
+</tr>
+<tr>
+<td>FailedType</td>
+<td>最后一个编译失败的原因</td>
+</tr>
+<tr>
+<td>FailedMethod</td>
+<td>最后一个编译失败的类名和方法</td>
+</tr>
+</tbody></table>
+<h4 id="jstat-gc"><a href="#jstat-gc" class="headerlink" title="jstat -gc"></a>jstat -gc</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">jacob@JacobMBPlocal~ jstat -gc  50674</span><br><span class="line"> S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU    CCSC   CCSU   YGC     YGCT    FGC    FGCT     GCT</span><br><span class="line">10752.0 10752.0  0.0   5396.8 65536.0  24964.9   175104.0     80.0    17536.0 17112.7 2176.0 2040.8      1    0.006   0      0.000    0.006</span><br></pre></td></tr></table></figure>
+
+<p>从左到右的含义分别是：</p>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SOC</td>
+<td>S0 区域总大小</td>
+</tr>
+<tr>
+<td>S1C</td>
+<td>S1 区域总大小</td>
+</tr>
+<tr>
+<td>S0U</td>
+<td>S0 区域使用大小</td>
+</tr>
+<tr>
+<td>S1U</td>
+<td>S1 区域使用大小</td>
+</tr>
+<tr>
+<td>EC</td>
+<td>Eden 总大小</td>
+</tr>
+<tr>
+<td>EU</td>
+<td>Eden 区域使用大小</td>
+</tr>
+<tr>
+<td>OC</td>
+<td>当前 Old Space 总大小</td>
+</tr>
+<tr>
+<td>OU</td>
+<td>Old Space 使用大小</td>
+</tr>
+<tr>
+<td>PC</td>
+<td>当前 Permanent Space 总大小</td>
+</tr>
+<tr>
+<td>PU</td>
+<td>Permanent Space 使用大小</td>
+</tr>
+<tr>
+<td>YCG</td>
+<td>新生代 GC 发生次数</td>
+</tr>
+<tr>
+<td>YGCT</td>
+<td>新生代 GC 时间</td>
+</tr>
+<tr>
+<td>FGC</td>
+<td>full GC 次数q</td>
+</tr>
+<tr>
+<td>FGCT</td>
+<td>full GC 时间</td>
+</tr>
+<tr>
+<td>GCT</td>
+<td>垃圾回收时间总和</td>
+</tr>
+</tbody></table>
+<h4 id="jstat-gccapacity"><a href="#jstat-gccapacity" class="headerlink" title="jstat -gccapacity"></a>jstat -gccapacity</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">~ jstat -gccapacity  50674</span><br><span class="line">NGCMN    NGCMX     NGC     S0C   S1C       EC      OGCMN      OGCMX       OGC         OC       MCMN     MCMX      MC     CCSMN    CCSMX     CCSC    YGC    FGC</span><br><span class="line">87040.0 238592.0  87040.0 10752.0 10752.0  65536.0   175104.0   478208.0   175104.0   175104.0      0.0 1064960.0  17536.0      0.0 1048576.0   2176.0      1     0</span><br></pre></td></tr></table></figure>
+
+<p>从左到右的含义分别是：</p>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NGCMN</td>
+<td>新生代使用到的最小空间。 Minimum new generation capacity (KB).</td>
+</tr>
+<tr>
+<td>NGCMX</td>
+<td>新生代使用到的最大空间。Maximum new generation capacity (KB).</td>
+</tr>
+<tr>
+<td>NGC</td>
+<td>当前新生代大小。Current new generation capacity (KB).</td>
+</tr>
+<tr>
+<td>S0C</td>
+<td>当前 S0 区域大小。Current survivor space 0 capacity (KB).</td>
+</tr>
+<tr>
+<td>S1C</td>
+<td>当前 S1 区域大小。Current survivor space 1 capacity (KB).</td>
+</tr>
+<tr>
+<td>EC</td>
+<td>当前 Eden 区域大小。Current eden space capacity (KB).</td>
+</tr>
+<tr>
+<td>OGCMN</td>
+<td>老年代使用到的最小空间大小。Minimum old generation capacity (KB).</td>
+</tr>
+<tr>
+<td>OGCMX</td>
+<td>老年代使用到的最大空间大小。Maximum old generation capacity (KB).</td>
+</tr>
+<tr>
+<td>OGC</td>
+<td>当前老年代大小。Current old generation capacity (KB).</td>
+</tr>
+<tr>
+<td>OC</td>
+<td>当前老年代空间大小。Current old space capacity (KB).</td>
+</tr>
+<tr>
+<td>PGCMN</td>
+<td>永久代使用到的最小空间。Minimum permanent generation capacity (KB).</td>
+</tr>
+<tr>
+<td>PGCMX</td>
+<td>永久代使用到的最大空间。Maximum Permanent generation capacity (KB).</td>
+</tr>
+<tr>
+<td>PGC</td>
+<td>当前永久代大小。Current Permanent generation capacity (KB).</td>
+</tr>
+<tr>
+<td>PC</td>
+<td>当前永久空间大小。Current Permanent space capacity (KB).</td>
+</tr>
+<tr>
+<td>VGC</td>
+<td>Young GC 次数。 Number of Young generation GC Events.</td>
+</tr>
+<tr>
+<td>FGC</td>
+<td>Full GC 次数。Number of Full GC Events.</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>如果读者对于 <code>Current old generation capacity</code> 和 <code>Current old space capacity</code> 有疑问，可以参考<code>StackOverFlow</code>上面的这个提问：<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/11253285/jstat-difference-between-ogc-oc-pgc-pc">jstat: difference between OGC &amp; OC, PGC &amp; PC</a> ,简单点描述就是 一个<strong>代</strong>包含的空间不一定只有一个，只是 HotSpot 恰好只有一个。 <code>OGC = sum(all OC)</code></p>
+</blockquote>
+<h4 id="jstat-gcutil"><a href="#jstat-gcutil" class="headerlink" title="jstat -gcutil"></a>jstat -gcutil</h4><p><code>gcutil</code> 和 <code>gccapacity</code> 展现的数据基本相同，<code>gccapacity</code> 只是一个是精确的数据，<code>gcutil</code> 是更加直观的百分比。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ jstat -gcutil 17931</span><br><span class="line">  S0     S1     E      O      M     CCS    YGC     YGCT    FGC    FGCT     GCT</span><br><span class="line">  0.00   7.25   9.64   3.52  98.53  96.94    385    6.771     6    0.517    7.288</span><br></pre></td></tr></table></figure>
+
+<p>从左到右的含义分别是：</p>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>S0</td>
+<td>S0 区空间占用百分比。Survivor space 0 utilization as a percentage of the space’s current capacity.</td>
+</tr>
+<tr>
+<td>S1</td>
+<td>S1 区空间占用百分比。Survivor space 1 utilization as a percentage of the space’s current capacity.</td>
+</tr>
+<tr>
+<td>E</td>
+<td>Eden 区空间占用百分比。Eden space utilization as a percentage of thespace’s current capacity.</td>
+</tr>
+<tr>
+<td>O</td>
+<td>老年代空间占用百分比。Old space utilization as a percentage of the space’s current capacity.</td>
+</tr>
+<tr>
+<td>P</td>
+<td>永久代空间占用百分比。Permanent space utilization as a percentage ofthe space’s current capacity.</td>
+</tr>
+<tr>
+<td>YGC</td>
+<td>Young GC 次数。Number of young generation GC events.</td>
+</tr>
+<tr>
+<td>YGCT</td>
+<td>Young GC 时间。Young generation garbage collection time.</td>
+</tr>
+<tr>
+<td>FGC</td>
+<td>Full GC 次数。Number of Full GC events.</td>
+</tr>
+<tr>
+<td>FGCT</td>
+<td>Full GC 时间。Full garbage collection time.</td>
+</tr>
+<tr>
+<td>GCT</td>
+<td>总的 GC 时间。Total garbage collection time.</td>
+</tr>
+</tbody></table>
+<h4 id="jstat-gccause"><a href="#jstat-gccause" class="headerlink" title="jstat -gccause"></a>jstat -gccause</h4><p><code>gccause</code>和<code>gccause</code>基本相同，多出了两个参数，分别表示上一次 GC 的原因，和本次 GC 的原因。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ jstat -gccause 17931</span><br><span class="line">  S0     S1     E      O      M     CCS    YGC     YGCT    FGC    FGCT     GCT    LGCC                 GCC</span><br><span class="line">  5.30   0.00  40.79   3.82  98.34  95.90    438    7.501     6    0.517    8.018 Allocation Failure   No GC</span><br></pre></td></tr></table></figure>
+
+<p>新增的两个参数：</p>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LGCC</td>
+<td>上次 GC 的原因。Cause of last Garbage Collection.</td>
+</tr>
+<tr>
+<td>GCC</td>
+<td>本次 GC 的原因。Cause of current Garbage Collection.</td>
+</tr>
+</tbody></table>
+<h4 id="jstat-gcnew"><a href="#jstat-gcnew" class="headerlink" title="jstat -gcnew"></a>jstat -gcnew</h4><p>新生代统计</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ jstat -gcnew 17931</span><br><span class="line"> S0C    S1C    S0U    S1U   TT MTT  DSS      EC       EU     YGC     YGCT</span><br><span class="line">52416.0 52416.0    0.0 2820.6 15  15 26208.0 419456.0 321595.5    453    7.662</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SOC</td>
+<td>当前 S0 区域大小。Current survivor space 0 capacity (KB).</td>
+</tr>
+<tr>
+<td>S1C</td>
+<td>当前 S1 区域大小。Current survivor space 1 capacity (KB).</td>
+</tr>
+<tr>
+<td>S0U</td>
+<td>S0 占用大小。Survivor space 0 utilization (KB).</td>
+</tr>
+<tr>
+<td>S1U</td>
+<td>S1 占用大小。Survivor space 1 utilization (KB).</td>
+</tr>
+<tr>
+<td>TT</td>
+<td>Tenuring 阈值。Tenuring threshold.</td>
+</tr>
+<tr>
+<td>MTT</td>
+<td>最大 Tenuring 阈值。Maximum tenuring threshold.</td>
+</tr>
+<tr>
+<td>DSS</td>
+<td>需要的S区域大小。Desired survivor size (KB).</td>
+</tr>
+<tr>
+<td>EC</td>
+<td>Current eden space capacity (KB).</td>
+</tr>
+<tr>
+<td>EU</td>
+<td>Eden space utilization (KB).</td>
+</tr>
+<tr>
+<td>VGC</td>
+<td>Number of young generation GC events.</td>
+</tr>
+<tr>
+<td>VGCT</td>
+<td>Young generation garbage collection time.</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>Tenuring 阈值是动态变化的，最大 Tenuring 阈值可以通过 JVM 参数设置。具体可以参考我的另外一篇博客 <a href="/experiment-on-jvm.html#%E5%AE%9E%E9%AA%8C%E5%85%AD%EF%BC%9ATenuringThreshold-%E6%98%AF%E5%8A%A8%E6%80%81%E5%8F%98%E5%8C%96%E7%9A%84">Tenuring Threshold 是动态变化的</a></p>
+</blockquote>
+<blockquote>
+<p><code>DSS</code> 为需要的 S 空间的大小，如果实际空间不足，新生代的对象会提前进入老年代。<a href="/experiment-on-jvm.html#%E5%AE%9E%E9%AA%8C%E4%B8%80%EF%BC%9A%E4%BD%BF%E7%94%A8ParNew-Serial-Old%E7%9A%84%E7%BB%84%E5%90%88%E8%BF%9B%E8%A1%8C%E5%86%85%E5%AD%98%E5%9B%9E%E6%94%B6">提前转移实验</a></p>
+</blockquote>
+<h4 id="jstat-gcnewcapacity"><a href="#jstat-gcnewcapacity" class="headerlink" title="jstat -gcnewcapacity"></a>jstat -gcnewcapacity</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ jstat -gcnewcapacity 17931</span><br><span class="line">  NGCMN      NGCMX       NGC      S0CMX     S0C     S1CMX     S1C       ECMX        EC      YGC   FGC</span><br><span class="line">  524288.0   524288.0   524288.0  52416.0  52416.0  52416.0  52416.0   419456.0   419456.0   486     6</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NGCMN</td>
+<td>新生代最大空间大小。Minimum new generation capacity (KB).</td>
+</tr>
+<tr>
+<td>NGCMX</td>
+<td>新生代最小空间大小。Maximum new generation capacity (KB).</td>
+</tr>
+<tr>
+<td>NGC</td>
+<td>当前新生代空间大小。Current new generation capacity (KB).</td>
+</tr>
+<tr>
+<td>S0CMX</td>
+<td>S0 区域最大空间大小。Maximum survivor space 0 capacity (KB).</td>
+</tr>
+<tr>
+<td>S0C</td>
+<td>S0 区域当前空间大小。Current survivor space 0 capacity (KB).</td>
+</tr>
+<tr>
+<td>S1CMX</td>
+<td>S1 区域最大空间大小。Maximum survivor space 1 capacity (KB).</td>
+</tr>
+<tr>
+<td>S1C</td>
+<td>S1 区域当前空间大小。Current survivor space 1 capacity (KB).</td>
+</tr>
+<tr>
+<td>ECMX</td>
+<td>Eden 区域最大空间大小。Maximum eden space capacity (KB).</td>
+</tr>
+<tr>
+<td>EC</td>
+<td>Eden 区域当前空间大小。Current eden space capacity (KB).</td>
+</tr>
+<tr>
+<td>YGC</td>
+<td>Young GC 次数。Number of young generation GC events.</td>
+</tr>
+<tr>
+<td>FGC</td>
+<td>Full GC 次数。Number of Full GC Events.</td>
+</tr>
+</tbody></table>
+<h4 id="jstat-gcold"><a href="#jstat-gcold" class="headerlink" title="jstat -gcold"></a>jstat -gcold</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ jstat -gcold 17931</span><br><span class="line">   MC       MU      CCSC     CCSU       OC          OU       YGC    FGC    FGCT     GCT</span><br><span class="line">102248.0 100603.7  10324.0   9900.6   1572864.0     63154.7    497     6    0.517    8.744</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PC</td>
+<td>当前永久代大小。Current permanent space capacity (KB).</td>
+</tr>
+<tr>
+<td>PU</td>
+<td>当前永久代占用。Permanent space utilization (KB).</td>
+</tr>
+<tr>
+<td>OC</td>
+<td>当前老年代大小。Current old space capacity (KB).</td>
+</tr>
+<tr>
+<td>OU</td>
+<td>当前老年代占用。Old space utilization (KB).</td>
+</tr>
+<tr>
+<td>YGC</td>
+<td>Young GC 次数。Number of young generation GC events.</td>
+</tr>
+<tr>
+<td>FGC</td>
+<td>Full GC 次数。Number of Full GC events.</td>
+</tr>
+<tr>
+<td>FGCT</td>
+<td>Full GC 时间。Full garbage collection time.</td>
+</tr>
+<tr>
+<td>GCT</td>
+<td>所有 GC 时间。Total garbage collection time.</td>
+</tr>
+</tbody></table>
+<h4 id="jstat-gcoldcapacity"><a href="#jstat-gcoldcapacity" class="headerlink" title="jstat -gcoldcapacity"></a>jstat -gcoldcapacity</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ jstat -gcoldcapacity 17931</span><br><span class="line">   OGCMN       OGCMX        OGC         OC       YGC   FGC    FGCT     GCT</span><br><span class="line">  1572864.0   1572864.0   1572864.0   1572864.0   508     6    0.517    8.923</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>OGCMN</td>
+<td>最小老年代大小。Minimum old generation capacity (KB).</td>
+</tr>
+<tr>
+<td>OGCMV</td>
+<td>最大老年代大小。Maximum old generation capacity (KB).</td>
+</tr>
+<tr>
+<td>OGC</td>
+<td>当前老年代大小。Current old generation capacity (KB).</td>
+</tr>
+<tr>
+<td>OC</td>
+<td>当前老年空间大小。Current old space capacity (KB).</td>
+</tr>
+<tr>
+<td>YGC</td>
+<td>Young GC 次数。Number of young generation GC events.</td>
+</tr>
+<tr>
+<td>FGC</td>
+<td>Full GC 次数。Number of Full GC events.</td>
+</tr>
+<tr>
+<td>FGCT</td>
+<td>Full GC 时间。Full garbage collection time.</td>
+</tr>
+<tr>
+<td>GCT</td>
+<td>所有 GC 时间。Total garbage collection time.</td>
+</tr>
+</tbody></table>
+<h4 id="jstat-printcompilation"><a href="#jstat-printcompilation" class="headerlink" title="jstat -printcompilation"></a>jstat -printcompilation</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ jstat -printcompilation 17931</span><br><span class="line">Compiled  Size  Type Method</span><br><span class="line">   21778   2719    1 com/sankuai/octo/config/model/file_param_t hashCode</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Compiled</td>
+<td>Number of compilation tasks performed.</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>Number of bytes of bytecode for the method.</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>Compilation type.</td>
+</tr>
+<tr>
+<td>Method</td>
+<td>Class name and method name identifying the compiled method. Class name uses “&#x2F;“ instead of “.” as namespace separator. Method name is the method within the given class. The format for these two fields is consistent with the HotSpot -XX:+PrintComplation option.</td>
+</tr>
+</tbody></table>
+<h4 id="jstat-的额外参数"><a href="#jstat-的额外参数" class="headerlink" title="jstat 的额外参数"></a>jstat 的额外参数</h4><p>上述的命令都可以使用类似下面的参数</p>
+<p><code>jstat -gcutil -t 17931 500 100</code> 其中<code>-t</code>表示打印时间戳、<code>17931</code>为 lvmid、<code>500</code>表示间隔 500ms 来输出信息、 <code>100</code>表示信息条目显示d的数量。</p>
+<p>譬如，下面显示了10行，显示时间间隔为500ms</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ jstat -gcutil 17931 500 10</span><br><span class="line">  S0     S1     E      O      M     CCS    YGC     YGCT    FGC    FGCT     GCT</span><br><span class="line">  9.55   0.00  69.10   4.26  98.34  95.92    552    8.950     6    0.517    9.466</span><br><span class="line">  9.55   0.00  71.22   4.26  98.34  95.92    552    8.950     6    0.517    9.466</span><br><span class="line">  9.55   0.00  72.88   4.26  98.34  95.92    552    8.950     6    0.517    9.466</span><br><span class="line">  9.55   0.00  74.90   4.26  98.34  95.92    552    8.950     6    0.517    9.466</span><br><span class="line">  9.55   0.00  77.01   4.26  98.34  95.92    552    8.950     6    0.517    9.466</span><br><span class="line">  9.55   0.00  78.98   4.26  98.34  95.92    552    8.950     6    0.517    9.466</span><br><span class="line">  9.55   0.00  80.78   4.26  98.34  95.92    552    8.950     6    0.517    9.466</span><br><span class="line">  9.55   0.00  82.90   4.26  98.34  95.92    552    8.950     6    0.517    9.466</span><br><span class="line">  9.55   0.00  84.71   4.26  98.34  95.92    552    8.950     6    0.517    9.466</span><br><span class="line">  9.55   0.00  86.85   4.26  98.34  95.92    552    8.950     6    0.517    9.466</span><br></pre></td></tr></table></figure>
+
+<h2 id="jinfo"><a href="#jinfo" class="headerlink" title="jinfo"></a>jinfo</h2><p>输出 Java 配置信息</p>
+<p>下面是 Intellj IDEA 的部分输出信息</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">jinfo 88747</span><br><span class="line">Attaching to process ID 88747, please wait...</span><br><span class="line">Debugger attached successfully.</span><br><span class="line">Server compiler detected.</span><br><span class="line">JVM version is 25.131-b11</span><br><span class="line">Java System Properties:</span><br><span class="line"></span><br><span class="line">java.vendor = Oracle Corporation</span><br><span class="line">preload.project.path = /Users/jacob/Developer/IDEA/campaignmanage</span><br><span class="line">sun.java.launcher = SUN_STANDARD</span><br><span class="line">idea.config.path = /Users/jacob/Library/Preferences/IntelliJIdea2017.3</span><br><span class="line">sun.management.compiler = HotSpot 64-Bit Tiered Compilers</span><br><span class="line">sun.nio.ch.bugLevel =</span><br><span class="line">idea.paths.selector = IntelliJIdea2017.3</span><br><span class="line">kotlin.daemon.client.alive.path = &quot;/var/folders/hw/_d9gvls95316wtq_crffgz3w0000gn/T/kotlin-idea-4717993236071674726-is-running&quot;</span><br><span class="line">jnidispatch.path = /Users/jacob/Library/Caches/IntelliJIdea2017.3/compile-server/campaignmanage_7408d958/_temp_/jna-100881631/jna5884254379081076550.tmp</span><br><span class="line">os.name = Mac OS X</span><br><span class="line">sun.boot.class.path = /Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/lib/resources.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/lib/rt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/lib/sunrsasign.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/lib/jsse.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/lib/jce.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/lib/charsets.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/lib/jfr.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/classes</span><br><span class="line">idea.plugins.path = /Users/jacob/Library/Application Support/IntelliJIdea2017.3</span><br><span class="line">java.vm.specification.vendor = Oracle Corporation</span><br><span class="line">java.runtime.version = 1.8.0_131-b11</span><br><span class="line">jna.loaded = true</span><br><span class="line">io.netty.serviceThreadPrefix = Netty</span><br><span class="line">user.name = jacob</span><br><span class="line">kotlin.incremental.compilation = true</span><br><span class="line">idea.home.path = /Applications/IntelliJ IDEA.app/Contents</span><br><span class="line">user.language = zh</span><br><span class="line">jdt.compiler.useSingleThread = true</span><br><span class="line">sun.boot.library.path = /Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/lib</span><br><span class="line">java.version = 1.8.0_131</span><br><span class="line">user.timezone = Asia/Shanghai</span><br><span class="line">java.net.preferIPv4Stack = true</span><br><span class="line">kotlin.daemon.enabled =</span><br><span class="line">sun.arch.data.model = 64</span><br><span class="line"></span><br><span class="line">java.vm.name = Java HotSpot(TM) 64-Bit Server VM</span><br><span class="line">file.encoding = UTF-8</span><br><span class="line">java.specification.version = 1.8</span><br><span class="line">compile.parallel = false</span><br><span class="line">io.netty.noUnsafe = true</span><br><span class="line"></span><br><span class="line">VM Flags:</span><br><span class="line">Non-default VM flags: -XX:CICompilerCount=4 -XX:InitialHeapSize=268435456 -XX:MaxHeapSize=734003200 -XX:MaxNewSize=244318208 -XX:MinHeapDeltaBytes=524288 -XX:NewSize=89128960 -XX:OldSize=179306496 -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:+UseFastUnorderedTimeStamps -XX:+UseParallelGC</span><br><span class="line">Command line:  -Xmx700m -Djava.awt.headless=true -Djava.endorsed.dirs=&quot;&quot; -Djdt.compiler.useSingleThread=true -Dpreload.project.path=/Users/jacob/Developer/IDEA/campaignmanage -Dpreload.config.path=/Users/jacob/Library/Preferences/IntelliJIdea2017.3/options -Dcompile.parallel=false</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>参数为空</td>
+<td>打印命令行标记和系统属性</td>
+</tr>
+<tr>
+<td>-flags</td>
+<td>打印命令行标记</td>
+</tr>
+<tr>
+<td>-sysprops</td>
+<td>打印Java系统属性</td>
+</tr>
+</tbody></table>
+<h2 id="jmap"><a href="#jmap" class="headerlink" title="jmap"></a>jmap</h2><p>下面的工具介绍不再提供例子，读者感兴趣可以自己尝试</p>
+<table>
+<thead>
+<tr>
+<th>选 项</th>
+<th>作 用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-dump</td>
+<td>生成 Java 堆转储快照。格式为：<code>-dump:[live,]format=b,file=&lt;filename&gt;</code>，其中 live 子参数说明是否只 dump 出存活的对象</td>
+</tr>
+<tr>
+<td>-finalizerinfo</td>
+<td>显示在 F-Queue 中等待 Finalizer 想成执行 finalize 方法的对象。只在 Linux&#x2F;Solaris 平台下有效。在JDK9 Mac 平台失败，JDK8 可以</td>
+</tr>
+<tr>
+<td>-heap</td>
+<td>显示 Java 堆详细信息，如使用哪种回收器、参数配置、分代状况等。只在 Linux&#x2F;Solaris 平台下有效。在JDK9 Mac 平台失败，JDK8可以</td>
+</tr>
+<tr>
+<td>-histo</td>
+<td>显示堆中对象的统计信息，包括类、实例数量、合计容量</td>
+</tr>
+<tr>
+<td>permstat</td>
+<td>以ClassLoader为统计口径显示永久代内存状态，只在 Linux&#x2F;Solaris 平台下有效。 JDK8以上版本已经废弃</td>
+</tr>
+<tr>
+<td>-F</td>
+<td>当虚拟机进程对 -dump 选项没有响应时，可使用这个选项强制生成 dump 快照。只在 Linux&#x2F;Solaris 平台下有效。</td>
+</tr>
+</tbody></table>
+<h2 id="jhat"><a href="#jhat" class="headerlink" title="jhat"></a>jhat</h2><p>虚拟机堆转储快照分析工具,不建议使用, 建议使用 <code>visualVM</code> 等工具进行分析</p>
+<h2 id="jstack"><a href="#jstack" class="headerlink" title="jstack"></a>jstack</h2><p>Java堆栈跟踪工具</p>
+<blockquote>
+<p>“线程快照就是当前虚拟机内每一条线程正在执行的方法堆栈的集合，生成线程快照的主要目的是定位线程出现长时间停顿的原因，如线程间死锁、死循环、请求外部资源导致的长时间等待等都是导致线程长时间停顿的常见原因。线程出现停顿的时候通过jstack来查看各个线程的调用堆栈，就可以知道没有响应的线程到底在后台做些什么事情，或者等待着什么资源。”</p>
+</blockquote>
+<blockquote>
+<p>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-F</td>
+<td>当正常输出的请求不被响应时，强制输出线程堆栈</td>
+</tr>
+<tr>
+<td>-l</td>
+<td>除堆栈外，显示关于锁的附加信息</td>
+</tr>
+<tr>
+<td>-m</td>
+<td>如果调用到本地方法的话，可以显示C&#x2F;C++ 的堆栈.(JDK9失败）</td>
+</tr>
+</tbody></table>
+<h1 id="visualVM"><a href="#visualVM" class="headerlink" title="visualVM"></a>visualVM</h1><p>visualVM 通过可视化的方式来和命令行的命令进行互补，来分析一些内存占用的趋势，一些参数的动态变化比命令行工具有着先天的优势，由于官方文档比较全面，不再赘述。</p>
+<p>visualVM 官方提供了中文文档：</p>
+<ul>
+<li>QuickStart：<a target="_blank" rel="noopener" href="https://visualvm.github.io/gettingstarted.html?Java_VisualVM">https://visualvm.github.io/gettingstarted.html?Java_VisualVM</a></li>
+<li>Document： <a target="_blank" rel="noopener" href="https://visualvm.github.io/documentation.html">https://visualvm.github.io/documentation.html</a></li>
+<li>GitHub 主页：<a target="_blank" rel="noopener" href="https://github.com/oracle/visualvm">https://github.com/oracle/visualvm</a></li>
+</ul>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7"><span class="toc-number">1.</span> <span class="toc-text">命令行工具</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#jps"><span class="toc-number">1.1.</span> <span class="toc-text">jps</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E8%A6%81%E9%80%89%E9%A1%B9"><span class="toc-number">1.1.1.</span> <span class="toc-text">主要选项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B"><span class="toc-number">1.1.2.</span> <span class="toc-text">使用示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jstat"><span class="toc-number">1.2.</span> <span class="toc-text">jstat</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E8%A6%81%E9%80%89%E9%A1%B9-1"><span class="toc-number">1.2.1.</span> <span class="toc-text">主要选项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B-1"><span class="toc-number">1.2.2.</span> <span class="toc-text">使用示例</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-class"><span class="toc-number">1.2.2.1.</span> <span class="toc-text">jstat -class</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-compiler"><span class="toc-number">1.2.2.2.</span> <span class="toc-text">jstat -compiler</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-gc"><span class="toc-number">1.2.2.3.</span> <span class="toc-text">jstat -gc</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-gccapacity"><span class="toc-number">1.2.2.4.</span> <span class="toc-text">jstat -gccapacity</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-gcutil"><span class="toc-number">1.2.2.5.</span> <span class="toc-text">jstat -gcutil</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-gccause"><span class="toc-number">1.2.2.6.</span> <span class="toc-text">jstat -gccause</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-gcnew"><span class="toc-number">1.2.2.7.</span> <span class="toc-text">jstat -gcnew</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-gcnewcapacity"><span class="toc-number">1.2.2.8.</span> <span class="toc-text">jstat -gcnewcapacity</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-gcold"><span class="toc-number">1.2.2.9.</span> <span class="toc-text">jstat -gcold</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-gcoldcapacity"><span class="toc-number">1.2.2.10.</span> <span class="toc-text">jstat -gcoldcapacity</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-printcompilation"><span class="toc-number">1.2.2.11.</span> <span class="toc-text">jstat -printcompilation</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jstat-%E7%9A%84%E9%A2%9D%E5%A4%96%E5%8F%82%E6%95%B0"><span class="toc-number">1.2.2.12.</span> <span class="toc-text">jstat 的额外参数</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jinfo"><span class="toc-number">1.3.</span> <span class="toc-text">jinfo</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jmap"><span class="toc-number">1.4.</span> <span class="toc-text">jmap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jhat"><span class="toc-number">1.5.</span> <span class="toc-text">jhat</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#jstack"><span class="toc-number">1.6.</span> <span class="toc-text">jstack</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#visualVM"><span class="toc-number">2.</span> <span class="toc-text">visualVM</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/&text=JVM-探究（四）：虚拟机监控和分析工具"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/&title=JVM-探究（四）：虚拟机监控和分析工具"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/&is_video=false&description=JVM-探究（四）：虚拟机监控和分析工具"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=JVM-探究（四）：虚拟机监控和分析工具&body=Check out this article: https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/&title=JVM-探究（四）：虚拟机监控和分析工具"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/&title=JVM-探究（四）：虚拟机监控和分析工具"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/&title=JVM-探究（四）：虚拟机监控和分析工具"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/&title=JVM-探究（四）：虚拟机监控和分析工具"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/&name=JVM-探究（四）：虚拟机监控和分析工具&description=&lt;p&gt;文章用来介绍常用的虚拟机内存监控和虚拟机相关的故障排除工具。 包括&lt;code&gt;JDK&lt;/code&gt;自带的命令行工具、和一些可视化工具，如&lt;code&gt;jvisualvm&lt;/code&gt;。"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2018/01/30/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E5%9B%9B%EF%BC%89%EF%BC%9A%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9B%91%E6%8E%A7%E5%92%8C%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/&t=JVM-探究（四）：虚拟机监控和分析工具"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    ZHANG, BO
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

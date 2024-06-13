@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="单例模式是设计模式里面最常见的，也是在面试过程中面试官最容易考到的，通过单例模式还可以引申到其他的一些并发问题。今天我们来聊聊如何正确的构建一个单例。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何构建一个正确的单例">
+<meta property="og:url" content="https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="单例模式是设计模式里面最常见的，也是在面试过程中面试官最容易考到的，通过单例模式还可以引申到其他的一些并发问题。今天我们来聊聊如何正确的构建一个单例。">
+<meta property="og:locale">
+<meta property="og:image" content="https://jacobchang.cn/media/dragonboat_ZH-CN0697680986_1920x1080.jpg">
+<meta property="article:published_time" content="2019-05-30T15:26:28.000Z">
+<meta property="article:modified_time" content="2024-06-13T12:56:22.290Z">
+<meta property="article:author" content="ZHANG, BO">
+<meta property="article:tag" content="tech">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jacobchang.cn/media/dragonboat_ZH-CN0697680986_1920x1080.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>如何构建一个正确的单例</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2019/06/03/%E8%81%8A%E8%81%8AConcurrentModificationException/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/&text=如何构建一个正确的单例"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/&title=如何构建一个正确的单例"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/&is_video=false&description=如何构建一个正确的单例"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=如何构建一个正确的单例&body=Check out this article: https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/&title=如何构建一个正确的单例"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/&title=如何构建一个正确的单例"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/&title=如何构建一个正确的单例"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/&title=如何构建一个正确的单例"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/&name=如何构建一个正确的单例&description=&lt;p&gt;单例模式是设计模式里面最常见的，也是在面试过程中面试官最容易考到的，通过单例模式还可以引申到其他的一些并发问题。今天我们来聊聊如何正确的构建一个单例。&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/&t=如何构建一个正确的单例"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%A5%BF%E6%B1%89%E5%8D%95%E4%BE%8B%EF%BC%88%E9%9D%99%E6%80%81%E7%B1%BB%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-number">1.</span> <span class="toc-text">饿汉单例（静态类模式）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%87%92%E6%B1%89%E5%8D%95%E4%BE%8B-%EF%BC%88%E9%9D%99%E6%80%81%E7%B1%BB%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">懒汉单例 （静态类模式）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%8C%E9%87%8D%E6%A3%80%E6%B5%8B%E9%94%81-Double-Checked-Locking"><span class="toc-number">3.</span> <span class="toc-text">双重检测锁 Double Checked Locking</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9E%9A%E4%B8%BE%E7%B1%BB%E6%A8%A1%E5%BC%8F%E5%AE%9E%E7%8E%B0%E6%9E%9A%E4%B8%BE"><span class="toc-number">4.</span> <span class="toc-text">枚举类模式实现枚举</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        如何构建一个正确的单例
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">ZHANG, BO</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2019-05-30T15:26:28.000Z" class="dt-published" itemprop="datePublished">2019-05-30</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Java/" rel="tag">Java</a>, <a class="p-category" href="/tags/tech/" rel="tag">tech</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>单例模式是设计模式里面最常见的，也是在面试过程中面试官最容易考到的，通过单例模式还可以引申到其他的一些并发问题。今天我们来聊聊如何正确的构建一个单例。</p>
+<span id="more"></span>
+
+<p><img src="/../media/dragonboat_ZH-CN0697680986_1920x1080.jpg" alt="dragonboat_ZH-CN0697680986_1920x1080"></p>
+<p>首先我们来写一个最简单的单例，该单例只能使用在单线程的情况下。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UnsafeLazyInitialization</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> Resource resource;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> Resource <span class="title function_">getInstance</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (resource == <span class="literal">null</span>) &#123;</span><br><span class="line">      resource = <span class="keyword">new</span> <span class="title class_">Resource</span>(); <span class="comment">// 多线程情况下是不安全的发布</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> resource;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们来分析一下这个单例如果放到多线程模式下会有什么问题，如果线程 A 和 B 同时到达 <code>if (resource == null)</code> 的时候（或者是由于可见性的原因，线程 B 没有看到线程 A 已经对引用赋值了），此时判断逻辑都为 <code>true</code>  于是就会创建 <code>Resource</code> 对象，两个线程创建了两个对象（如果有多个线程，可能会创建更多的对象），不符合单例的要求。相对这个问题而言，这里还隐藏了更危险的问题，由于指令的重排序的原因，可能导致一些线程能够获取这个单例，但是单例对象还在初始化，内部处于一个不确定的状态。</p>
+<h4 id="饿汉单例（静态类模式）"><a href="#饿汉单例（静态类模式）" class="headerlink" title="饿汉单例（静态类模式）"></a>饿汉单例（静态类模式）</h4><p>下面我们改进一下这个单例，让其变为一个线程安全的单例。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">EagerInitialization</span> &#123; <span class="comment">// 饿汉模式</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">Resource</span> <span class="variable">resource</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Resource</span>(); <span class="comment">// 通过类加载过程，提前加载单例，避免线程竞争</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> Resource <span class="title function_">getResource</span><span class="params">()</span> &#123; </span><br><span class="line">    <span class="keyword">return</span> resource;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的代码如何做到的线程安全，是由于利用了静态初始化器。</p>
+<blockquote>
+<p>静态初始化器是由 JVM 再类的初始化阶段执行，即在类被加载后并且被线程使用之前。由于 JVM 将在初始化期间获得一个锁，并且每个线程都至少获取一次这个锁以确保这个累已经加载，因此在静态初始化期间，内存写入操作将自动对所有线程可见。</p>
+</blockquote>
+<h4 id="懒汉单例-（静态类模式）"><a href="#懒汉单例-（静态类模式）" class="headerlink" title="懒汉单例 （静态类模式）"></a>懒汉单例 （静态类模式）</h4><p>上面的模式展示了如何使用 Java 本身类加载的机制来保证单例的，使用同样的方式也可以构建一种懒汉模式的单例。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ResourceFactory</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">ResourceHolder</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">Resource</span> <span class="variable">resource</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Resource</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> Resource <span class="title function_">getResource</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> ResourceHolder.resource;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="双重检测锁-Double-Checked-Locking"><a href="#双重检测锁-Double-Checked-Locking" class="headerlink" title="双重检测锁 Double Checked Locking"></a>双重检测锁 Double Checked Locking</h4><p>在江湖上还传说着一种既高效又线程安全的单例写法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 不要这么做</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DoubleCheckedLocking</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> Resource resource;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="title function_">getInstance</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (resource == <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">synchronized</span>(DoubleCheckedLocking.class) &#123;</span><br><span class="line">        <span class="keyword">if</span> (resource == <span class="literal">null</span>) &#123;</span><br><span class="line">          resource = <span class="keyword">new</span> <span class="title class_">Resource</span>();</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> resource;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的 DCL 真正的问题在于在没有同步的情况下读取一个共享对象。可见性问题会造成有些线程可能看到失效的值，这个值可能是一个 <code>null</code> ，更加糟糕的情况下，这个值可能是一个不确定的值，因为该对象还没有初始化完成就发布了。</p>
+<p>上面的例子可以改写成以下代码，通过使用 <code>volatile</code> 来保证共享对象的可见性</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DoubleCheckedLocking</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> Resource resource;</span><br><span class="line">  .....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>然而，DCL 的这种使用方法已经被广泛地废弃了——促使该模式出现的驱动力（无竞争同步的执行速度很慢，以及 JVM 启动很慢）已经不复存在了，因此它不是一种高效的优化措施。延迟初始化能带来同样的优势，并且更容易理解。</p>
+</blockquote>
+<h4 id="枚举类模式实现枚举"><a href="#枚举类模式实现枚举" class="headerlink" title="枚举类模式实现枚举"></a>枚举类模式实现枚举</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">MySingleton</span> &#123;</span><br><span class="line">  <span class="keyword">void</span> <span class="title function_">doSomething</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">Singleton</span> <span class="keyword">implements</span> <span class="title class_">MySingleton</span> &#123;</span><br><span class="line">  INSTANCE &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">doSomething</span><span class="params">()</span> &#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;complete singleton&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> MySingleton <span class="title function_">getInstance</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> Singleton.INSTANCE;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>effective java 推荐使用枚举来做单例</p>
+<blockquote>
+<p>使用枚举实现单例的方法虽然还没有广泛采用，但是单元素的枚举类型已经成为实现Singleton的最佳方法。</p>
+</blockquote>
+<p>使用枚举来做单例的优势是：写法简单，单例线程安全由 JMM 提供、反序列化得到的对象也能保证是同一个。</p>
+<p>单例线程安全：如果反编译单例的代码之后，会发现是一些 static 的属性和代码块。</p>
+<p>反序列化的保障：</p>
+<blockquote>
+<p>Java的序列化机制针对枚举类型是特殊处理的。简单来讲，在序列化枚举类型时，只会存储枚举类的引用和枚举常量的名称。随后的反序列化的过程中，这些信息被用来在运行时环境中查找存在的枚举类型对象。</p>
+</blockquote>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>推荐使用枚举去实现单例模式！</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%A5%BF%E6%B1%89%E5%8D%95%E4%BE%8B%EF%BC%88%E9%9D%99%E6%80%81%E7%B1%BB%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-number">1.</span> <span class="toc-text">饿汉单例（静态类模式）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%87%92%E6%B1%89%E5%8D%95%E4%BE%8B-%EF%BC%88%E9%9D%99%E6%80%81%E7%B1%BB%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">懒汉单例 （静态类模式）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%8C%E9%87%8D%E6%A3%80%E6%B5%8B%E9%94%81-Double-Checked-Locking"><span class="toc-number">3.</span> <span class="toc-text">双重检测锁 Double Checked Locking</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9E%9A%E4%B8%BE%E7%B1%BB%E6%A8%A1%E5%BC%8F%E5%AE%9E%E7%8E%B0%E6%9E%9A%E4%B8%BE"><span class="toc-number">4.</span> <span class="toc-text">枚举类模式实现枚举</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/&text=如何构建一个正确的单例"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/&title=如何构建一个正确的单例"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/&is_video=false&description=如何构建一个正确的单例"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=如何构建一个正确的单例&body=Check out this article: https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/&title=如何构建一个正确的单例"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/&title=如何构建一个正确的单例"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/&title=如何构建一个正确的单例"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/&title=如何构建一个正确的单例"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/&name=如何构建一个正确的单例&description=&lt;p&gt;单例模式是设计模式里面最常见的，也是在面试过程中面试官最容易考到的，通过单例模式还可以引申到其他的一些并发问题。今天我们来聊聊如何正确的构建一个单例。&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/&t=如何构建一个正确的单例"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    ZHANG, BO
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

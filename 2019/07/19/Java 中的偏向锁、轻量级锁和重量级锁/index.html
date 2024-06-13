@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="今天我们来聊聊 Synchronized 里面的各种锁：偏向锁、轻量级锁、重量级锁，以及三个锁之间是如何进行锁膨胀的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java 中的偏向锁、轻量级锁和重量级锁">
+<meta property="og:url" content="https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="今天我们来聊聊 Synchronized 里面的各种锁：偏向锁、轻量级锁、重量级锁，以及三个锁之间是如何进行锁膨胀的。">
+<meta property="og:locale">
+<meta property="og:image" content="https://jacobchang.cn/media/GodsGarden_ZH-CN3317703606_1920x1080.jpg">
+<meta property="og:image" content="https://jacobchang.cn/media/image-20190719003918974.png">
+<meta property="og:image" content="https://jacobchang.cn/media/lock-of-jvm.jpeg">
+<meta property="og:image" content="https://jacobchang.cn/media/20170420102716139.jpeg">
+<meta property="og:image" content="https://jacobchang.cn/media/20170420102754608.jpeg">
+<meta property="og:image" content="https://jacobchang.cn/media/image-20190719112951132.png">
+<meta property="og:image" content="https://jacobchang.cn/media/v2-9db4211af1be81785f6cc51a58ae6054_r.jpg">
+<meta property="article:published_time" content="2019-07-18T16:28:02.000Z">
+<meta property="article:modified_time" content="2024-06-13T12:56:22.287Z">
+<meta property="article:author" content="ZHANG, BO">
+<meta property="article:tag" content="JVM">
+<meta property="article:tag" content="锁">
+<meta property="article:tag" content="偏向锁">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jacobchang.cn/media/GodsGarden_ZH-CN3317703606_1920x1080.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Java 中的偏向锁、轻量级锁和重量级锁</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2019/07/29/%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%E9%97%AE%E9%A2%98/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/&text=Java 中的偏向锁、轻量级锁和重量级锁"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/&title=Java 中的偏向锁、轻量级锁和重量级锁"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/&is_video=false&description=Java 中的偏向锁、轻量级锁和重量级锁"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Java 中的偏向锁、轻量级锁和重量级锁&body=Check out this article: https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/&title=Java 中的偏向锁、轻量级锁和重量级锁"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/&title=Java 中的偏向锁、轻量级锁和重量级锁"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/&title=Java 中的偏向锁、轻量级锁和重量级锁"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/&title=Java 中的偏向锁、轻量级锁和重量级锁"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/&name=Java 中的偏向锁、轻量级锁和重量级锁&description=&lt;p&gt;今天我们来聊聊 Synchronized 里面的各种锁：偏向锁、轻量级锁、重量级锁，以及三个锁之间是如何进行锁膨胀的。&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/&t=Java 中的偏向锁、轻量级锁和重量级锁"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Mark-Word"><span class="toc-number">1.</span> <span class="toc-text">Mark Word</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%94%81%E4%BB%8B%E7%BB%8D"><span class="toc-number">2.</span> <span class="toc-text">锁介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%94%81%E7%9A%84%E6%B5%81%E8%BD%AC"><span class="toc-number">3.</span> <span class="toc-text">锁的流转</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E5%88%86%E9%85%8D"><span class="toc-number">3.1.</span> <span class="toc-text">对象分配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%81%8F%E5%90%91%E9%94%81-%E5%88%9D%E5%A7%8B%E9%94%81%E5%AE%9A"><span class="toc-number">3.2.</span> <span class="toc-text">偏向锁 初始锁定</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%81%8F%E5%90%91%E9%94%81-%E9%94%81%E5%AE%9A-%E8%A7%A3%E9%94%81"><span class="toc-number">3.3.</span> <span class="toc-text">偏向锁 锁定&#x2F;解锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%81%8F%E5%90%91%E9%94%81-%E9%87%8D%E5%81%8F%E5%90%91%EF%BC%88rebias%EF%BC%89"><span class="toc-number">3.4.</span> <span class="toc-text">偏向锁 重偏向（rebias）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%92%A4%E9%94%80%E5%81%8F%E5%90%91%EF%BC%88revoke%EF%BC%89"><span class="toc-number">3.5.</span> <span class="toc-text">撤销偏向（revoke）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Bulk-Revoke"><span class="toc-number">3.6.</span> <span class="toc-text">Bulk Revoke</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%AE%9A"><span class="toc-number">3.7.</span> <span class="toc-text">轻量级锁定</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81-%E9%80%92%E5%BD%92%E9%94%81%E5%AE%9A"><span class="toc-number">3.8.</span> <span class="toc-text">轻量级锁 递归锁定</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81-%E8%86%A8%E8%83%80"><span class="toc-number">3.9.</span> <span class="toc-text">轻量级锁 膨胀</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81-%E8%A7%A3%E9%94%81"><span class="toc-number">3.10.</span> <span class="toc-text">轻量级锁 解锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81-%E8%A7%A3%E9%94%81"><span class="toc-number">3.11.</span> <span class="toc-text">重量级锁 解锁</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">4.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Java 中的偏向锁、轻量级锁和重量级锁
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">ZHANG, BO</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2019-07-18T16:28:02.000Z" class="dt-published" itemprop="datePublished">2019-07-19</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/JVM/" rel="tag">JVM</a>, <a class="p-category" href="/tags/%E5%81%8F%E5%90%91%E9%94%81/" rel="tag">偏向锁</a>, <a class="p-category" href="/tags/%E9%94%81/" rel="tag">锁</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>今天我们来聊聊 Synchronized 里面的各种锁：偏向锁、轻量级锁、重量级锁，以及三个锁之间是如何进行锁膨胀的。</p>
+<span id="more"></span>
+
+<p><img src="/../media/GodsGarden_ZH-CN3317703606_1920x1080.jpg" alt="GodsGarden_ZH-CN3317703606_1920x1080"></p>
+<p>众所周知，线程阻塞带来的上下文切换的代价是很大的，Java 为了尽量减少上下文的切换从而引入了更多的锁机制。在了解各种锁机制之前，先要学习一些前置知识。对于各种锁的获取和释放、以及锁升级的流程，在文末总结处有一张图，如果赶时间，直接看图吧。</p>
+<h2 id="Mark-Word"><a href="#Mark-Word" class="headerlink" title="Mark Word"></a>Mark Word</h2><p><img src="/../media/image-20190719003918974.png" alt="image-20190719003918974"></p>
+<p>Java 对象头里面有一部分叫做 Mark Word，在32位虚拟机下面占有 32bit，在 64 位虚拟机下面占用 64 bit，本文以 32 位虚拟机为例子。</p>
+<h2 id="锁介绍"><a href="#锁介绍" class="headerlink" title="锁介绍"></a>锁介绍</h2><p><strong>偏向锁：</strong>一个线程反复的去获取&#x2F;释放一个锁，如果这个锁是轻量级锁或者重量级锁，不断的加解锁显然是没有必要的，造成了资源的浪费。于是引入了偏向锁，偏向锁在获取资源的时候会在资源对象上记录该对象是偏向该线程的，偏向锁并不会主动释放，这样每次偏向锁进入的时候都会判断改资源是否是偏向自己的，如果是偏向自己的则不需要进行额外的操作，直接可以进入同步操作。</p>
+<p><strong>轻量级锁：</strong>轻量级锁是由偏向所升级来的，偏向锁运行在一个线程进入同步块的情况下，当第二个线程加入锁争用的时候，偏向锁就会升级为轻量级锁； 在轻量级锁中如果发生多线程竞争，未持有锁的线程会自旋等待。</p>
+<p><strong>重量级锁：</strong>由操作系统的 mutex 来实现，多线程竞争下，未持有锁的线程将被阻塞。</p>
+<h2 id="锁的流转"><a href="#锁的流转" class="headerlink" title="锁的流转"></a>锁的流转</h2><p><img src="/../media/lock-of-jvm.jpeg" alt="锁转移"></p>
+<h3 id="对象分配"><a href="#对象分配" class="headerlink" title="对象分配"></a>对象分配</h3><p>首先确定该类的偏向锁是否可用（决定了在新建对象实例的时候倒数第三 bit 是 0 还是 1）；如果不可用，直接使用轻量锁。如果偏向锁可用，新建实例对象 obj，此时 obj 进入到未锁定、未偏向、可偏向的状态。</p>
+<h3 id="偏向锁-初始锁定"><a href="#偏向锁-初始锁定" class="headerlink" title="偏向锁 初始锁定"></a>偏向锁 初始锁定</h3><p>此时线程 A 想要获取对象 obj 的偏向锁，由于此时 obj 没有偏向任何线程（有可能是刚刚新建，也有可能是由锁定状态重偏向之后导致的未锁定状态），所以利用 CAS 操作将线程 ID 写入到 Mark Word 里面，此时 线程 A 获取了 obj 的偏向锁。obj 处于已偏向、锁定状态。</p>
+<h3 id="偏向锁-锁定-解锁"><a href="#偏向锁-锁定-解锁" class="headerlink" title="偏向锁 锁定&#x2F;解锁"></a>偏向锁 锁定&#x2F;解锁</h3><p>一旦 obj 第一次偏向了线程 A，A 就可以在没有竞争的情况下，也就是锁不升级的情况下，以极小的代价反复获取 obj 对象的锁。</p>
+<h3 id="偏向锁-重偏向（rebias）"><a href="#偏向锁-重偏向（rebias）" class="headerlink" title="偏向锁 重偏向（rebias）"></a>偏向锁 重偏向（rebias）</h3><p>如果 obj 先被线程 A 锁定，然后释放。然后线程 B 过来是否能重新获取偏向锁呐？在一定条件下，经过了重偏向可以重新获得偏向锁。</p>
+<p>通过上面的 mark word 我们可以看出，在偏向锁的时候有一个字段是 epoch，同时在 obj 的类 O 信息里面也有一个 epoch，每次系统到达安全点会对类的 epoch 加 1，变成 epoch_new，然后扫描所有的类 O 的实例，判断该偏向锁是否还被持有，如果被持有则将 epoch_new 复制给对象头的 epoch 字段。</p>
+<p>每次去获取偏向锁的时候回去判断对象实例的 epoch 和 类的 epoch 是否相等，如果不等代表对象是未锁定、可偏向、未偏向状态，可以偏向新的线程。</p>
+<h3 id="撤销偏向（revoke）"><a href="#撤销偏向（revoke）" class="headerlink" title="撤销偏向（revoke）"></a>撤销偏向（revoke）</h3><blockquote>
+<p> Once biased, that thread can subsequently lock and unlock the object without resorting to expensive atomic instructions. Obviously, an object can be biased toward at most one thread at any given time. (We refer to that thread as the bias holding thread). If another thread tries to acquire a biased object, however, we need to <em>revoke</em> the bias from the original thread. </p>
+</blockquote>
+<p>线程 B 来竞争，此时偏向锁会膨胀位轻量级锁。当 B 线程想利用 CAS 获取偏向锁失败， A 线程被暂停，然后检查 A 线程；</p>
+<ol>
+<li><p>A 线程已经退出了同步代码块，或者是已经不在存活了，如果是上面两种情况之一的，将 obj 的 Mark Word 后 3bit 改为 001（无锁状态），然后再去唤醒 A 线程。</p>
+</li>
+<li><p>A 线程还在同步代码块中，此时将 A 线程的偏向锁升级为轻量级锁。首先会 copy 一份 obj 对象的 mark word 内容，放到线程 A 当前栈帧的一个叫做 Lock Record 空间的 displace mark word 的位置，</p>
+</li>
+</ol>
+<p>   <img src="/../media/20170420102716139.jpeg" alt="20170420102716139"></p>
+<p>   然后通过 CAS 将 obj 中 mark word 的内容替换为指向栈帧中 mark word 的位置，最后将 Lock Record 里面的 owner 指向 obj 对象。并且对象Mark Word的锁标志位设置为“00”，到此完成了锁的升级。</p>
+<p>   <img src="/../media/20170420102754608.jpeg" alt="20170420102754608"></p>
+<h3 id="Bulk-Revoke"><a href="#Bulk-Revoke" class="headerlink" title="Bulk Revoke"></a>Bulk Revoke</h3><p>Java 会在类信息里面维护一个计数器记录，记录该类发生偏向锁 revoke 的次数，一旦达到某个阈值，则认为这个类不适合偏向锁，将会禁用这个类的偏向锁功能。这个类新建的对象实例的最后 3bit 将是 001（无锁）。</p>
+<blockquote>
+<p>Objects that are explicitly designed to be shared between multiple threads, such as producer&#x2F;consumer queues, are not suitable for biased locking. Therefore, biased locking is disabled for a class if revocations for its instances happened frequently in the past. This is called <em>bulk revocation</em>. If the locking code is invoked on an instance of a class for which biased locking was disabled, it performs the standard thin locking. Newly allocated instances of the class are marked as non-biasable.</p>
+</blockquote>
+<h3 id="轻量级锁定"><a href="#轻量级锁定" class="headerlink" title="轻量级锁定"></a>轻量级锁定</h3><p>刚刚在上文中关于撤销偏向（revoke）中已经描述了锁定的流程。在此再总结一遍</p>
+<ol>
+<li>复制 mark word 到 displace mark word</li>
+<li>CAS 替换 mark word 中的信息为指针</li>
+<li>修改 锁 标志为 00</li>
+<li>将栈帧中的 owner 指向锁定的对象</li>
+</ol>
+<h3 id="轻量级锁-递归锁定"><a href="#轻量级锁-递归锁定" class="headerlink" title="轻量级锁 递归锁定"></a>轻量级锁 递归锁定</h3><p><img src="/../media/image-20190719112951132.png" alt="image-20190719112951132"></p>
+<p>线程 A 在去获取轻量级锁的时候，会首先使用 CAS 操作，如果操作失败那么会在此时判断是不是该线程已经持有过该对象的锁了，通过判断对象的 mark word 是不是指向当前线程的栈帧，如果是则会在最新的栈帧处新建一个 displaced mark word 为 null 的 lock record。关于为什么要这么做，其实就是为了记录一下锁的重入，发生重入了需要记录，本来是记录到 mark word 里面最方便，可能是 mark word 没有足够的空间。如果是在 lock record里面记录的话，需要遍历 lock record 才可以获取这个数量。所以最终Hotspot选择每次获得锁都添加一个<code>Lock Record</code>来表示锁的重入。</p>
+<p>类似的递归的解锁只需要将栈帧中的 lock records 删除即可。</p>
+<h3 id="轻量级锁-膨胀"><a href="#轻量级锁-膨胀" class="headerlink" title="轻量级锁 膨胀"></a>轻量级锁 膨胀</h3><p>线程 A 持有对象 obj 的轻量级锁，线程 B 过来 CAS 失败，开始自旋等待，自旋到达一定次数之后如果还没有获取该轻量级锁，则会将该锁膨胀为重量级锁。会将 mark word 的的锁标志为改为10，同时经指针指向互斥量，然后线程 B 挂起。</p>
+<blockquote>
+<p>JDK1.6中 -XX:+UseSpinning开启； -XX:PreBlockSpin&#x3D;10 为自旋次数。<br>JDK1.7后，去掉 -XX:PreBlockSpin 参数，由jvm控制。</p>
+</blockquote>
+<h3 id="轻量级锁-解锁"><a href="#轻量级锁-解锁" class="headerlink" title="轻量级锁 解锁"></a>轻量级锁 解锁</h3><p>轻量级锁解锁也是理由 CAS 将 mark word 里面的指针替换为无锁的 mark word 信息。需要判断 mark word 里面是指向该线程的 lock record</p>
+<ol>
+<li>如果不是，说明已经锁膨胀了，CAS 失败，此时需要唤醒在等待重量级锁的线程</li>
+<li>如果是，说明锁没有膨胀，直接 CAS 操作将 mark word 改为 001（无锁）状态，为下一个线程获取轻量级锁做好准备。</li>
+</ol>
+<h3 id="重量级锁-解锁"><a href="#重量级锁-解锁" class="headerlink" title="重量级锁 解锁"></a>重量级锁 解锁</h3><p>释放 mutex，唤醒在等待的线程</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>新标签页打开图片可看大图</p>
+<p><img src="/../media/v2-9db4211af1be81785f6cc51a58ae6054_r.jpg" alt="v2-9db4211af1be81785f6cc51a58ae6054_r"></p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/zqz_zqz/article/details/70233767">java 中的锁 – 偏向锁、轻量级锁、自旋锁、重量级锁 - zqz_zqz的博客 - CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/34606653">Java 8 并发篇 - 冷静分析 Synchronized（下） - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://blogs.oracle.com/dave/biased-locking-in-hotspot">Biased Locking in HotSpot | Oracle David Dice’s Blog</a>  &#x2F;&#x2F;rebias</p>
+<p><a target="_blank" rel="noopener" href="http://www.ishenping.com/ArtInfo/266444.html#Bulk_Rebias_192">Java中的偏向锁，轻量级锁， 重量级锁解析 - 神评网</a> &#x2F;&#x2F;rebias</p>
+<p><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/56582060"> BiasedLocking模式下markOop中位域epoch的根本作用是什么？ - 知乎</a> &#x2F;&#x2F;rebias</p>
+<p><a target="_blank" rel="noopener" href="https://juejin.im/post/5bfffafc6fb9a049d37ed198">死磕Synchronized底层实现–轻量级锁 - 掘金</a></p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Mark-Word"><span class="toc-number">1.</span> <span class="toc-text">Mark Word</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%94%81%E4%BB%8B%E7%BB%8D"><span class="toc-number">2.</span> <span class="toc-text">锁介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%94%81%E7%9A%84%E6%B5%81%E8%BD%AC"><span class="toc-number">3.</span> <span class="toc-text">锁的流转</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E5%88%86%E9%85%8D"><span class="toc-number">3.1.</span> <span class="toc-text">对象分配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%81%8F%E5%90%91%E9%94%81-%E5%88%9D%E5%A7%8B%E9%94%81%E5%AE%9A"><span class="toc-number">3.2.</span> <span class="toc-text">偏向锁 初始锁定</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%81%8F%E5%90%91%E9%94%81-%E9%94%81%E5%AE%9A-%E8%A7%A3%E9%94%81"><span class="toc-number">3.3.</span> <span class="toc-text">偏向锁 锁定&#x2F;解锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%81%8F%E5%90%91%E9%94%81-%E9%87%8D%E5%81%8F%E5%90%91%EF%BC%88rebias%EF%BC%89"><span class="toc-number">3.4.</span> <span class="toc-text">偏向锁 重偏向（rebias）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%92%A4%E9%94%80%E5%81%8F%E5%90%91%EF%BC%88revoke%EF%BC%89"><span class="toc-number">3.5.</span> <span class="toc-text">撤销偏向（revoke）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Bulk-Revoke"><span class="toc-number">3.6.</span> <span class="toc-text">Bulk Revoke</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%AE%9A"><span class="toc-number">3.7.</span> <span class="toc-text">轻量级锁定</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81-%E9%80%92%E5%BD%92%E9%94%81%E5%AE%9A"><span class="toc-number">3.8.</span> <span class="toc-text">轻量级锁 递归锁定</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81-%E8%86%A8%E8%83%80"><span class="toc-number">3.9.</span> <span class="toc-text">轻量级锁 膨胀</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81-%E8%A7%A3%E9%94%81"><span class="toc-number">3.10.</span> <span class="toc-text">轻量级锁 解锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81-%E8%A7%A3%E9%94%81"><span class="toc-number">3.11.</span> <span class="toc-text">重量级锁 解锁</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">4.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/&text=Java 中的偏向锁、轻量级锁和重量级锁"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/&title=Java 中的偏向锁、轻量级锁和重量级锁"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/&is_video=false&description=Java 中的偏向锁、轻量级锁和重量级锁"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Java 中的偏向锁、轻量级锁和重量级锁&body=Check out this article: https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/&title=Java 中的偏向锁、轻量级锁和重量级锁"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/&title=Java 中的偏向锁、轻量级锁和重量级锁"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/&title=Java 中的偏向锁、轻量级锁和重量级锁"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/&title=Java 中的偏向锁、轻量级锁和重量级锁"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/&name=Java 中的偏向锁、轻量级锁和重量级锁&description=&lt;p&gt;今天我们来聊聊 Synchronized 里面的各种锁：偏向锁、轻量级锁、重量级锁，以及三个锁之间是如何进行锁膨胀的。&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/&t=Java 中的偏向锁、轻量级锁和重量级锁"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    ZHANG, BO
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

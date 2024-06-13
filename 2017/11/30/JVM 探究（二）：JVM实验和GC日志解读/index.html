@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="本文用于记录在学习 JVM 过程中的实验，在完成《深入理解Java虚拟机》第二版第三章中的实验的基础上，同时保证在JDK1.8上实验的可重复性，并且针对不同的垃圾收集器做实验扩充。在对不能在JDK8上重现的实验代码做了修正，在实验结果中分析了JVM的部分特性, 介绍了GC日志的解读等。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM-探究（二）：JVM实验和 GC 日志解读">
+<meta property="og:url" content="https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="本文用于记录在学习 JVM 过程中的实验，在完成《深入理解Java虚拟机》第二版第三章中的实验的基础上，同时保证在JDK1.8上实验的可重复性，并且针对不同的垃圾收集器做实验扩充。在对不能在JDK8上重现的实验代码做了修正，在实验结果中分析了JVM的部分特性, 介绍了GC日志的解读等。">
+<meta property="og:locale">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fltm4roaulj31am11g78a.jpg">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1flzag9e7m8g30go04v1l7.gif">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1flzag1vzrjg30gn03yb2l.gif">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fm0dsme76og30bn060hdz.gif">
+<meta property="article:published_time" content="2017-11-30T12:42:05.000Z">
+<meta property="article:modified_time" content="2024-06-13T12:56:22.286Z">
+<meta property="article:author" content="ZHANG, BO">
+<meta property="article:tag" content="JVM">
+<meta property="article:tag" content="tech">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fltm4roaulj31am11g78a.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>JVM-探究（二）：JVM实验和 GC 日志解读</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2018/01/03/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%89%EF%BC%89%EF%BC%9A%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95%E5%92%8C%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/&text=JVM-探究（二）：JVM实验和 GC 日志解读"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/&title=JVM-探究（二）：JVM实验和 GC 日志解读"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/&is_video=false&description=JVM-探究（二）：JVM实验和 GC 日志解读"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=JVM-探究（二）：JVM实验和 GC 日志解读&body=Check out this article: https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/&title=JVM-探究（二）：JVM实验和 GC 日志解读"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/&title=JVM-探究（二）：JVM实验和 GC 日志解读"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/&title=JVM-探究（二）：JVM实验和 GC 日志解读"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/&title=JVM-探究（二）：JVM实验和 GC 日志解读"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/&name=JVM-探究（二）：JVM实验和 GC 日志解读&description=&lt;p&gt;本文用于记录在学习 JVM 过程中的实验，在完成《深入理解Java虚拟机》第二版第三章中的实验的基础上，同时保证在&lt;code&gt;JDK1.8&lt;/code&gt;上实验的可重复性，并且针对不同的垃圾收集器做实验扩充。在对不能在&lt;code&gt;JDK8&lt;/code&gt;上重现的实验代码做了修正，在实验结果中分析了JVM的部分特性, 介绍了GC日志的解读等。&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/&t=JVM-探究（二）：JVM实验和 GC 日志解读"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#GC-%E6%97%A5%E5%BF%97%E5%90%AB%E4%B9%89"><span class="toc-number">1.</span> <span class="toc-text">GC 日志含义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8D%E8%AF%8D%E8%A7%A3%E9%87%8A"><span class="toc-number">2.</span> <span class="toc-text">名词解释</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8%E5%8F%82%E6%95%B0"><span class="toc-number">3.</span> <span class="toc-text">常用垃圾收集器参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E4%BB%A3%E7%A0%81"><span class="toc-number">4.</span> <span class="toc-text">实验代码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C"><span class="toc-number">5.</span> <span class="toc-text">实验</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E4%B8%80%EF%BC%9A%E4%BD%BF%E7%94%A8ParNew-Serial-Old%E7%9A%84%E7%BB%84%E5%90%88%E8%BF%9B%E8%A1%8C%E5%86%85%E5%AD%98%E5%9B%9E%E6%94%B6"><span class="toc-number">5.1.</span> <span class="toc-text">实验一：使用ParNew+Serial Old的组合进行内存回收</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C%EF%BC%9A"><span class="toc-number">5.1.1.</span> <span class="toc-text">实验结果：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E5%88%86%E6%9E%90%EF%BC%9A"><span class="toc-number">5.1.2.</span> <span class="toc-text">实验分析：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E4%BA%8C%EF%BC%9A%E4%BD%BF%E7%94%A8Parallel-Scavenge-Serial-Old%E7%9A%84%E7%BB%84%E5%90%88%E8%BF%9B%E8%A1%8C%E5%86%85%E5%AD%98%E5%9B%9E%E6%94%B6"><span class="toc-number">5.2.</span> <span class="toc-text">实验二：使用Parallel Scavenge+Serial Old的组合进行内存回收</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C"><span class="toc-number">5.2.1.</span> <span class="toc-text">实验结果</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E5%88%86%E6%9E%90"><span class="toc-number">5.2.2.</span> <span class="toc-text">实验分析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%85%B6%E4%BB%96%E6%94%B6%E9%9B%86%E5%99%A8%E7%BB%84%E5%90%88%E6%8E%A2%E7%A9%B6%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%88%86%E9%85%8D%E6%83%85%E5%86%B5"><span class="toc-number">5.2.3.</span> <span class="toc-text">使用其他收集器组合探究对象的分配情况</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E4%B8%89%EF%BC%9A%E4%BD%BF%E7%94%A8%E5%8F%82%E6%95%B0-XX-PretenureSizeThreshold%E6%9D%A5%E8%AE%BE%E7%BD%AE%E7%9B%B4%E6%8E%A5%E8%BF%9B%E5%85%A5%E8%80%81%E5%B9%B4%E4%BB%A3%E7%9A%84%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%A4%A7%E5%B0%8F"><span class="toc-number">5.3.</span> <span class="toc-text">实验三：使用参数-XX:PretenureSizeThreshold来设置直接进入老年代的对象的大小</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C%EF%BC%9A-1"><span class="toc-number">5.3.1.</span> <span class="toc-text">实验结果：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E5%88%86%E6%9E%90-1"><span class="toc-number">5.3.2.</span> <span class="toc-text">实验分析</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E5%9B%9B%EF%BC%9A-%E4%BD%BF%E7%94%A8%E5%8F%82%E6%95%B0-XX-MaxTenuringThreshold-1%E6%9D%A5%E8%AE%BE%E7%BD%AE%E8%BF%9B%E5%85%A5%E8%80%81%E5%B9%B4%E4%BB%A3%E7%9A%84%E5%AF%B9%E8%B1%A1%E5%B9%B4%E9%BE%84"><span class="toc-number">5.4.</span> <span class="toc-text">实验四： 使用参数-XX:MaxTenuringThreshold&#x3D;1来设置进入老年代的对象年龄</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C%EF%BC%9A-2"><span class="toc-number">5.4.1.</span> <span class="toc-text">实验结果：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E4%BA%94%EF%BC%9A-%E4%BD%BF%E7%94%A8%E5%8F%82%E6%95%B0-XX-MaxTenuringThreshold-4%E6%9D%A5%E8%AE%BE%E7%BD%AE%E8%BF%9B%E5%85%A5%E8%80%81%E5%B9%B4%E4%BB%A3%E7%9A%84%E5%AF%B9%E8%B1%A1%E5%B9%B4%E9%BE%84"><span class="toc-number">5.5.</span> <span class="toc-text">实验五： 使用参数-XX:MaxTenuringThreshold&#x3D;4来设置进入老年代的对象年龄</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C-1"><span class="toc-number">5.5.1.</span> <span class="toc-text">实验结果</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E5%88%86%E6%9E%90-2"><span class="toc-number">5.5.2.</span> <span class="toc-text">实验分析</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E5%85%AD%EF%BC%9ATenuringThreshold-%E6%98%AF%E5%8A%A8%E6%80%81%E5%8F%98%E5%8C%96%E7%9A%84"><span class="toc-number">5.6.</span> <span class="toc-text">实验六：TenuringThreshold 是动态变化的</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C-2"><span class="toc-number">5.6.1.</span> <span class="toc-text">实验结果</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E5%88%86%E6%9E%90-3"><span class="toc-number">5.6.2.</span> <span class="toc-text">实验分析</span></a></li></ol></li></ol></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        JVM-探究（二）：JVM实验和 GC 日志解读
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">ZHANG, BO</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-11-30T12:42:05.000Z" class="dt-published" itemprop="datePublished">2017-11-30</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/JVM/" rel="tag">JVM</a>, <a class="p-category" href="/tags/Java/" rel="tag">Java</a>, <a class="p-category" href="/tags/tech/" rel="tag">tech</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>本文用于记录在学习 JVM 过程中的实验，在完成《深入理解Java虚拟机》第二版第三章中的实验的基础上，同时保证在<code>JDK1.8</code>上实验的可重复性，并且针对不同的垃圾收集器做实验扩充。在对不能在<code>JDK8</code>上重现的实验代码做了修正，在实验结果中分析了JVM的部分特性, 介绍了GC日志的解读等。</p>
+<span id="more"></span>
+
+<h2 id="GC-日志含义"><a href="#GC-日志含义" class="headerlink" title="GC 日志含义"></a>GC 日志含义</h2><p>GC 日志理解起来十分简单，因为日志本来就是要给开发人员看的，所以设计的很直观。</p>
+<p>举个例子，我们来分别说明各个部分所代表的含义：</p>
+<p><code>[GC (Allocation Failure) [ParNew: 7989K-&gt;424K(9216K), 0.0037834 secs] 7989K-&gt;6568K(19456K), 0.0038147 secs] [Times: user=0.02 sys=0.00, real=0.00 secs]</code></p>
+<p>将上面 GC 日志抽象为各个部分，然后我们再分别说明各个部分的含义</p>
+<p><code>[a(b)[c:d-&gt;e(f), g secs] h-&gt;i(j), k secs] [Times: user:l sys=m, real=n secs]</code></p>
+<p>a: GC 或者是 Full GC， 这里引用一句话</p>
+<blockquote>
+<p>“GC日志开头的“[GC”和“[Full GC”说明了这次垃圾收集的停顿类型，而不是用来区分新生代GC还是老年代GC的。如果有“Full”，说明这次GC是发生了Stop-The-World的”</p>
+<p>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
+</blockquote>
+<p>b: 用来说明发生这次 GC 的原因，我们例子中发生这次GC的原因是内存分配失败</p>
+<p>c: 表示发生GC的区域，这里表示是新生代发生了GC，上面那个例子是因为在新生代中内存不够给新对象分配了，然后触发了 GC  </p>
+<p>d: GC 之前该区域已使用的容量</p>
+<p>e: GC 之后该区域已使用的容量</p>
+<p>f: 该内存区域的总容量</p>
+<p>g: 表示该区域这次 GC 使用的时间</p>
+<p>h: 表示 GC 前整个堆的已使用容量</p>
+<p>i: 表示 GC 后整个堆的已使用容量</p>
+<p>j: 表示 Java 堆的总容量</p>
+<p>k: 表示 Java堆 这次 GC 使用的时间</p>
+<p>l: 代表用户态消耗的 CPU 时间</p>
+<p>m: 代表内核态消耗的 CPU 时间</p>
+<p>n: 整个 GC 事件从开始到结束的墙钟时间（Wall Clock Time）</p>
+<blockquote>
+<p>“CPU时间与墙钟时间的区别是，墙钟时间包括各种非运算的等待耗时，例如等待磁盘I&#x2F;O、等待线程阻塞，而CPU时间不包括这些耗时，但当系统有多CPU或者多核的话，多线程操作会叠加这些CPU时间，所以读者看到user或sys时间超过real时间是完全正常的。”</p>
+<p>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
+</blockquote>
+<h2 id="名词解释"><a href="#名词解释" class="headerlink" title="名词解释"></a>名词解释</h2><blockquote>
+<p>“**新生代GC（Minor GC)**：指发生在新生代的垃圾收集动作，因为Java对象大多都具备朝生夕灭的特性，所以Minor GC非常频繁，一般回收速度也比较快。</p>
+<p><strong>老年代GC（Major GC&#x2F;Full GC）</strong>：指发生在老年代的GC，出现了Major GC，经常会伴随至少一次的Minor GC（但非绝对的，在Parallel Scavenge收集器的收集策略里就有直接进行Major GC的策略选择过程）。Major GC的速度一般会比Minor GC慢10倍以上。”</p>
+<p>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
+</blockquote>
+<h2 id="常用垃圾收集器参数"><a href="#常用垃圾收集器参数" class="headerlink" title="常用垃圾收集器参数"></a>常用垃圾收集器参数</h2><table>
+<thead>
+<tr>
+<th>参数</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>UseSerialGC</td>
+<td align="left">虚拟机在运行在 Client 模式下的默认值，打开此开关后，使用 Serial+Serial Old 收集器组合进行内存回收</td>
+</tr>
+<tr>
+<td>UseParNewGC</td>
+<td align="left">使用 ParNew + Serial Old 收集器组合进行内存回收</td>
+</tr>
+<tr>
+<td>UseConcMarkSweepGC</td>
+<td align="left">使用 ParNew + CMS + Serial Old 的收集器组合进行内存回收，当 CMS 出现 Concurrent Mode Failure 失败后会使用 Serial Old 作为备用收集器</td>
+</tr>
+<tr>
+<td>UseParallelOldGC</td>
+<td align="left">使用 Parallel Scavenge + Parallel Old 的收集器组合</td>
+</tr>
+<tr>
+<td>UseParallelGC</td>
+<td align="left">使用 Parallel Scavenge + Serial Old （PS MarkSweep）的收集器组合</td>
+</tr>
+<tr>
+<td>SurvivorRatio</td>
+<td align="left">新生代中 Eden 和任何一个 Survivor 区域的容量比值，默认为 8</td>
+</tr>
+<tr>
+<td>PretenureSizeThreshold</td>
+<td align="left">直接晋升到老年代对象的大小，单位是Byte</td>
+</tr>
+<tr>
+<td>MaxTenuringThreshold</td>
+<td align="left">晋升到老年代的对象最大年龄</td>
+</tr>
+<tr>
+<td>UseAdaptiveSizePolicy</td>
+<td align="left">动态调整 Java 堆中各区域的大小以及进入老年代的年龄</td>
+</tr>
+<tr>
+<td>HandlePromotionFailure</td>
+<td align="left">是否允许分配担保失败</td>
+</tr>
+<tr>
+<td>ParallelGCThreads</td>
+<td align="left">设置并行 GC 时进行内存回收的线程数</td>
+</tr>
+<tr>
+<td>GCTimeRatio</td>
+<td align="left">GC 时间站占时间的比率，默认值为99，只在 Parallel Scavenge 收集器的时候生效</td>
+</tr>
+<tr>
+<td>MaxGCPauseMillis</td>
+<td align="left">设置 GC 最大的停顿时间，只在 Parallel Scavenge 收集器的时候生效</td>
+</tr>
+<tr>
+<td>CMSInitiatingOccupancyFraction</td>
+<td align="left">设置 CMS 收集器在老年代空间被使用多少后触发垃圾收集，默认是 68%，仅在 CMS 收集器上生效</td>
+</tr>
+<tr>
+<td>CMSFullGCsBeforeCompaction</td>
+<td align="left">设置 CMS 收集器在进行多少次垃圾回收之后启动一次内存碎片整理</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>注：上表摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”，稍有调整.</p>
+</blockquote>
+<h2 id="实验代码"><a href="#实验代码" class="headerlink" title="实验代码"></a>实验代码</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.coderbean.jvm;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Created by jacobchang on 2017/11/20.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestAllocation</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">_1MB</span> <span class="operator">=</span> <span class="number">1024</span>*<span class="number">1024</span>;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * VM参数：（参数序号对应实验序号）</span></span><br><span class="line"><span class="comment">     *  1. -verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+UseParNewGC -XX:+PrintGCDetails -XX:SurvivorRatio=8</span></span><br><span class="line"><span class="comment">     *  2. -verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+UseParallelGC -XX:+PrintGCDetails -XX:SurvivorRatio=8</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">testAllocation</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">byte</span>[] allocation1, allocation2, allocation3, allocation4;</span><br><span class="line">        allocation1 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">2</span>*_1MB];</span><br><span class="line">        allocation2 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">2</span>*_1MB];</span><br><span class="line">        allocation3 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">2</span>*_1MB];</span><br><span class="line">        allocation4 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">4</span>*_1MB]; <span class="comment">//出现一次 Minor GC</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * VM参数：（参数序号对应实验序号）</span></span><br><span class="line"><span class="comment">     *  3. -verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+UseParNewGC -XX:+PrintGCDetails -XX:PretenureSizeThreshold=3145728</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">testPreteureSizeThreshold</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">byte</span>[] allocation;</span><br><span class="line">        allocation = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * VM参数：（参数序号对应实验序号）</span></span><br><span class="line"><span class="comment">     *  4. -verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+UseSerialGC -XX:+PrintGCDetails -XX:MaxTenuringThreshold=1 -XX:+PrintTenuringDistribution</span></span><br><span class="line"><span class="comment">     *  5. -verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+UseSerialGC -XX:+PrintGCDetails -XX:MaxTenuringThreshold=4 -XX:+PrintTenuringDistribution</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@SuppressWarnings(&quot;unused&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">testTenuringThredhold</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">byte</span>[] allocation1, allocation2, allocation3, allocation4;</span><br><span class="line">        allocation1 = <span class="keyword">new</span> <span class="title class_">byte</span>[_1MB / <span class="number">16</span>];</span><br><span class="line">        allocation3 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">        allocation4 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">        allocation4 = <span class="literal">null</span>;</span><br><span class="line">        allocation4 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * VM参数：（参数序号对应实验序号）</span></span><br><span class="line"><span class="comment">     *  6. -verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+UseSerialGC -XX:+PrintGCDetails -XX:MaxTenuringThreshold=4 -XX:+PrintTenuringDistribution</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     *  如果在Survivor空间中相同年龄所有对象大小的总和&gt;Survivor空间的一半（ -XX:TargetSurvivorRatio）时，年龄&gt;=该年龄的对象就可以直接进入年老代</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@SuppressWarnings(&quot;unused&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">testTenuringThredhold2</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">byte</span>[] allocation1, allocation2, allocation3, allocation4;</span><br><span class="line">        allocation1 = <span class="keyword">new</span> <span class="title class_">byte</span>[_1MB / <span class="number">4</span>];</span><br><span class="line">        allocation3 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">        allocation4 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">        allocation4 = <span class="literal">null</span>;</span><br><span class="line">        allocation4 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">4</span> * _1MB];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h2><h3 id="实验一：使用ParNew-Serial-Old的组合进行内存回收"><a href="#实验一：使用ParNew-Serial-Old的组合进行内存回收" class="headerlink" title="实验一：使用ParNew+Serial Old的组合进行内存回收"></a>实验一：使用<code>ParNew</code>+<code>Serial Old</code>的组合进行内存回收</h3><p><strong>对象优先在 Eden 区分配</strong></p>
+<h4 id="实验结果："><a href="#实验结果：" class="headerlink" title="实验结果："></a>实验结果：</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[GC (Allocation Failure) [ParNew: 7989K-&gt;424K(9216K), 0.0037834 secs] 7989K-&gt;6568K(19456K), 0.0038147 secs] [Times: user=0.02 sys=0.00, real=0.00 secs]</span><br><span class="line">Heap</span><br><span class="line"> par new generation   total 9216K, used 4685K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)</span><br><span class="line">  eden space 8192K,  52% used [0x00000007bec00000, 0x00000007bf0290f0, 0x00000007bf400000)</span><br><span class="line">  from space 1024K,  41% used [0x00000007bf500000, 0x00000007bf56a3a8, 0x00000007bf600000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000007bf400000, 0x00000007bf400000, 0x00000007bf500000)</span><br><span class="line"> tenured generation   total 10240K, used 6144K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)</span><br><span class="line">   the space 10240K,  60% used [0x00000007bf600000, 0x00000007bfc00030, 0x00000007bfc00200, 0x00000007c0000000)</span><br><span class="line"> Metaspace       used 3242K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 359K, capacity 388K, committed 512K, reserved 1048576K</span><br><span class="line"></span><br><span class="line">Process finished with exit code 0</span><br></pre></td></tr></table></figure>
+
+<h4 id="实验分析："><a href="#实验分析：" class="headerlink" title="实验分析："></a>实验分析：</h4><p> 通过上面的GC日志我们可以看出一开始出现了 MinorGC, 引起GC的原因是 <code>内存分配失败</code>，因为分配allocation4的时候，Eden区已经没有足够的区域来分配了，所以发生了本次 MinorGC ，经过 MinorGC 之后新生代的已使用容量从7989K减少到了424K，然而整个堆的内存总量却几乎没有减少，原因就是，由于发现新生代没有可以回收的对象，所以不得不使用内存担保将allocation1～3 三个对象提前转移到老年代。此时再在 Eden 区域为 allocation4 分配 4MB 的空间，因此最后我们发现 Eden 区域占用了 4MB，老年代占用了 6MB</p>
+<h3 id="实验二：使用Parallel-Scavenge-Serial-Old的组合进行内存回收"><a href="#实验二：使用Parallel-Scavenge-Serial-Old的组合进行内存回收" class="headerlink" title="实验二：使用Parallel Scavenge+Serial Old的组合进行内存回收"></a>实验二：使用<code>Parallel Scavenge</code>+<code>Serial Old</code>的组合进行内存回收</h3><p><strong>对象优先在 Eden 区分配</strong></p>
+<h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4> <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Heap</span><br><span class="line">PSYoungGen      total 9216K, used 8192K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)</span><br><span class="line"> eden space 8192K, 100% used [0x00000007bf600000,0x00000007bfe00000,0x00000007bfe00000)</span><br><span class="line"> from space 1024K, 0% used [0x00000007bff00000,0x00000007bff00000,0x00000007c0000000)</span><br><span class="line"> to   space 1024K, 0% used [0x00000007bfe00000,0x00000007bfe00000,0x00000007bff00000)</span><br><span class="line">ParOldGen       total 10240K, used 4096K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)</span><br><span class="line"> object space 10240K, 40% used [0x00000007bec00000,0x00000007bf000010,0x00000007bf600000)</span><br><span class="line">Metaspace       used 3311K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line"> class space    used 369K, capacity 388K, committed 512K, reserved 1048576K</span><br></pre></td></tr></table></figure>
+
+<h4 id="实验分析"><a href="#实验分析" class="headerlink" title="实验分析"></a>实验分析</h4><p>  第一眼看到日志惊奇的发现居然没有发生任何类型的 GC， 起初看到日志的时候我也很惊奇，于是乎请出了Java内存分析工具<code>VisualVM</code>, JDK中会自带<code>JVisualVM</code> 效果类似，可以通过命令<code>jvisualvm</code>启动，具体分析方法可以参考我的另外一篇博客<a href="http://jacobchang.cn/">VisualVM使用指南</a>。</p>
+<blockquote>
+<p>注： 如果想要重现下面的分析结果，除了JVM参数要和我一直外，在程序执行过程中务必设置几个断点，好让VisualVM能够出现这种阶梯图像，不然由于执行太快，看起来就像是一次性分配了内存一样。</p>
+</blockquote>
+<p>  <img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1fltm4roaulj31am11g78a.jpg" alt="堆内存占用情况分析"></p>
+<p>  通过上图中我标出的五条线，可以看到在1位置的时候第一次在Eden中分配了 2MB 内存，然后在2，3，4 时刻分别又再次分配了 2MB 内存，此时 Eden 区域已经占用了 8MB 了，在 5 时刻当要分配 4MB 内存的时候，Eden 区域已经不够用了，直接分配到了<code>老年代</code>。这是因为<code>Parallel Scavenge</code>收集器为了保证吞吐量而直接将Eden区中无法存放的大对象直接放到了老年代。</p>
+<blockquote>
+<p>注： 虚拟机参数 <code>-XX：PretenureSizeThreshold</code> 并不是实验二中的大对象分配到老年代的直接控制参数，该参数只针对 <code>Serial</code> 和 <code>ParNew</code> 两个新生代收集器有作用。 该参数的作用在下一节大对象直接进入老年代的实验中讲解。</p>
+</blockquote>
+<h4 id="使用其他收集器组合探究对象的分配情况"><a href="#使用其他收集器组合探究对象的分配情况" class="headerlink" title="使用其他收集器组合探究对象的分配情况"></a>使用其他收集器组合探究对象的分配情况</h4><p> 由于<del>篇幅有限</del>，其实是我想偷懒了（＾∇＾），各位可以参考上面的垃圾收集器参数章节，自己去验证。</p>
+<h3 id="实验三：使用参数-XX-PretenureSizeThreshold来设置直接进入老年代的对象的大小"><a href="#实验三：使用参数-XX-PretenureSizeThreshold来设置直接进入老年代的对象的大小" class="headerlink" title="实验三：使用参数-XX:PretenureSizeThreshold来设置直接进入老年代的对象的大小"></a>实验三：使用参数<code>-XX:PretenureSizeThreshold</code>来设置直接进入老年代的对象的大小</h3><p><strong>大对象直接进入老年代</strong><br>虚拟机提供一个参数 <code>-XX:PretenureSizeThreshold</code> 用来设置直接在老年代分配的对象的大小，如果对象大于这个值就会直接在老年代分配。这样做的目的是避免在<code>Eden</code>区及两个<code>Survivor</code>区之间发生大量的内存复制。</p>
+<blockquote>
+<p>“比遇到一个大对象更加坏的消息就是遇到一群“朝生夕灭”的“短命大对象”，写程序的时候应当避免”</p>
+<p>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
+</blockquote>
+<h4 id="实验结果：-1"><a href="#实验结果：-1" class="headerlink" title="实验结果："></a>实验结果：</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Heap</span><br><span class="line"> par new generation   total 9216K, used 2936K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)</span><br><span class="line">  eden space 8192K,  35% used [0x00000007bec00000, 0x00000007beede130, 0x00000007bf400000)</span><br><span class="line">  from space 1024K,   0% used [0x00000007bf400000, 0x00000007bf400000, 0x00000007bf500000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000007bf500000, 0x00000007bf500000, 0x00000007bf600000)</span><br><span class="line"> tenured generation   total 10240K, used 4096K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)</span><br><span class="line">   the space 10240K,  40% used [0x00000007bf600000, 0x00000007bfa00010, 0x00000007bfa00200, 0x00000007c0000000)</span><br><span class="line"> Metaspace       used 3278K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 364K, capacity 388K, committed 512K, reserved 1048576K</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h4 id="实验分析-1"><a href="#实验分析-1" class="headerlink" title="实验分析"></a>实验分析</h4><p> 通过上面的堆的内存占用情况很容易看出我们分配的4MB大小的对象直接被放到了老年代</p>
+<h3 id="实验四：-使用参数-XX-MaxTenuringThreshold-1来设置进入老年代的对象年龄"><a href="#实验四：-使用参数-XX-MaxTenuringThreshold-1来设置进入老年代的对象年龄" class="headerlink" title="实验四： 使用参数-XX:MaxTenuringThreshold=1来设置进入老年代的对象年龄"></a>实验四： 使用参数<code>-XX:MaxTenuringThreshold=1</code>来设置进入老年代的对象年龄</h3><p> <strong>长期存活的对象将进入老年代</strong></p>
+<h4 id="实验结果：-2"><a href="#实验结果：-2" class="headerlink" title="实验结果："></a>实验结果：</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[GC (Allocation Failure) [DefNew</span><br><span class="line">Desired survivor size 524288 bytes, new threshold 1 (max 1)</span><br><span class="line">- age   1:     749112 bytes,     749112 total</span><br><span class="line">: 6868K-&gt;731K(9216K), 0.0039484 secs] 6868K-&gt;4827K(19456K), 0.0039697 secs] [Times: user=0.00 sys=0.00, real=0.00 secs]</span><br><span class="line">[GC (Allocation Failure) [DefNew</span><br><span class="line">Desired survivor size 524288 bytes, new threshold 1 (max 1)</span><br><span class="line">- age   1:       1496 bytes,       1496 total</span><br><span class="line">: 4911K-&gt;1K(9216K), 0.0012023 secs] 9007K-&gt;4706K(19456K), 0.0012150 secs] [Times: user=0.00 sys=0.00, real=0.00 secs]</span><br><span class="line">Heap</span><br><span class="line"> def new generation   total 9216K, used 4316K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)</span><br><span class="line">  eden space 8192K,  52% used [0x00000007bec00000, 0x00000007bf036cc8, 0x00000007bf400000)</span><br><span class="line">  from space 1024K,   0% used [0x00000007bf400000, 0x00000007bf4005d8, 0x00000007bf500000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000007bf500000, 0x00000007bf500000, 0x00000007bf600000)</span><br><span class="line"> tenured generation   total 10240K, used 4704K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)</span><br><span class="line">   the space 10240K,  45% used [0x00000007bf600000, 0x00000007bfa98328, 0x00000007bfa98400, 0x00000007c0000000)</span><br><span class="line"> Metaspace       used 3288K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 364K, capacity 388K, committed 512K, reserved 1048576K</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1flzag9e7m8g30go04v1l7.gif" alt="实验4"></p>
+<p>  通过上面的堆内存分配和visualGC的分析图片可以看出，当执行到最后一句话的时候，也就是进行第二次GC的时候，原本在<code>S0区域</code>的一些对象被移动到了老年代，这是因为当发生<code>MinorGC</code>的时候发现该对象的年龄已经到达我们设置的<code>MaxTenuringThreshold</code>值。</p>
+<h3 id="实验五：-使用参数-XX-MaxTenuringThreshold-4来设置进入老年代的对象年龄"><a href="#实验五：-使用参数-XX-MaxTenuringThreshold-4来设置进入老年代的对象年龄" class="headerlink" title="实验五： 使用参数-XX:MaxTenuringThreshold=4来设置进入老年代的对象年龄"></a>实验五： 使用参数<code>-XX:MaxTenuringThreshold=4</code>来设置进入老年代的对象年龄</h3><h4 id="实验结果-1"><a href="#实验结果-1" class="headerlink" title="实验结果"></a>实验结果</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[GC (Allocation Failure) [DefNew</span><br><span class="line">Desired survivor size 524288 bytes, new threshold 1 (max 4)</span><br><span class="line">- age   1:     749320 bytes,     749320 total</span><br><span class="line">: 6868K-&gt;731K(9216K), 0.0040400 secs] 6868K-&gt;4827K(19456K), 0.0040616 secs] [Times: user=0.00 sys=0.01, real=0.01 secs]</span><br><span class="line">[GC (Allocation Failure) [DefNew</span><br><span class="line">Desired survivor size 524288 bytes, new threshold 4 (max 4)</span><br><span class="line">- age   1:        808 bytes,        808 total</span><br><span class="line">: 4911K-&gt;0K(9216K), 0.0012952 secs] 9007K-&gt;4706K(19456K), 0.0013076 secs] [Times: user=0.00 sys=0.00, real=0.00 secs]</span><br><span class="line">Heap</span><br><span class="line"> def new generation   total 9216K, used 4315K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)</span><br><span class="line">  eden space 8192K,  52% used [0x00000007bec00000, 0x00000007bf036ca8, 0x00000007bf400000)</span><br><span class="line">  from space 1024K,   0% used [0x00000007bf400000, 0x00000007bf400328, 0x00000007bf500000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000007bf500000, 0x00000007bf500000, 0x00000007bf600000)</span><br><span class="line"> tenured generation   total 10240K, used 4706K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)</span><br><span class="line">   the space 10240K,  45% used [0x00000007bf600000, 0x00000007bfa988a8, 0x00000007bfa98a00, 0x00000007c0000000)</span><br><span class="line"> Metaspace       used 3282K, capacity 4496K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 364K, capacity 388K, committed 512K, reserved 1048576K</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1flzag1vzrjg30gn03yb2l.gif" alt="实验5"></p>
+<h4 id="实验分析-2"><a href="#实验分析-2" class="headerlink" title="实验分析"></a>实验分析</h4><p>通过上面的日志和图片，可以看出与实验四不同的是，这里执行到最后的时候<code>S0区域</code>中的对象并没有进入到老年代而是进入了<code>S1区域</code>,因为我们把进入老年代的年龄设置为了4.</p>
+<blockquote>
+<p>注：如果没有按照我的代码写的话，你可能会发现即使把<code>MaxTenuringThreshold</code>设置为了大于1的值，但还是有可能会在一次 GC 之后就进入了老年代，这是因为进入我们设置的只是一个最大值，真正的值可能比这个值更小，是动态变化的，这种情况会在下面的实验中介绍。</p>
+</blockquote>
+<h3 id="实验六：TenuringThreshold-是动态变化的"><a href="#实验六：TenuringThreshold-是动态变化的" class="headerlink" title="实验六：TenuringThreshold 是动态变化的"></a>实验六：TenuringThreshold 是动态变化的</h3><h4 id="实验结果-2"><a href="#实验结果-2" class="headerlink" title="实验结果"></a>实验结果</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[GC (Allocation Failure) [DefNew</span><br><span class="line">Desired survivor size 524288 bytes, new threshold 1 (max 4)</span><br><span class="line">- age   1:     948816 bytes,     948816 total</span><br><span class="line">: 7123K-&gt;926K(9216K), 0.0065933 secs] 7123K-&gt;5022K(19456K), 0.0066172 secs] [Times: user=0.00 sys=0.01, real=0.01 secs]</span><br><span class="line">[GC (Allocation Failure) [DefNew</span><br><span class="line">Desired survivor size 524288 bytes, new threshold 4 (max 4)</span><br><span class="line">- age   1:        464 bytes,        464 total</span><br><span class="line">: 5270K-&gt;0K(9216K), 0.0013556 secs] 9366K-&gt;4900K(19456K), 0.0013708 secs] [Times: user=0.00 sys=0.00, real=0.00 secs]</span><br><span class="line">Heap</span><br><span class="line"> def new generation   total 9216K, used 4233K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)</span><br><span class="line">  eden space 8192K,  51% used [0x00000007bec00000, 0x00000007bf022570, 0x00000007bf400000)</span><br><span class="line">  from space 1024K,   0% used [0x00000007bf400000, 0x00000007bf4001d0, 0x00000007bf500000)</span><br><span class="line">  to   space 1024K,   0% used [0x00000007bf500000, 0x00000007bf500000, 0x00000007bf600000)</span><br><span class="line"> tenured generation   total 10240K, used 4899K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)</span><br><span class="line">   the space 10240K,  47% used [0x00000007bf600000, 0x00000007bfac8f38, 0x00000007bfac9000, 0x00000007c0000000)</span><br><span class="line"> Metaspace       used 3315K, capacity 4500K, committed 4864K, reserved 1056768K</span><br><span class="line">  class space    used 367K, capacity 388K, committed 512K, reserved 1048576K</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fm0dsme76og30bn060hdz.gif" alt="实验结果"></p>
+<h4 id="实验分析-3"><a href="#实验分析-3" class="headerlink" title="实验分析"></a>实验分析</h4><p> 看到上面的堆信息可以看到最后<code>from</code>和<code>to</code>两个<code>Survivor</code>区域占用情况都为0，原因就是在<code>allocation1</code>被放到<code>S1</code>区域之后，由于该对象和一些附加信息的和占用了<code>S1区域</code>一半以上的空间，因为此时<code>allocation1</code>对象的年龄为1，所以此时<code>TenuringThreshold</code>的值也就变成了1，在GC的时候进入了老年代。通过上图中VisualGC左下角的<code>TenuringThreshold</code>值一直在变化也能得到验证。</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#GC-%E6%97%A5%E5%BF%97%E5%90%AB%E4%B9%89"><span class="toc-number">1.</span> <span class="toc-text">GC 日志含义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8D%E8%AF%8D%E8%A7%A3%E9%87%8A"><span class="toc-number">2.</span> <span class="toc-text">名词解释</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8%E5%8F%82%E6%95%B0"><span class="toc-number">3.</span> <span class="toc-text">常用垃圾收集器参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E4%BB%A3%E7%A0%81"><span class="toc-number">4.</span> <span class="toc-text">实验代码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C"><span class="toc-number">5.</span> <span class="toc-text">实验</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E4%B8%80%EF%BC%9A%E4%BD%BF%E7%94%A8ParNew-Serial-Old%E7%9A%84%E7%BB%84%E5%90%88%E8%BF%9B%E8%A1%8C%E5%86%85%E5%AD%98%E5%9B%9E%E6%94%B6"><span class="toc-number">5.1.</span> <span class="toc-text">实验一：使用ParNew+Serial Old的组合进行内存回收</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C%EF%BC%9A"><span class="toc-number">5.1.1.</span> <span class="toc-text">实验结果：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E5%88%86%E6%9E%90%EF%BC%9A"><span class="toc-number">5.1.2.</span> <span class="toc-text">实验分析：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E4%BA%8C%EF%BC%9A%E4%BD%BF%E7%94%A8Parallel-Scavenge-Serial-Old%E7%9A%84%E7%BB%84%E5%90%88%E8%BF%9B%E8%A1%8C%E5%86%85%E5%AD%98%E5%9B%9E%E6%94%B6"><span class="toc-number">5.2.</span> <span class="toc-text">实验二：使用Parallel Scavenge+Serial Old的组合进行内存回收</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C"><span class="toc-number">5.2.1.</span> <span class="toc-text">实验结果</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E5%88%86%E6%9E%90"><span class="toc-number">5.2.2.</span> <span class="toc-text">实验分析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%85%B6%E4%BB%96%E6%94%B6%E9%9B%86%E5%99%A8%E7%BB%84%E5%90%88%E6%8E%A2%E7%A9%B6%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%88%86%E9%85%8D%E6%83%85%E5%86%B5"><span class="toc-number">5.2.3.</span> <span class="toc-text">使用其他收集器组合探究对象的分配情况</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E4%B8%89%EF%BC%9A%E4%BD%BF%E7%94%A8%E5%8F%82%E6%95%B0-XX-PretenureSizeThreshold%E6%9D%A5%E8%AE%BE%E7%BD%AE%E7%9B%B4%E6%8E%A5%E8%BF%9B%E5%85%A5%E8%80%81%E5%B9%B4%E4%BB%A3%E7%9A%84%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%A4%A7%E5%B0%8F"><span class="toc-number">5.3.</span> <span class="toc-text">实验三：使用参数-XX:PretenureSizeThreshold来设置直接进入老年代的对象的大小</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C%EF%BC%9A-1"><span class="toc-number">5.3.1.</span> <span class="toc-text">实验结果：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E5%88%86%E6%9E%90-1"><span class="toc-number">5.3.2.</span> <span class="toc-text">实验分析</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E5%9B%9B%EF%BC%9A-%E4%BD%BF%E7%94%A8%E5%8F%82%E6%95%B0-XX-MaxTenuringThreshold-1%E6%9D%A5%E8%AE%BE%E7%BD%AE%E8%BF%9B%E5%85%A5%E8%80%81%E5%B9%B4%E4%BB%A3%E7%9A%84%E5%AF%B9%E8%B1%A1%E5%B9%B4%E9%BE%84"><span class="toc-number">5.4.</span> <span class="toc-text">实验四： 使用参数-XX:MaxTenuringThreshold&#x3D;1来设置进入老年代的对象年龄</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C%EF%BC%9A-2"><span class="toc-number">5.4.1.</span> <span class="toc-text">实验结果：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E4%BA%94%EF%BC%9A-%E4%BD%BF%E7%94%A8%E5%8F%82%E6%95%B0-XX-MaxTenuringThreshold-4%E6%9D%A5%E8%AE%BE%E7%BD%AE%E8%BF%9B%E5%85%A5%E8%80%81%E5%B9%B4%E4%BB%A3%E7%9A%84%E5%AF%B9%E8%B1%A1%E5%B9%B4%E9%BE%84"><span class="toc-number">5.5.</span> <span class="toc-text">实验五： 使用参数-XX:MaxTenuringThreshold&#x3D;4来设置进入老年代的对象年龄</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C-1"><span class="toc-number">5.5.1.</span> <span class="toc-text">实验结果</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E5%88%86%E6%9E%90-2"><span class="toc-number">5.5.2.</span> <span class="toc-text">实验分析</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E5%85%AD%EF%BC%9ATenuringThreshold-%E6%98%AF%E5%8A%A8%E6%80%81%E5%8F%98%E5%8C%96%E7%9A%84"><span class="toc-number">5.6.</span> <span class="toc-text">实验六：TenuringThreshold 是动态变化的</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C-2"><span class="toc-number">5.6.1.</span> <span class="toc-text">实验结果</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E5%88%86%E6%9E%90-3"><span class="toc-number">5.6.2.</span> <span class="toc-text">实验分析</span></a></li></ol></li></ol></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/&text=JVM-探究（二）：JVM实验和 GC 日志解读"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/&title=JVM-探究（二）：JVM实验和 GC 日志解读"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/&is_video=false&description=JVM-探究（二）：JVM实验和 GC 日志解读"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=JVM-探究（二）：JVM实验和 GC 日志解读&body=Check out this article: https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/&title=JVM-探究（二）：JVM实验和 GC 日志解读"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/&title=JVM-探究（二）：JVM实验和 GC 日志解读"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/&title=JVM-探究（二）：JVM实验和 GC 日志解读"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/&title=JVM-探究（二）：JVM实验和 GC 日志解读"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/&name=JVM-探究（二）：JVM实验和 GC 日志解读&description=&lt;p&gt;本文用于记录在学习 JVM 过程中的实验，在完成《深入理解Java虚拟机》第二版第三章中的实验的基础上，同时保证在&lt;code&gt;JDK1.8&lt;/code&gt;上实验的可重复性，并且针对不同的垃圾收集器做实验扩充。在对不能在&lt;code&gt;JDK8&lt;/code&gt;上重现的实验代码做了修正，在实验结果中分析了JVM的部分特性, 介绍了GC日志的解读等。&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/&t=JVM-探究（二）：JVM实验和 GC 日志解读"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    ZHANG, BO
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

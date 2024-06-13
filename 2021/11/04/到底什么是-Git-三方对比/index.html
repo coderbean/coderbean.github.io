@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="问题： 为什么我在 gitlab 上提交的MR，代码diff不是两个分支的区别？ 带有场景的举例子： 小A 在linke上建立的新的迭代，同时生成了代码分支 dev，然后 A、B两个同学都在这个迭代进行开发。小 A 基于 dev 分支创建了 dev_A 分支，小B基于dev分支创建了dev_B 分支。后来小A将他的变更合并到了 dev 分支，小B在开发过程中由于和master分支有冲突，所以他在本">
+<meta property="og:type" content="article">
+<meta property="og:title" content="到底什么是 Git 三方对比">
+<meta property="og:url" content="https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="问题： 为什么我在 gitlab 上提交的MR，代码diff不是两个分支的区别？ 带有场景的举例子： 小A 在linke上建立的新的迭代，同时生成了代码分支 dev，然后 A、B两个同学都在这个迭代进行开发。小 A 基于 dev 分支创建了 dev_A 分支，小B基于dev分支创建了dev_B 分支。后来小A将他的变更合并到了 dev 分支，小B在开发过程中由于和master分支有冲突，所以他在本">
+<meta property="og:locale">
+<meta property="og:image" content="https://jacobchang.cn/media/%E6%8A%93%E7%8B%82.png">
+<meta property="article:published_time" content="2021-11-04T12:44:39.000Z">
+<meta property="article:modified_time" content="2024-06-13T12:56:22.290Z">
+<meta property="article:author" content="ZHANG, BO">
+<meta property="article:tag" content="Git">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jacobchang.cn/media/%E6%8A%93%E7%8B%82.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>到底什么是 Git 三方对比</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2024/06/13/hello-world/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2021/07/26/OpenClash%E6%90%AD%E9%85%8DAdguardHome%E4%BD%BF%E7%94%A8/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/&text=到底什么是 Git 三方对比"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/&title=到底什么是 Git 三方对比"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/&is_video=false&description=到底什么是 Git 三方对比"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=到底什么是 Git 三方对比&body=Check out this article: https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/&title=到底什么是 Git 三方对比"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/&title=到底什么是 Git 三方对比"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/&title=到底什么是 Git 三方对比"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/&title=到底什么是 Git 三方对比"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/&name=到底什么是 Git 三方对比&description=&lt;p&gt;问题： 为什么我在 gitlab 上提交的MR，代码diff不是两个分支的区别？&lt;/p&gt;
+&lt;p&gt;带有场景的举例子：&lt;/p&gt;
+&lt;p&gt;小A 在linke上建立的新的迭代，同时生成了代码分支 &lt;code&gt;dev&lt;/code&gt;，然后 A、B两个同学都在这个迭代进行开发。小 A 基于 &lt;code&gt;dev&lt;/code&gt; 分支创建了 &lt;code&gt;dev_A&lt;/code&gt; 分支，小B基于dev分支创建了&lt;code&gt;dev_B&lt;/code&gt; 分支。后来小A将他的变更合并到了 dev 分支，小B在开发过程中由于和master分支有冲突，所以他在本地解决冲突合并了一下 master 分支，然后又合并了一下 dev 分支，然后推送到 antcode 进行 MR，发现MR中代入了 master 的代码，和小A已经提交的代码？why？&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/&t=到底什么是 Git 三方对比"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#AntCode-%E6%98%AF%E5%A6%82%E4%BD%95%E5%81%9A%E4%BB%A3%E7%A0%81diff%E7%9A%84"><span class="toc-number">1.</span> <span class="toc-text">AntCode 是如何做代码diff的</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%8A%E9%9D%A2%E7%9A%84%E5%91%BD%E4%BB%A4%E7%A9%B6%E7%AB%9F%E6%98%AF%E5%A6%82%E4%BD%95%E5%AF%B9%E6%AF%94%E7%9A%84%EF%BC%9F"><span class="toc-number">2.</span> <span class="toc-text">上面的命令究竟是如何对比的？</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E8%BF%99%E7%B1%BB%E9%97%AE%E9%A2%98"><span class="toc-number">3.</span> <span class="toc-text">如何避免这类问题</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        到底什么是 Git 三方对比
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">ZHANG, BO</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2021-11-04T12:44:39.000Z" class="dt-published" itemprop="datePublished">2021-11-04</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Git/" rel="tag">Git</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>问题： 为什么我在 gitlab 上提交的MR，代码diff不是两个分支的区别？</p>
+<p>带有场景的举例子：</p>
+<p>小A 在linke上建立的新的迭代，同时生成了代码分支 <code>dev</code>，然后 A、B两个同学都在这个迭代进行开发。小 A 基于 <code>dev</code> 分支创建了 <code>dev_A</code> 分支，小B基于dev分支创建了<code>dev_B</code> 分支。后来小A将他的变更合并到了 dev 分支，小B在开发过程中由于和master分支有冲突，所以他在本地解决冲突合并了一下 master 分支，然后又合并了一下 dev 分支，然后推送到 antcode 进行 MR，发现MR中代入了 master 的代码，和小A已经提交的代码？why？</p>
+<span id="more"></span>
+
+<p><img src="/../media/%E6%8A%93%E7%8B%82.png" alt="抓狂"></p>
+<h1 id="AntCode-是如何做代码diff的"><a href="#AntCode-是如何做代码diff的" class="headerlink" title="AntCode 是如何做代码diff的"></a>AntCode 是如何做代码diff的</h1><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git diff [&lt;options&gt;] &lt;commit&gt;...&lt;commit&gt; [--] [&lt;path&gt;...]</span><br><span class="line">	   This form is to view the changes on the branch containing and up to the second &lt;commit&gt;, starting at a common</span><br><span class="line">	   ancestor of both &lt;commit&gt;. <span class="string">&quot;git diff A...B&quot;</span> is equivalent to <span class="string">&quot;git diff <span class="subst">$(git merge-base A B)</span> B&quot;</span>. You can omit any</span><br><span class="line">	   one of &lt;commit&gt;, <span class="built_in">which</span> has the same effect as using HEAD instead.</span><br></pre></td></tr></table></figure>
+
+<h1 id="上面的命令究竟是如何对比的？"><a href="#上面的命令究竟是如何对比的？" class="headerlink" title="上面的命令究竟是如何对比的？"></a>上面的命令究竟是如何对比的？</h1><p>既然 <code>&quot;git diff A...B&quot; is equivalent to &quot;git diff $(git merge-base A B) B&quot;</code>，那我们先来看看 <code>git merge-base A B</code>，看看这个是个啥？</p>
+<p>简单来说就是 找到 A 和 B 的两个的最近的共同祖先，然后在和 B 做比较。</p>
+<p>这个时候我们来看下上面那个场景的拓扑图</p>
+<p>![git 三方合并](..&#x2F;media&#x2F;git 三方合并.png)</p>
+<p>这个是 小 B 提交了合并到 <code>dev</code> 的 MR，他看到的对比应该是</p>
+<p><code>dev</code> 和 <code>dev_B</code> 的共同祖先是 <code>X</code> 节点，所以展示的diff的区别就是 <code>X</code> 和 <code>devB</code> 最新commit 的区别，所以区别上会带入其他迭代的代码和<code>dev_A</code>的代码。</p>
+<h1 id="如何避免这类问题"><a href="#如何避免这类问题" class="headerlink" title="如何避免这类问题"></a>如何避免这类问题</h1><ol>
+<li>每次提交代码都是基于新的分支，这个新分支的建立是基于最新的 dev 分支创建的</li>
+<li>不要主动去合并master然后推送了，等到预发的时候再合并master。</li>
+</ol>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#AntCode-%E6%98%AF%E5%A6%82%E4%BD%95%E5%81%9A%E4%BB%A3%E7%A0%81diff%E7%9A%84"><span class="toc-number">1.</span> <span class="toc-text">AntCode 是如何做代码diff的</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%8A%E9%9D%A2%E7%9A%84%E5%91%BD%E4%BB%A4%E7%A9%B6%E7%AB%9F%E6%98%AF%E5%A6%82%E4%BD%95%E5%AF%B9%E6%AF%94%E7%9A%84%EF%BC%9F"><span class="toc-number">2.</span> <span class="toc-text">上面的命令究竟是如何对比的？</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E9%81%BF%E5%85%8D%E8%BF%99%E7%B1%BB%E9%97%AE%E9%A2%98"><span class="toc-number">3.</span> <span class="toc-text">如何避免这类问题</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/&text=到底什么是 Git 三方对比"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/&title=到底什么是 Git 三方对比"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/&is_video=false&description=到底什么是 Git 三方对比"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=到底什么是 Git 三方对比&body=Check out this article: https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/&title=到底什么是 Git 三方对比"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/&title=到底什么是 Git 三方对比"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/&title=到底什么是 Git 三方对比"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/&title=到底什么是 Git 三方对比"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/&name=到底什么是 Git 三方对比&description=&lt;p&gt;问题： 为什么我在 gitlab 上提交的MR，代码diff不是两个分支的区别？&lt;/p&gt;
+&lt;p&gt;带有场景的举例子：&lt;/p&gt;
+&lt;p&gt;小A 在linke上建立的新的迭代，同时生成了代码分支 &lt;code&gt;dev&lt;/code&gt;，然后 A、B两个同学都在这个迭代进行开发。小 A 基于 &lt;code&gt;dev&lt;/code&gt; 分支创建了 &lt;code&gt;dev_A&lt;/code&gt; 分支，小B基于dev分支创建了&lt;code&gt;dev_B&lt;/code&gt; 分支。后来小A将他的变更合并到了 dev 分支，小B在开发过程中由于和master分支有冲突，所以他在本地解决冲突合并了一下 master 分支，然后又合并了一下 dev 分支，然后推送到 antcode 进行 MR，发现MR中代入了 master 的代码，和小A已经提交的代码？why？&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2021/11/04/%E5%88%B0%E5%BA%95%E4%BB%80%E4%B9%88%E6%98%AF-Git-%E4%B8%89%E6%96%B9%E5%AF%B9%E6%AF%94/&t=到底什么是 Git 三方对比"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    ZHANG, BO
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

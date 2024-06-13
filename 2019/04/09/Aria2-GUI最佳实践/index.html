@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="目前用的爽的下载工具，通过搭配  Chrome 和 自己写的一些脚本达到不输迅雷的用户体验。  本文在 MacOS 下可以通过所有步骤，其他平台需要自行修改相关步骤">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Aria2 GUI最佳实践">
+<meta property="og:url" content="https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="目前用的爽的下载工具，通过搭配  Chrome 和 自己写的一些脚本达到不输迅雷的用户体验。  本文在 MacOS 下可以通过所有步骤，其他平台需要自行修改相关步骤">
+<meta property="og:locale">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1wmsowtn4j30he0i076a.jpg">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1wmu6com6j30yt0u0n1f.jpg">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1wmvewqh5j30y40rota2.jpg">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1xep6hxkvj31tm0mujw0.jpg">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1wmyn8cffj30hs0fywfp.jpg">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1wmzyuwz3j311x0u0tha.jpg">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1wn0qhed3j30i80f0tag.jpg">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1xenq065vj31880u0k3r.jpg">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1xemfqc4dj30jk03uq3w.jpg">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1wo1bmaqpj310s0cmq53.jpg">
+<meta property="article:published_time" content="2019-04-09T11:06:03.000Z">
+<meta property="article:modified_time" content="2024-06-13T12:56:22.285Z">
+<meta property="article:author" content="ZHANG, BO">
+<meta property="article:tag" content="tools">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1wmsowtn4j30he0i076a.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Aria2 GUI最佳实践</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/&text=Aria2 GUI最佳实践"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/&title=Aria2 GUI最佳实践"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/&is_video=false&description=Aria2 GUI最佳实践"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Aria2 GUI最佳实践&body=Check out this article: https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/&title=Aria2 GUI最佳实践"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/&title=Aria2 GUI最佳实践"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/&title=Aria2 GUI最佳实践"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/&title=Aria2 GUI最佳实践"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/&name=Aria2 GUI最佳实践&description=&lt;p&gt;目前用的爽的下载工具，通过搭配  Chrome 和 自己写的一些脚本达到不输迅雷的用户体验。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;本文在 MacOS 下可以通过所有步骤，其他平台需要自行修改相关步骤&lt;/p&gt;
+&lt;/blockquote&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/&t=Aria2 GUI最佳实践"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Aria2-%E4%B8%8B%E8%BD%BD"><span class="toc-number">1.</span> <span class="toc-text">Aria2 下载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE-Aria2"><span class="toc-number">2.</span> <span class="toc-text">配置 Aria2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B0%83%E8%AF%95-Aria2"><span class="toc-number">3.</span> <span class="toc-text">调试 Aria2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE-Aria2-%E5%BC%80%E6%9C%BA%E5%90%AF%E5%8A%A8"><span class="toc-number">4.</span> <span class="toc-text">配置 Aria2 开机启动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GUI-%E6%8E%A8%E8%8D%90"><span class="toc-number">5.</span> <span class="toc-text">GUI 推荐</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8-Aria2-%E4%B8%8B%E8%BD%BD%E7%A3%81%E5%8A%9B%E9%93%BE%E6%8E%A5"><span class="toc-number">6.</span> <span class="toc-text">使用 Aria2 下载磁力链接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8%E4%B8%8B%E8%BD%BD%E5%AE%8C%E6%88%90%E5%90%8E%E9%80%9A%E7%9F%A5"><span class="toc-number">7.</span> <span class="toc-text">配置使用下载完成后通知</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Aria2-%E6%BB%A1%E9%80%9F%E4%B8%8B%E8%BD%BD%E7%99%BE%E5%BA%A6%E4%BA%91%E6%96%87%E4%BB%B6"><span class="toc-number">8.</span> <span class="toc-text">Aria2 满速下载百度云文件</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Aria2 GUI最佳实践
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">ZHANG, BO</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2019-04-09T11:06:03.000Z" class="dt-published" itemprop="datePublished">2019-04-09</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/%E5%B7%A5%E5%85%B7/">工具</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/tools/" rel="tag">tools</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>目前用的爽的下载工具，通过搭配  Chrome 和 自己写的一些脚本达到不输迅雷的用户体验。</p>
+<blockquote>
+<p>本文在 MacOS 下可以通过所有步骤，其他平台需要自行修改相关步骤</p>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="Aria2-下载"><a href="#Aria2-下载" class="headerlink" title="Aria2 下载"></a>Aria2 下载</h2><p>推荐使用 <a target="_blank" rel="noopener" href="https://brew.sh/index_zh-cn">Homebrew</a> 安装</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install aria2</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置-Aria2"><a href="#配置-Aria2" class="headerlink" title="配置 Aria2"></a>配置 Aria2</h2><p>将下面的内容复制到 <code>/Users/用户名/.aria2/aria2.conf</code> 里面，用户名是你 Mac 的用户名。<br>同时建立session文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">touch ~/.aria2/aria2.session</span><br></pre></td></tr></table></figure>
+
+<p>文中注释了一些选项含义，所以的含义需要看这个网址获取 <a target="_blank" rel="noopener" href="https://aria2.github.io/manual/en/html/aria2c.html?highlight=download#cmdoption-on-bt-download-complete">aria2c(1) — aria2 1.34.0 documentation</a></p>
+<p>不建议修改下面的除了 用户文件夹之外的内容，这些内容都是经过实践得出的比较优秀的配置，下载速度较快</p>
+<p>需要修改下面的用户名 jacob 改为你自己的用户名方可使用。</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## &#x27;#&#x27;开头为注释内容, 选项都有相应的注释说明, 根据需要修改 ##</span></span><br><span class="line"><span class="comment">## 被注释的选项填写的是默认值, 建议在需要修改时再取消注释  ##</span></span><br><span class="line"><span class="comment">## 添加了@和默认启用的选项都是系统需要调用的，请不要随意改动否则可能无法正常运行</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">## 日志</span></span><br><span class="line"><span class="comment">#log-level=info</span></span><br><span class="line"><span class="comment">#log=/Users/jacob/.aria2/aria2.log</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">## 文件保存相关 ##</span></span><br><span class="line"><span class="comment"># 文件的保存路径(可使用绝对路径或相对路径), 默认: 当前启动位置</span></span><br><span class="line"><span class="comment"># 此项 OS X 无法使用 $HOME 及 ~/ 设置路径  建议使用 /users/用户名/downloads</span></span><br><span class="line"><span class="attr">dir</span>=<span class="string">/Users/jacob/Downloads</span></span><br><span class="line"><span class="comment"># 启用磁盘缓存, 0为禁用缓存, 需1.16以上版本, 默认:16M</span></span><br><span class="line"><span class="attr">disk-cache</span>=<span class="string">0M</span></span><br><span class="line"><span class="comment"># 文件预分配方式, 能有效降低磁盘碎片, 默认:prealloc</span></span><br><span class="line"><span class="comment"># 预分配所需时间: none &lt; falloc ? trunc &lt; prealloc</span></span><br><span class="line"><span class="comment"># falloc和trunc则需要文件系统和内核支持</span></span><br><span class="line"><span class="comment"># NTFS建议使用falloc, EXT3/4建议trunc, MAC 下需要注释此项</span></span><br><span class="line"><span class="comment"># file-allocation=none</span></span><br><span class="line"><span class="comment"># 断点续传</span></span><br><span class="line"><span class="attr">continue</span>=<span class="string">true</span></span><br><span class="line"><span class="comment"># 最大重试次数, 设置为0表示不限制重试次数, 默认:5</span></span><br><span class="line"><span class="attr">max-tries</span>=<span class="string">5</span></span><br><span class="line"><span class="comment"># 设置重试等待的秒数, 默认:0</span></span><br><span class="line"><span class="attr">retry-wait</span>=<span class="string">5</span></span><br><span class="line"><span class="comment">## 下载连接相关 ##</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"># 最大同时下载任务数, 运行时可修改, 默认:5</span></span><br><span class="line"><span class="attr">max-concurrent-downloads</span>=<span class="string">20</span></span><br><span class="line"><span class="comment"># 同一服务器连接数, 添加时可指定, 默认:1</span></span><br><span class="line"><span class="attr">max-connection-per-server</span>=<span class="string">16</span></span><br><span class="line"><span class="comment"># 最小文件分片大小, 添加时可指定, 取值范围1M -1024M, 默认:20M</span></span><br><span class="line"><span class="comment"># 假定size=10M, 文件为20MiB 则使用两个来源下载; 文件为15MiB 则使用一个来源下载</span></span><br><span class="line"><span class="attr">min-split-size</span>=<span class="string">1024K</span></span><br><span class="line"><span class="comment"># 单个任务最大线程数, 添加时可指定, 默认:5</span></span><br><span class="line"><span class="attr">split</span>=<span class="string">16</span></span><br><span class="line"><span class="comment"># 整体下载速度限制, 运行时可修改, 默认:0</span></span><br><span class="line"><span class="attr">max-overall-download-limit</span>=<span class="string">0</span></span><br><span class="line"><span class="comment"># 单个任务下载速度限制, 默认:0</span></span><br><span class="line"><span class="attr">max-download-limit</span>=<span class="string">0</span></span><br><span class="line"><span class="comment"># 整体上传速度限制, 运行时可修改, 默认:0</span></span><br><span class="line"><span class="attr">max-overall-upload-limit</span>=<span class="string">0</span></span><br><span class="line"><span class="comment"># 单个任务上传速度限制, 默认:0</span></span><br><span class="line"><span class="attr">max-upload-limit</span>=<span class="string">0</span></span><br><span class="line"><span class="comment"># 禁用IPv6, 默认:false</span></span><br><span class="line"><span class="attr">disable-ipv6</span>=<span class="string">false</span></span><br><span class="line"><span class="comment">#运行覆盖已存在文件</span></span><br><span class="line"><span class="attr">allow-overwrite</span>=<span class="string">true</span></span><br><span class="line"><span class="comment">#自动重命名</span></span><br><span class="line"><span class="attr">auto-file-renaming</span>=<span class="string">true</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">## 进度保存相关 ##</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"># 从会话文件中读取下载任务</span></span><br><span class="line"><span class="attr">input-file</span>=<span class="string">/Users/jacob/.aria2/aria2.session</span></span><br><span class="line"><span class="comment"># 在Aria2退出时保存`错误/未完成`的下载任务到会话文件</span></span><br><span class="line"><span class="attr">save-session</span>=<span class="string">/Users/jacob/.aria2/aria2.session</span></span><br><span class="line"><span class="comment"># 定时保存会话, 0为退出时才保存, 需1.16.1以上版本, 默认:0</span></span><br><span class="line"><span class="attr">save-session-interval</span>=<span class="string">30</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">## RPC相关设置 ##</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"># 启用RPC, 默认:false</span></span><br><span class="line"><span class="attr">enable-rpc</span>=<span class="string">true</span></span><br><span class="line"><span class="comment"># 允许所有来源, 默认:false</span></span><br><span class="line"><span class="attr">rpc-allow-origin-all</span>=<span class="string">true</span></span><br><span class="line"><span class="comment"># 允许非外部访问, 默认:false</span></span><br><span class="line"><span class="attr">rpc-listen-all</span>=<span class="string">true</span></span><br><span class="line"><span class="comment"># 事件轮询方式, 取值:[epoll, kqueue, port, poll, select], 不同系统默认值不同</span></span><br><span class="line"><span class="comment">#event-poll=select</span></span><br><span class="line"><span class="comment"># RPC监听端口, 端口被占用时可以修改, 默认:6800</span></span><br><span class="line"><span class="comment"># 使用本客户端请勿修改此项</span></span><br><span class="line"><span class="attr">rpc-listen-port</span>=<span class="string">6800</span></span><br><span class="line"><span class="comment"># 设置的RPC授权令牌, v1.18.4新增功能, 取代 --rpc-user 和 --rpc-passwd 选项</span></span><br><span class="line"><span class="attr">rpc-secret</span>=<span class="string">maria.rpc.2018</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">## BT/PT下载相关 ##</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"># 当下载的是一个种子(以.torrent结尾)时, 自动开始BT任务, 默认:true</span></span><br><span class="line"><span class="comment">#follow-torrent=true</span></span><br><span class="line"><span class="comment"># BT监听端口, 当端口被屏蔽时使用, 默认:6881-6999</span></span><br><span class="line"><span class="attr">listen-port</span>=<span class="string">51413</span></span><br><span class="line"><span class="comment"># 单个种子最大连接数, 默认:55</span></span><br><span class="line"><span class="comment">#bt-max-peers=55</span></span><br><span class="line"><span class="comment"># 打开DHT功能, PT需要禁用, 默认:true</span></span><br><span class="line"><span class="attr">enable-dht</span>=<span class="string">true</span></span><br><span class="line"><span class="comment"># 打开IPv6 DHT功能, PT需要禁用</span></span><br><span class="line"><span class="comment">#enable-dht6=false</span></span><br><span class="line"><span class="comment"># DHT网络监听端口, 默认:6881-6999</span></span><br><span class="line"><span class="comment">#dht-listen-port=6881-6999</span></span><br><span class="line"><span class="comment"># 本地节点查找, PT需要禁用, 默认:false</span></span><br><span class="line"><span class="attr">bt-enable-lpd</span>=<span class="string">true</span></span><br><span class="line"><span class="comment"># 种子交换, PT需要禁用, 默认:true</span></span><br><span class="line"><span class="attr">enable-peer-exchange</span>=<span class="string">true</span></span><br><span class="line"><span class="comment"># 每个种子限速, 对少种的PT很有用, 默认:50K</span></span><br><span class="line"><span class="comment">#bt-request-peer-speed-limit=50K</span></span><br><span class="line"><span class="comment"># 客户端伪装, PT需要</span></span><br><span class="line"><span class="attr">peer-id-prefix</span>=<span class="string">-TR2770-</span></span><br><span class="line"><span class="attr">user-agent</span>=<span class="string">Transmission/2.77</span></span><br><span class="line"><span class="comment"># 当种子的分享率达到这个数时, 自动停止做种, 0为一直做种, 默认:1.0</span></span><br><span class="line"><span class="attr">seed-ratio</span>=<span class="string">0</span></span><br><span class="line"><span class="comment"># 强制保存会话, 即使任务已经完成, 默认:false</span></span><br><span class="line"><span class="comment"># 较新的版本开启后会在任务完成后依然保留.aria2文件</span></span><br><span class="line"><span class="comment">#force-save=false</span></span><br><span class="line"><span class="comment"># BT校验相关, 默认:true</span></span><br><span class="line"><span class="comment">#bt-hash-check-seed=true</span></span><br><span class="line"><span class="comment"># 继续之前的BT任务时, 无需再次校验, 默认:false</span></span><br><span class="line"><span class="attr">bt-seed-unverified</span>=<span class="string">true</span></span><br><span class="line"><span class="comment"># 保存磁力链接元数据为种子文件(.torrent文件), 默认:false</span></span><br><span class="line"><span class="attr">bt-save-metadata</span>=<span class="string">true</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"># bt-tracker数据来自https://github.com/ngosang/trackerslist/blob/master/trackers_all_udp.txt</span></span><br><span class="line"></span><br><span class="line"><span class="attr">bt-tracker</span>=<span class="string">udp://tracker.coppersurfer.tk:6969/announce,udp://tracker.open-internet.nl:6969/announce,udp://tracker.leechers-paradise.org:6969/announce,udp://tracker.internetwarriors.net:1337/announce,udp://9.rarbg.to:2710/announce,udp://9.rarbg.me:2710/announce,udp://tracker.opentrackr.org:1337/announce,http://tracker3.itzmx.com:6961/announce,http://tracker1.itzmx.com:8080/announce,udp://exodus.desync.com:6969/announce,udp://explodie.org:6969/announce,udp://ipv4.tracker.harry.lu:80/announce,udp://denis.stalker.upeer.me:6969/announce,udp://tracker.torrent.eu.org:451/announce,udp://tracker.tiny-vps.com:6969/announce,udp://open.demonii.si:1337/announce,http://vps02.net.orel.ru:80/announce,http://re-tracker.uz:80/announce,http://open.acgnxtracker.com:80/announce,udp://tracker4.itzmx.com:2710/announce,</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">## 一些脚本</span></span><br><span class="line"><span class="comment">#下载完成后字段执行操作</span></span><br><span class="line"><span class="attr">on-bt-download-complete</span>=<span class="string">/Users/jacob/.aria2/aria2_on_bt_download_complete.sh</span></span><br><span class="line"><span class="attr">on-download-complete</span>=<span class="string">/Users/jacob/.aria2/aria2_on_download_complete.sh</span></span><br><span class="line"><span class="attr">on-download-error</span>=<span class="string">/Users/jacob/.aria2/aria2_on_download_error.sh</span></span><br><span class="line"><span class="attr">on-download-pause</span>=<span class="string">/Users/jacob/.aria2/aria2_on_download_pause.sh</span></span><br><span class="line"><span class="attr">on-download-start</span>=<span class="string">/Users/jacob/.aria2/aria2_on_download_start.sh</span></span><br><span class="line"><span class="attr">on-download-stop</span>=<span class="string">/Users/jacob/.aria2/aria2_on_download_stop.sh</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="调试-Aria2"><a href="#调试-Aria2" class="headerlink" title="调试 Aria2"></a>调试 Aria2</h2><p>Aria2 启动可能会有问题，我们需要调试成功之后才然后设置开机启动，否则无法查看错误信息，</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/bin/aria2c --conf-path=/Users/jacob/.aria2/aria2.conf</span><br></pre></td></tr></table></figure>
+
+<p>通过上面的命令可以看到提示，如果没有错误就可以进入下一步了。如果有错误根据错误提示解决问题</p>
+<h2 id="配置-Aria2-开机启动"><a href="#配置-Aria2-开机启动" class="headerlink" title="配置 Aria2 开机启动"></a>配置 Aria2 开机启动</h2><p>aira2 每次都要自己启动，十分麻烦，但是 aria2 资源占用很低，适合在后台常驻，所以可以设置为开机启动。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd ~/Library/LaunchAgents</span><br><span class="line">touch com.aria2c.plist</span><br></pre></td></tr></table></figure>
+
+<p>将下面的内容放入 <code>com.aria2c.plist</code></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span>?&gt;</span></span><br><span class="line"><span class="meta">&lt;!DOCTYPE <span class="keyword">plist</span> <span class="keyword">PUBLIC</span> <span class="string">&quot;-//Apple//DTD PLIST 1.0//EN&quot;</span> <span class="string">&quot;http://www.apple.com/DTDs/PropertyList-1.0.dtd&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">plist</span> <span class="attr">version</span>=<span class="string">&quot;1.0&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dict</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">key</span>&gt;</span>KeepAlive<span class="tag">&lt;/<span class="name">key</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">true</span>/&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">key</span>&gt;</span>Label<span class="tag">&lt;/<span class="name">key</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">string</span>&gt;</span>com.aria2c<span class="tag">&lt;/<span class="name">string</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">key</span>&gt;</span>ProgramArguments<span class="tag">&lt;/<span class="name">key</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">array</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">string</span>&gt;</span>/usr/local/bin/aria2c<span class="tag">&lt;/<span class="name">string</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">string</span>&gt;</span>--conf-path=/Users/jacob/.aria2/aria2.conf<span class="tag">&lt;/<span class="name">string</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">array</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">key</span>&gt;</span>RunAtLoad<span class="tag">&lt;/<span class="name">key</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">true</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dict</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">plist</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>加载配置</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">launchctl load ~/Library/LaunchAgents/com.aria2c.plist</span><br></pre></td></tr></table></figure>
+
+<p>此时 通过 <code>ps aux | grep &quot;aria2&quot;</code>可以看到 aria2 已经启动，如果没有启动可以注销Mac用户后登陆即可看到 aria2 在运行中。以后 aira2 就可以开机启动了。</p>
+<h2 id="GUI-推荐"><a href="#GUI-推荐" class="headerlink" title="GUI 推荐"></a>GUI 推荐</h2><p>Aria2 有很多 GUI，这个推荐一个 Chrome 插件用作 GUI， Chrome 的功能我们可以让他看起来像一个独立的应用。</p>
+<p>安装 <a target="_blank" rel="noopener" href="https://chrome.google.com/webstore/detail/aria2-for-chrome/mpkodccbngfoacfalldjimigbofkhgjn">Aria2 for Chrome - Chrome 网上应用店</a></p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1wmsowtn4j30he0i076a.jpg" alt="image-20190409195941716"></p>
+<p>右键插件图标进入选项，设置 rpc 网址为 <code>http://token:maria.rpc.2018@localhost:6800/jsonrpc</code></p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1wmu6com6j30yt0u0n1f.jpg" alt="image-20190409200110273"></p>
+<p>然后单击插件图标即可看到提示 Aria2 已连接的提示</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1wmvewqh5j30y40rota2.jpg" alt="image-20190409200222405"></p>
+<p>如果这里无法连接，需要在 GUI 内部设置token等信息</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1xep6hxkvj31tm0mujw0.jpg" alt="image-20190410120509073"></p>
+<p>下面我们可以让这个插件变成一个应用，如果你不感兴趣可以直接看下一节。</p>
+<p>右键点击 插件 图标，点击 打开AriaNG 文字，进入页面</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1wmyn8cffj30hs0fywfp.jpg" alt="image-20190409200528048"></p>
+<p>然后将这个页面导出为应用</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1wmzyuwz3j311x0u0tha.jpg" alt="image-20190409200644372"></p>
+<p>此时在mac的应用里就会有一个 AriaNG 应用了，图标可以自行定制，如何修改图标自己搜索下吧</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1wn0qhed3j30i80f0tag.jpg" alt="image-20190409200728757"></p>
+<p>效果如下</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1xenq065vj31880u0k3r.jpg" alt="image-20190410120344344"></p>
+<h2 id="使用-Aria2-下载磁力链接"><a href="#使用-Aria2-下载磁力链接" class="headerlink" title="使用 Aria2 下载磁力链接"></a>使用 Aria2 下载磁力链接</h2><p>普通下载不必多讲，按照插件和 GUI 的页面可以很容易的进行下载，这里说说如何下载 磁力链接。Aria2 磁力链接的速度会很慢，甚至可能无法下载，此时我们可以通过修改 配置中的 bt-tracker 选项来获得高速下载，速度不输迅雷。</p>
+<p>可以通过复制 <a target="_blank" rel="noopener" href="https://raw.githubusercontent.com/ngosang/trackerslist/master/trackers_best.txt">https://raw.githubusercontent.com/ngosang/trackerslist/master/trackers_best.txt</a>  的内容然后修改一下格式，配置给 Aria2，因为 trackers 一直在变化我也写了一个python3 的脚本来辅助更新。内容如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> urllib.request</span><br><span class="line"><span class="keyword">import</span> urllib.parse</span><br><span class="line"></span><br><span class="line">path = <span class="string">&#x27;/Users/jacob/.aria2/aria2.conf&#x27;</span></span><br><span class="line"></span><br><span class="line">url = <span class="string">&#x27;https://raw.githubusercontent.com/ngosang/trackerslist/master/trackers_best.txt&#x27;</span></span><br><span class="line">f = urllib.request.urlopen(url)</span><br><span class="line">s = f.read().decode(<span class="string">&#x27;utf-8&#x27;</span>)</span><br><span class="line">bt_tracker = s.replace(<span class="string">&#x27;\n\n&#x27;</span>, <span class="string">&#x27;,&#x27;</span>)</span><br><span class="line"></span><br><span class="line">data = <span class="string">&#x27;&#x27;</span></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(path, <span class="string">&#x27;r+&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    <span class="keyword">for</span> line <span class="keyword">in</span> f.readlines():</span><br><span class="line">        <span class="keyword">if</span> line.find(<span class="string">&#x27;bt-tracker&#x27;</span>) == <span class="number">0</span>:</span><br><span class="line">            line = <span class="string">&#x27;bt-tracker=%s&#x27;</span> % bt_tracker + <span class="string">&#x27;\n&#x27;</span></span><br><span class="line"></span><br><span class="line">        data += line</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(path, <span class="string">&#x27;r+&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    f.writelines(data)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>通过运行上面的脚本可以一键更新 bt-tracker 内容，注意配置修改之后必须要重启 Aria2 才可以生效。可以通过 kill 进程来实现，我们的开机启动配置会自动重启一个 Aria 进程。</p>
+<h2 id="配置使用下载完成后通知"><a href="#配置使用下载完成后通知" class="headerlink" title="配置使用下载完成后通知"></a>配置使用下载完成后通知</h2><p>先看看效果：</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1xemfqc4dj30jk03uq3w.jpg" alt="image-20190410120230775"></p>
+<p>上面的插件是没有实现下载完成后通知的，这样其实有些尴尬，每次都要去看看写没写完，可以通过 Aria2 自带的 钩子函数来实现。对应在 conf 里的配置是这些</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 一些脚本</span></span><br><span class="line"><span class="comment">#下载完成后字段执行操作</span></span><br><span class="line"><span class="attr">on-bt-download-complete</span>=<span class="string">/Users/jacob/.aria2/aria2_on_bt_download_complete.sh</span></span><br><span class="line"><span class="attr">on-download-complete</span>=<span class="string">/Users/jacob/.aria2/aria2_on_download_complete.sh</span></span><br><span class="line"><span class="attr">on-download-error</span>=<span class="string">/Users/jacob/.aria2/aria2_on_download_error.sh</span></span><br><span class="line"><span class="attr">on-download-pause</span>=<span class="string">/Users/jacob/.aria2/aria2_on_download_pause.sh</span></span><br><span class="line"><span class="attr">on-download-start</span>=<span class="string">/Users/jacob/.aria2/aria2_on_download_start.sh</span></span><br><span class="line"><span class="attr">on-download-stop</span>=<span class="string">/Users/jacob/.aria2/aria2_on_download_stop.sh</span></span><br></pre></td></tr></table></figure>
+
+<p>这些脚本的内容如下</p>
+<p>&#x2F;Users&#x2F;jacob&#x2F;.aria2&#x2F;aria2_on_bt_download_complete.sh</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/bin/terminal-notifier -title &quot;Aria2&quot; -subtitle &quot;BT下载完成&quot; -message &quot;&quot; -activate com.google.Chrome.app.Default-hpjnfnejkleckpmhmjppopcbnedoocmg  -appIcon /Users/jacob/Applications/Chrome\ Apps.localized/Default\ hpjnfnejkleckpmhmjppopcbnedoocmg.app/Contents/Resources/app.icns</span><br></pre></td></tr></table></figure>
+
+<p>&#x2F;Users&#x2F;jacob&#x2F;.aria2&#x2F;aria2_on_download_complete.sh</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/bin/terminal-notifier -title &quot;Aria2&quot; -subtitle &quot;下载完成&quot; -message $msg -execute &quot;/usr/bin/open $3&quot; -appIcon /Users/jacob/Applications/Chrome\ Apps.localized/Default\ hpjnfnejkleckpmhmjppopcbnedoocmg.app/Contents/Resources/app.icns</span><br></pre></td></tr></table></figure>
+
+<p>&#x2F;Users&#x2F;jacob&#x2F;.aria2&#x2F;aria2_on_download_error.sh</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">var=$3</span><br><span class="line">msg=$&#123;var##*/&#125;</span><br><span class="line">/usr/local/bin/terminal-notifier -title &quot;Aria2&quot; -subtitle &quot;下载失败&quot; -message $msg -activate com.google.Chrome.app.Default-hpjnfnejkleckpmhmjppopcbnedoocmg  -appIcon /Users/jacob/Applications/Chrome\ Apps.localized/Default\ hpjnfnejkleckpmhmjppopcbnedoocmg.app/Contents/Resources/app.icns</span><br></pre></td></tr></table></figure>
+
+<p>&#x2F;Users&#x2F;jacob&#x2F;.aria2&#x2F;aria2_on_download_pause.sh</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">var=$3</span><br><span class="line">msg=$&#123;var##*/&#125;</span><br><span class="line">/usr/local/bin/terminal-notifier -title &quot;Aria2&quot; -subtitle &quot;暂停下载&quot; -message $msg -activate com.google.Chrome.app.Default-hpjnfnejkleckpmhmjppopcbnedoocmg  -appIcon /Users/jacob/Applications/Chrome\ Apps.localized/Default\ hpjnfnejkleckpmhmjppopcbnedoocmg.app/Contents/Resources/app.icns</span><br></pre></td></tr></table></figure>
+
+<p>&#x2F;Users&#x2F;jacob&#x2F;.aria2&#x2F;aria2_on_download_start.sh</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span>=$<span class="number">3</span></span><br><span class="line">msg=$&#123;<span class="keyword">var</span>##*/&#125;</span><br><span class="line">/usr/local/bin/terminal-notifier -title <span class="string">&quot;Aria2&quot;</span> -subtitle <span class="string">&quot;开始下载&quot;</span> -message $msg -activate com.google.Chrome.app.Default-hpjnfnejkleckpmhmjppopcbnedoocmg  -appIcon /Users/jacob/Applications/Chrome\ Apps.localized/Default\ hpjnfnejkleckpmhmjppopcbnedoocmg.app/Contents/Resources/app.icns</span><br></pre></td></tr></table></figure>
+
+<p>使用这些脚本需要安装软件 <a target="_blank" rel="noopener" href="https://github.com/julienXX/terminal-notifier">julienXX&#x2F;terminal-notifier: Send User Notifications on macOS from the command-line.</a></p>
+<p>安装方式 <code>brew install terminal-notifier </code></p>
+<p>appIcon 就是通知时候的图标，可以自定义。这样就实现了下载完成后通知，并且点击通知就能够打开下载的文件。terminal-notifier 一定要使用全路径名，否则无法生效。</p>
+<h2 id="Aria2-满速下载百度云文件"><a href="#Aria2-满速下载百度云文件" class="headerlink" title="Aria2 满速下载百度云文件"></a>Aria2 满速下载百度云文件</h2><p>安装 Chrome 插件<a target="_blank" rel="noopener" href="https://github.com/acgotaku/BaiduExporter">acgotaku&#x2F;BaiduExporter: Assistant for Baidu to export download links to aria2&#x2F;aria2-rpc</a></p>
+<p>安装方式看 GitHub 的 readme， 然后配置本地 Aria2</p>
+<p>设置在这里：</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tNc79ly1g1wo1bmaqpj310s0cmq53.jpg" alt="image-20190409204236064"></p>
+<p>配置 URL 为 <code>http://token:maria.rpc.2018@localhost:6800/jsonrpc</code></p>
+<p>以后使用 导出下载即可获得满速下载。</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Aria2-%E4%B8%8B%E8%BD%BD"><span class="toc-number">1.</span> <span class="toc-text">Aria2 下载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE-Aria2"><span class="toc-number">2.</span> <span class="toc-text">配置 Aria2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B0%83%E8%AF%95-Aria2"><span class="toc-number">3.</span> <span class="toc-text">调试 Aria2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE-Aria2-%E5%BC%80%E6%9C%BA%E5%90%AF%E5%8A%A8"><span class="toc-number">4.</span> <span class="toc-text">配置 Aria2 开机启动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GUI-%E6%8E%A8%E8%8D%90"><span class="toc-number">5.</span> <span class="toc-text">GUI 推荐</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8-Aria2-%E4%B8%8B%E8%BD%BD%E7%A3%81%E5%8A%9B%E9%93%BE%E6%8E%A5"><span class="toc-number">6.</span> <span class="toc-text">使用 Aria2 下载磁力链接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E4%BD%BF%E7%94%A8%E4%B8%8B%E8%BD%BD%E5%AE%8C%E6%88%90%E5%90%8E%E9%80%9A%E7%9F%A5"><span class="toc-number">7.</span> <span class="toc-text">配置使用下载完成后通知</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Aria2-%E6%BB%A1%E9%80%9F%E4%B8%8B%E8%BD%BD%E7%99%BE%E5%BA%A6%E4%BA%91%E6%96%87%E4%BB%B6"><span class="toc-number">8.</span> <span class="toc-text">Aria2 满速下载百度云文件</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/&text=Aria2 GUI最佳实践"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/&title=Aria2 GUI最佳实践"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/&is_video=false&description=Aria2 GUI最佳实践"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Aria2 GUI最佳实践&body=Check out this article: https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/&title=Aria2 GUI最佳实践"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/&title=Aria2 GUI最佳实践"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/&title=Aria2 GUI最佳实践"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/&title=Aria2 GUI最佳实践"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/&name=Aria2 GUI最佳实践&description=&lt;p&gt;目前用的爽的下载工具，通过搭配  Chrome 和 自己写的一些脚本达到不输迅雷的用户体验。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;本文在 MacOS 下可以通过所有步骤，其他平台需要自行修改相关步骤&lt;/p&gt;
+&lt;/blockquote&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/&t=Aria2 GUI最佳实践"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    ZHANG, BO
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="了解分布式一致性的一些概念和理论，介绍简单常用的分布式一致性协议。主要介绍二阶段提交和三阶段提交的基本流程，并相互比较。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分布式一致性协议学习笔记：2PC 和 3PC">
+<meta property="og:url" content="https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="了解分布式一致性的一些概念和理论，介绍简单常用的分布式一致性协议。主要介绍二阶段提交和三阶段提交的基本流程，并相互比较。">
+<meta property="og:locale">
+<meta property="og:image" content="https://jacobchang.cn/media/Transfagarasan_ZH-CN5760731327_1920x1080.jpg">
+<meta property="og:image" content="https://www.wangbase.com/blogimg/asset/201807/bg2018071607.jpg">
+<meta property="og:image" content="https://jacobchang.cn/media/v2-e2f7149a81d9ad3aa46589e25503d688_r.jpg">
+<meta property="og:image" content="https://jacobchang.cn/media/v2-d40abfa365ed84e84e264ba13900f64b_hd.jpg">
+<meta property="og:image" content="https://jacobchang.cn/media/v2-a9e4ef8b9082ffdf76bc426e61ba3ed2_hd.jpg">
+<meta property="og:image" content="https://jacobchang.cn/media/v2-28c17c86e689007015a4853f0d0c4a89_hd-3021775.jpg">
+<meta property="article:published_time" content="2019-07-12T15:24:17.000Z">
+<meta property="article:modified_time" content="2024-06-13T12:56:22.289Z">
+<meta property="article:author" content="ZHANG, BO">
+<meta property="article:tag" content="分布式">
+<meta property="article:tag" content="一致性协议">
+<meta property="article:tag" content="CAP">
+<meta property="article:tag" content="BASE">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jacobchang.cn/media/Transfagarasan_ZH-CN5760731327_1920x1080.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>分布式一致性协议学习笔记：2PC 和 3PC</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2019/07/19/Java%20%E4%B8%AD%E7%9A%84%E5%81%8F%E5%90%91%E9%94%81%E3%80%81%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%92%8C%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2019/06/19/%E4%B8%89%E9%97%A8%E9%97%AE%E9%A2%98/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/&text=分布式一致性协议学习笔记：2PC 和 3PC"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/&title=分布式一致性协议学习笔记：2PC 和 3PC"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/&is_video=false&description=分布式一致性协议学习笔记：2PC 和 3PC"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=分布式一致性协议学习笔记：2PC 和 3PC&body=Check out this article: https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/&title=分布式一致性协议学习笔记：2PC 和 3PC"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/&title=分布式一致性协议学习笔记：2PC 和 3PC"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/&title=分布式一致性协议学习笔记：2PC 和 3PC"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/&title=分布式一致性协议学习笔记：2PC 和 3PC"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/&name=分布式一致性协议学习笔记：2PC 和 3PC&description=&lt;p&gt;了解分布式一致性的一些概念和理论，介绍简单常用的分布式一致性协议。主要介绍二阶段提交和三阶段提交的基本流程，并相互比较。&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/&t=分布式一致性协议学习笔记：2PC 和 3PC"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E7%9A%84%E7%89%B9%E7%82%B9"><span class="toc-number">1.</span> <span class="toc-text">分布式的特点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="toc-number">2.</span> <span class="toc-text">分布式系统常见问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CAP-%E5%92%8C-BASE-%E7%90%86%E8%AE%BA"><span class="toc-number">3.</span> <span class="toc-text">CAP 和 BASE 理论</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CAP"><span class="toc-number">3.1.</span> <span class="toc-text">CAP</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BASE"><span class="toc-number">3.2.</span> <span class="toc-text">BASE</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2PC-%E4%B8%8E-3PC"><span class="toc-number">4.</span> <span class="toc-text">2PC 与 3PC</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2PC"><span class="toc-number">4.1.</span> <span class="toc-text">2PC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3PC"><span class="toc-number">4.2.</span> <span class="toc-text">3PC</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        分布式一致性协议学习笔记：2PC 和 3PC
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">ZHANG, BO</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2019-07-12T15:24:17.000Z" class="dt-published" itemprop="datePublished">2019-07-12</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/BASE/" rel="tag">BASE</a>, <a class="p-category" href="/tags/CAP/" rel="tag">CAP</a>, <a class="p-category" href="/tags/%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE/" rel="tag">一致性协议</a>, <a class="p-category" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag">分布式</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>了解分布式一致性的一些概念和理论，介绍简单常用的分布式一致性协议。主要介绍二阶段提交和三阶段提交的基本流程，并相互比较。</p>
+<span id="more"></span>
+
+<p><img src="/../media/Transfagarasan_ZH-CN5760731327_1920x1080.jpg" alt="Transfagarasan_ZH-CN5760731327_1920x1080"></p>
+<h2 id="分布式的特点"><a href="#分布式的特点" class="headerlink" title="分布式的特点"></a>分布式的特点</h2><ol>
+<li>分布性：系统中的机器随意分布。</li>
+<li>对等性：组成分布式系统的所有节点都是对等的。</li>
+<li>并发性：需要协调并发操作一些共享资源。</li>
+<li>缺乏全局时钟：在分布式系统中，很难定义两件事情谁先谁后。</li>
+<li>故障总是会发生：任何在设计阶段考虑到的异常情况，一定会在系统实际运行中发生。</li>
+</ol>
+<h2 id="分布式系统常见问题"><a href="#分布式系统常见问题" class="headerlink" title="分布式系统常见问题"></a>分布式系统常见问题</h2><ol>
+<li>通讯异常：单机内存访问往往延时在纳秒数量级（通常是 10ns 左右）；网络则在 0.1～1ms，消息丢失和消息延迟变得非常普遍</li>
+<li>网络分区：俗称”脑裂”，部分节点和整个分布式系统失去联系，自己单独组成了一个小集群。</li>
+<li>三态：成功、失败和超时。无法预测超时的请求是否到达了接收方，还是在接收方返回的时候丢失了。</li>
+</ol>
+<h2 id="CAP-和-BASE-理论"><a href="#CAP-和-BASE-理论" class="headerlink" title="CAP 和 BASE 理论"></a>CAP 和 BASE 理论</h2><p>通常可以把一系列的分布式的操作序列称之为子事务。分布式事务也可以被定义为一种嵌套型事物。分布式系统不可能像单机系统那样可以严格满足 ACID 特性，所以要有不同的取舍，因此有了 CAP 和 BASE 理论。</p>
+<h3 id="CAP"><a href="#CAP" class="headerlink" title="CAP"></a>CAP</h3><p>一个分布式系统不可能同时满足<strong>一致性（C：Consistency）</strong>、<strong>可用性（A：Availability）</strong>和<strong>分区容错性（P：Partition tolerance）</strong>这三个基本需求。</p>
+<p><strong>一致性：</strong> 在分布式环境中，一致性是指数据在多个副本之间是否能够保持一致的特性。数据在发生变化的时候，需要保证发生变化之后，所有的副本都能保持一致。</p>
+<p><strong>可用性：</strong>系统提供的服务必须一直处于可运送的状态，对于每一个请求总是能够在有限的时间内返回结果。</p>
+<p><strong>分区容错性：</strong> 分布式系统在遇到任何网络分区故障的时候，仍然需要保证对外提供满足一致性和可用性的服务。</p>
+<p><img src="https://www.wangbase.com/blogimg/asset/201807/bg2018071607.jpg" alt="CAP 定理示意图"></p>
+<p>对于 CAP 的取舍：放弃 P 的通用做法是将所有的数据都放到一个节点，这样可以避免网络分区带来的问题，但是值得注意的是，<strong>放弃了 P 也就等于放弃了系统的扩展性</strong>；放弃 A ：当系统发生故障的时候，允许系统短时间内不可用，需要等待系统恢复后方可继续提供服务； 放弃 C：<strong>放弃 C 并不是说放弃最终一致性</strong>，而是说放弃强一致性，保证系统在某段时间之后能够达到最终一致性。</p>
+<p>对于一个分布式系统而言，不同节点之间必然存在网络通讯，因此网络分区问题是不可避免的。同时分布式系统的扩展特性也是无法舍弃的。<strong>因此系统的设计和架构一般都考虑如何权衡 A 和 C。</strong></p>
+<h3 id="BASE"><a href="#BASE" class="headerlink" title="BASE"></a>BASE</h3><p>BASE 是 Basically Available（基本可用）、Soft status（软状态）和 Eventually consistent（最终一致性）三个短语的缩写。</p>
+<p><strong>基本可用：</strong>在系统出现故障的时候，允许损失部分可用性。比如响应时间上的损失和功能上的损失。</p>
+<p><strong>软状态：</strong> 也称为弱状态，表示允许系统中的数据存在中间状态，即允许不同的数据副本之间数据同步存在延迟。</p>
+<p><strong>最终一致性：</strong> 经过一段时间的同步之后，系统最终能够达到一个数据一致的状态。</p>
+<blockquote>
+<p>最终一致性的一些变种：</p>
+<ol>
+<li>因果一致性：进程 A 更新数据后通知了进程 B，进程 B 必须对修改后的数据可见。</li>
+<li>读己之所写：进程 A 对数据做的更改，自己总是能够获得最新的值。</li>
+<li>会话一致性：在单个会话中，进程 A 总是能够看到最新的值。</li>
+<li>单调读一致性：在系统中读出数据项 Y 的值 y 后，后面的读取中不允许返回比 y 更旧的值。</li>
+<li>单调写一致性：系统需要保证来自同一个进程的写操作被顺序的执行。</li>
+</ol>
+</blockquote>
+<h2 id="2PC-与-3PC"><a href="#2PC-与-3PC" class="headerlink" title="2PC 与 3PC"></a>2PC 与 3PC</h2><p>2PC 和 3PC 就是用来保证 CAP 中的 C 或者 BASE 里面的 E 的协议。</p>
+<p>当一个事务需要跨越多个分布式节点的时候，需要引入一个成为**”协调者”（Coordinator）<strong>的组件来统一调度所有分布式节点的执行逻辑，这些被调度的分布式节点则被称为</strong>“参与者”（Participant）**。协调者负责调度参与者的行为，并最终决定这些参与者是否真的需要把事务进行真正的提交。由此，衍生出二阶段提交和三阶段提交两种协议。</p>
+<h3 id="2PC"><a href="#2PC" class="headerlink" title="2PC"></a>2PC</h3><p>两阶段提交主要包含<strong>投票（Propose）</strong>和<strong>执行（Commit）</strong>两个阶段。</p>
+<p>在 Propose 阶段，协调者向所有参与者（voter）发送事务内容，询问是否可以执行事务提交操作，并等待参与者的响应。各个参与者为该事务预留资源，保证在下一个阶段能够提交事务，如果资源可以获取反馈给协调者 agree 响应，反之返回 disagree 响应。</p>
+<p><img src="/../media/v2-e2f7149a81d9ad3aa46589e25503d688_r.jpg" alt="事务提交流程"></p>
+<p><strong>事务提交：</strong>如果在 Propose 阶段，所有参与者都返回的是 agree 信号，那么协调者会发送提交事务的请求；所有参与者收到事务提交请求后会正式执行事务提交操作并释放事务执行期间占用的资源，执行完成后将事务执行结果反馈给协调者；协调者收到所有参与者的反馈信息后，事务执行完毕。</p>
+<p><img src="/../media/v2-d40abfa365ed84e84e264ba13900f64b_hd.jpg" alt="事务中断流程"></p>
+<p><strong>事务中断：</strong> 如果在 Propose 阶段有参与者返回 disagree 或者有的节点超时未返回，没有投票达成一致，那么协调者会向所有参与者发送回滚请求；参与者收到回滚请求之后会释放掉在 Propose 阶段占用的资源，然后反馈信号给协调者；协调者收到反馈消息之后，完成事务终端。</p>
+<hr>
+<p>二阶段提交协议的优点是：原理简单，实现方便。</p>
+<p>二阶段提交协议的缺点是：</p>
+<ol>
+<li>同步阻塞：2PC 协议的各个阶段都是同步阻塞的，任何节点故障都有会导致事务提交失败。</li>
+<li>单点问题：一旦协调者出现问题，将无法提交事务。如果协调者在收到参与者的 Propose 确认之后，发送 Commit 信号之前发生故障，那么所有参与者占用的资源将无法得到释放。</li>
+<li>数据不一致：如果在 Commit 阶段部分参与者发生了故障，导致事务无法提交，但是正常的参与者提交了事务。导致数据不一致。</li>
+</ol>
+<blockquote>
+<p>假设coordinator和voter3都在Commit这个阶段crash了, 而voter1和voter2没有收到commit消息. 这时候voter1和voter2就陷入了一个困境. 因为他们并不能判断现在是两个场景中的哪一种: </p>
+<ol>
+<li>上轮全票通过然后 voter3 第一个收到了 commit 的消息并在 commit 操作之后 crash 了。</li>
+<li>上轮 voter3 反对所以干脆没有通过。</li>
+</ol>
+<p><img src="/../media/v2-a9e4ef8b9082ffdf76bc426e61ba3ed2_hd.jpg" alt="coordinator和voter3 crash, voter{1,2}无法判断当前状态而卡死"></p>
+</blockquote>
+<hr>
+<h3 id="3PC"><a href="#3PC" class="headerlink" title="3PC"></a>3PC</h3><p>三阶段提交是在二阶段提交的基础上进行的改进，将二阶段提交的 Propose Phase 一分为二，形成了 CanCommit、PreCommit 和 doCommit 三个阶段。</p>
+<p><img src="/../media/v2-28c17c86e689007015a4853f0d0c4a89_hd-3021775.jpg" alt="3PC, coordinator提议通过, voter{1,2,3}达成新的共识"></p>
+<p><strong>CanCommit：</strong>协调者向所有参与者询问是否可以执行事务提交操作；各参与者想协调者反馈是否可以提交事务。</p>
+<p><strong>PreCommit：</strong> </p>
+<ul>
+<li>如果所有参与者反馈的都是 agree， 那么就会执行事务预提交。协调者发送 PreCommit 请求，参与者收到请求之后进行资源的分配工作，最后将资源分配结果反馈这协调者。等待后面的  commit 命令或者 abort 命令。</li>
+<li>如果任意一个参与者返回了 disagree，或者在协调者等待超时之后。协调者将会向所有参与者节点发送 abort 请求。</li>
+</ul>
+<p><strong>doCommit：</strong> </p>
+<ul>
+<li>如果上面 PreCommit 全部成功，即协调者收到了全部参与者的成功反馈，那么协调者将会发送 doCommit 请求；参与者接收到 doCommit 会正式提交事务然后释放事务执行期间占用的资源，反馈事务提交结果给协调者；协调者收到参与者反馈的消息后，完成事务。</li>
+<li>如果上面的 PreCommit 有部分失败反馈，或者是等待超时就会中断事务。协调者会向所有参与者节点发送 abort 请求；参与者收到 abort 请求后执行回滚操作，并反馈给协调者；协调者收到反馈消息后，完成事务的中断。</li>
+</ul>
+<p>需要注意的是，在 doCommit 阶段，可能出现下面的两种故障：</p>
+<ul>
+<li>协调者出现问题</li>
+<li>协调者和参与者之间网络故障</li>
+</ul>
+<p>无论出现上面那种情况，都会造成从黁税额无法及时收到来自协调者的 doCommit 请求或者是 abort 请求，针对这种情况，参与者会在等待超时之后，继续事务的提交操作。</p>
+<hr>
+<p>三阶段提交协议的优点是：相比于 2PC 能够在单点故障后继续达成一致。</p>
+<p>三阶段提交协议的缺点是：引入了新的问题，如果某个参与者与协调者出现在不同的网络分区，那么该参与者会提交事务，有可能出现数据不一致的情况。</p>
+<hr>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/35298019">漫话分布式系统共识协议: 2PC&#x2F;3PC篇 - 知乎</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.amazon.cn/dp/B00RECRKPK">《从Paxos到Zookeeper:分布式一致性原理与实践》 倪超【摘要 书评 试读】图书</a></p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E7%9A%84%E7%89%B9%E7%82%B9"><span class="toc-number">1.</span> <span class="toc-text">分布式的特点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="toc-number">2.</span> <span class="toc-text">分布式系统常见问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CAP-%E5%92%8C-BASE-%E7%90%86%E8%AE%BA"><span class="toc-number">3.</span> <span class="toc-text">CAP 和 BASE 理论</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CAP"><span class="toc-number">3.1.</span> <span class="toc-text">CAP</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BASE"><span class="toc-number">3.2.</span> <span class="toc-text">BASE</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2PC-%E4%B8%8E-3PC"><span class="toc-number">4.</span> <span class="toc-text">2PC 与 3PC</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2PC"><span class="toc-number">4.1.</span> <span class="toc-text">2PC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3PC"><span class="toc-number">4.2.</span> <span class="toc-text">3PC</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/&text=分布式一致性协议学习笔记：2PC 和 3PC"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/&title=分布式一致性协议学习笔记：2PC 和 3PC"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/&is_video=false&description=分布式一致性协议学习笔记：2PC 和 3PC"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=分布式一致性协议学习笔记：2PC 和 3PC&body=Check out this article: https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/&title=分布式一致性协议学习笔记：2PC 和 3PC"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/&title=分布式一致性协议学习笔记：2PC 和 3PC"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/&title=分布式一致性协议学习笔记：2PC 和 3PC"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/&title=分布式一致性协议学习笔记：2PC 和 3PC"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/&name=分布式一致性协议学习笔记：2PC 和 3PC&description=&lt;p&gt;了解分布式一致性的一些概念和理论，介绍简单常用的分布式一致性协议。主要介绍二阶段提交和三阶段提交的基本流程，并相互比较。&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2019/07/12/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%EF%BC%9A2PC%20%E5%92%8C%203PC/&t=分布式一致性协议学习笔记：2PC 和 3PC"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    ZHANG, BO
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

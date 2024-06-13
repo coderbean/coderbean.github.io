@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="作为一个 Java 程序员，不了解 Java 内存模型就不能写出能够充分利用内存的代码。本文通过对 Java 内存模型的介绍，让读者能够了解 Java 的内存的分配情况，适合 Java 初学者或者对 JMM 不熟悉的同学。后面的博客会针对每个部分做更加深入的解释。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM 探究（一）：JVM内存模型概念模型">
+<meta property="og:url" content="https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="作为一个 Java 程序员，不了解 Java 内存模型就不能写出能够充分利用内存的代码。本文通过对 Java 内存模型的介绍，让读者能够了解 Java 的内存的分配情况，适合 Java 初学者或者对 JMM 不熟悉的同学。后面的博客会针对每个部分做更加深入的解释。">
+<meta property="og:locale">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnvc6jtby5j30r50l9wh2.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/PicGoBed/PicBed/master/2019-07-26-NrXELZ.jpg">
+<meta property="article:published_time" content="2017-11-12T13:08:53.000Z">
+<meta property="article:modified_time" content="2024-06-13T12:56:22.286Z">
+<meta property="article:author" content="ZHANG, BO">
+<meta property="article:tag" content="JVM">
+<meta property="article:tag" content="tech">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnvc6jtby5j30r50l9wh2.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>JVM 探究（一）：JVM内存模型概念模型</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/11/10/%E6%84%BF%E4%BD%A0%E5%81%9A%E4%BD%A0%E8%87%AA%E5%B7%B1/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/&text=JVM 探究（一）：JVM内存模型概念模型"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/&title=JVM 探究（一）：JVM内存模型概念模型"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/&is_video=false&description=JVM 探究（一）：JVM内存模型概念模型"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=JVM 探究（一）：JVM内存模型概念模型&body=Check out this article: https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/&title=JVM 探究（一）：JVM内存模型概念模型"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/&title=JVM 探究（一）：JVM内存模型概念模型"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/&title=JVM 探究（一）：JVM内存模型概念模型"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/&title=JVM 探究（一）：JVM内存模型概念模型"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/&name=JVM 探究（一）：JVM内存模型概念模型&description=&lt;p&gt;作为一个 Java 程序员，不了解 Java 内存模型就不能写出能够充分利用内存的代码。本文通过对 Java 内存模型的介绍，让读者能够了解 Java 的内存的分配情况，适合 Java 初学者或者对 JMM 不熟悉的同学。后面的博客会针对每个部分做更加深入的解释。&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/&t=JVM 探究（一）：JVM内存模型概念模型"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Java-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.</span> <span class="toc-text">Java 内存模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#PC%EF%BC%88%E7%A8%8B%E5%BA%8F%E8%AE%A1%E6%95%B0%E5%99%A8%EF%BC%89"><span class="toc-number">1.1.</span> <span class="toc-text">PC（程序计数器）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Java-%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88%E5%92%8C%E6%9C%AC%E5%9C%B0%E6%96%B9%E6%B3%95%E6%A0%88"><span class="toc-number">1.2.</span> <span class="toc-text">Java 虚拟机栈和本地方法栈</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88"><span class="toc-number">1.2.1.</span> <span class="toc-text">虚拟机栈</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E6%96%B9%E6%B3%95%E6%A0%88"><span class="toc-number">1.2.2.</span> <span class="toc-text">本地方法栈</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Java-%E5%A0%86"><span class="toc-number">1.3.</span> <span class="toc-text">Java 堆</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%9B%B4%E6%8E%A5%E5%86%85%E5%AD%98"><span class="toc-number">1.3.1.</span> <span class="toc-text">直接内存</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E5%8C%BA"><span class="toc-number">1.4.</span> <span class="toc-text">方法区</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6%E5%B8%B8%E9%87%8F%E6%B1%A0"><span class="toc-number">1.4.1.</span> <span class="toc-text">运行时常量池</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JDK8-%E4%BB%A5%E5%8F%8A%E4%B9%8B%E5%90%8E%E7%9A%84%E6%A8%A1%E5%9E%8B"><span class="toc-number">2.</span> <span class="toc-text">JDK8 以及之后的模型</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        JVM 探究（一）：JVM内存模型概念模型
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">ZHANG, BO</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-11-12T13:08:53.000Z" class="dt-published" itemprop="datePublished">2017-11-12</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/JVM/" rel="tag">JVM</a>, <a class="p-category" href="/tags/Java/" rel="tag">Java</a>, <a class="p-category" href="/tags/tech/" rel="tag">tech</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>作为一个 Java 程序员，不了解 Java 内存模型就不能写出能够充分利用内存的代码。本文通过对 Java 内存模型的介绍，让读者能够了解 Java 的内存的分配情况，适合 Java 初学者或者对 JMM 不熟悉的同学。后面的博客会针对每个部分做更加深入的解释。</p>
+<span id="more"></span>
+
+<h2 id="Java-内存模型"><a href="#Java-内存模型" class="headerlink" title="Java 内存模型"></a>Java 内存模型</h2><p>首先通过下图对于 Java 内存模型有一个整体的认识，然后针对不同的区域的作用和存储的内容做进一步的解释。</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnvc6jtby5j30r50l9wh2.jpg" alt="Java内存模型"></p>
+<h3 id="PC（程序计数器）"><a href="#PC（程序计数器）" class="headerlink" title="PC（程序计数器）"></a>PC（程序计数器）</h3><p>这里的 PC 不是 Personal Computer，而是 Program Counter Register，从名字就可以看出来，这是一个寄存器，用来存储需要执行的指令地址。</p>
+<blockquote>
+<p>程序计数器（Program Counter (PC)）是在电脑处理器中的一个寄存器，用来指示电脑下一步要运行的指令序列。–WikiPedia</p>
+</blockquote>
+<p>PC 和其他 JVM 内存区域最大的区别是：</p>
+<blockquote>
+<p><strong>“此内存区域是唯一一个在Java虚拟机规范中没有规定任何OutOfMemoryError情况的区域。</strong>”<br>摘录来自: 周志明. “深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）”。 iBooks.</p>
+</blockquote>
+<p>像上面的图片一样，PC 是每个线程私有的，对于 Java 方法而言，PC 中存储的是正在执行的虚拟机字节码的内存地址；对于 Native 方法来说，PC 中的值为空（Undefined）。</p>
+<h3 id="Java-虚拟机栈和本地方法栈"><a href="#Java-虚拟机栈和本地方法栈" class="headerlink" title="Java 虚拟机栈和本地方法栈"></a>Java 虚拟机栈和本地方法栈</h3><h4 id="虚拟机栈"><a href="#虚拟机栈" class="headerlink" title="虚拟机栈"></a>虚拟机栈</h4><p>无论是在大学的 Java 编程课堂上，还是我们在学习过程编码过程，经常会出现 StackOverFlow，甚至目前最大的技术问答社区的名字也是 StackOverFlow。Java 语言中会产生栈溢出的就是这块内存区域，当你的程序中设置了超过 JVM 规定的递归深度的时候就会触发这个异常。类似 JMM 的其他内存区域，如果虚拟机栈在动态扩展的时候无法申请到足够的内存也会报OOM异常。</p>
+<p>Java 语言中每一个方法的执行都对应着一个栈帧（Stack Frame）的创建，栈帧中存储的是局部变量、方法出口等信息，因此对于一个方法的执行而言，所能够使用到的内存是在编译期间就能够完全确定的，在运行期间不会发生变化。在栈帧中，局部变量空间成为 Slot，除了 double 和 long 占有 2 个 slot 外，其他基本数据类型和对象引用都占用 1 个 slot 空间</p>
+<h4 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h4><p>本地方法栈和虚拟机栈最大的区别就是虚拟机栈是为执行 Java 字节码服务的，而本地方法栈是为了虚拟机使用到的 Native 方法服务的。除此之外，Java 虚拟机规范并没有针对本地方法栈的实现做具体规定。在 HotSpot 虚拟机中，本地方法栈和虚拟机栈是共用同一块内存的，不做具体区分。同样，本地方法栈也会产生 OOM 异常和 StackOverFlow 异常。</p>
+<h3 id="Java-堆"><a href="#Java-堆" class="headerlink" title="Java 堆"></a>Java 堆</h3><blockquote>
+<p>“The heap is the runtime data area from which memory for all class instances and arrays is allocated。” –Java虚拟机规范</p>
+</blockquote>
+<p>Java 虚拟机规范规定所有的实例对象和数组都应该分配到 Java 堆中。<br>说的通俗一点就是所有 new 出来的对象和数组都会放到该区域，由于现在的收集器都采用分代收集算法，所以在 Java 堆中又分了新生代和老年代，新生代有做了详细的区分。该区域的大小可以通过 JVM 参数 <code>-Xmx</code> 和 <code>-Xms</code> 来设置。</p>
+<h4 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h4><p>在 JDK1.4 中引入了 NIO，可以通过 Native 方法直接在堆外分配内存，然后通过在堆中存储的引用来对这块内存区域做操作。<strong>注意</strong> 这块区域并不会在 <code>-Xmx</code>和 <code>-Xms</code> 设置的大小之内，因此在设置 JVM 参数的时候要注意考虑这块内存区域，避免设置的内存区域总额大于物理内存</p>
+<h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3><p>Method Area 又叫 NonHeap，也是线程共有的内存区域，用来存：</p>
+<ul>
+<li>类信息</li>
+<li>常量</li>
+<li>静态变量</li>
+<li>字符串常量池</li>
+</ul>
+<p>在 JDK1.7 中已经将字符串常量池移出永久代，在 Java8 中更是之内取消了永久代，而是使用了元空间（MetaSpace）来存储这些信息，从而永久代的大小不需要再指定，只要不超出物理内存的限制就不会产生 OOM 异常</p>
+<h4 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h4><p>运行时常量池主要用来存储类的版本、字段、方法、接口等描述信息。常量池（Constant Pool Table）用来存储各种字面量和符号引用。String 的 <code>intern()</code> 方法就是在运行期间将对象放到常量池中的。此部分也会出现 OOM 异常。</p>
+<h2 id="JDK8-以及之后的模型"><a href="#JDK8-以及之后的模型" class="headerlink" title="JDK8 以及之后的模型"></a>JDK8 以及之后的模型</h2><p><img src="https://raw.githubusercontent.com/PicGoBed/PicBed/master/2019-07-26-NrXELZ.jpg" alt="pic"></p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Java-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.</span> <span class="toc-text">Java 内存模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#PC%EF%BC%88%E7%A8%8B%E5%BA%8F%E8%AE%A1%E6%95%B0%E5%99%A8%EF%BC%89"><span class="toc-number">1.1.</span> <span class="toc-text">PC（程序计数器）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Java-%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88%E5%92%8C%E6%9C%AC%E5%9C%B0%E6%96%B9%E6%B3%95%E6%A0%88"><span class="toc-number">1.2.</span> <span class="toc-text">Java 虚拟机栈和本地方法栈</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88"><span class="toc-number">1.2.1.</span> <span class="toc-text">虚拟机栈</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E6%96%B9%E6%B3%95%E6%A0%88"><span class="toc-number">1.2.2.</span> <span class="toc-text">本地方法栈</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Java-%E5%A0%86"><span class="toc-number">1.3.</span> <span class="toc-text">Java 堆</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%9B%B4%E6%8E%A5%E5%86%85%E5%AD%98"><span class="toc-number">1.3.1.</span> <span class="toc-text">直接内存</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E5%8C%BA"><span class="toc-number">1.4.</span> <span class="toc-text">方法区</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6%E5%B8%B8%E9%87%8F%E6%B1%A0"><span class="toc-number">1.4.1.</span> <span class="toc-text">运行时常量池</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JDK8-%E4%BB%A5%E5%8F%8A%E4%B9%8B%E5%90%8E%E7%9A%84%E6%A8%A1%E5%9E%8B"><span class="toc-number">2.</span> <span class="toc-text">JDK8 以及之后的模型</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/&text=JVM 探究（一）：JVM内存模型概念模型"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/&title=JVM 探究（一）：JVM内存模型概念模型"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/&is_video=false&description=JVM 探究（一）：JVM内存模型概念模型"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=JVM 探究（一）：JVM内存模型概念模型&body=Check out this article: https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/&title=JVM 探究（一）：JVM内存模型概念模型"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/&title=JVM 探究（一）：JVM内存模型概念模型"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/&title=JVM 探究（一）：JVM内存模型概念模型"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/&title=JVM 探究（一）：JVM内存模型概念模型"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/&name=JVM 探究（一）：JVM内存模型概念模型&description=&lt;p&gt;作为一个 Java 程序员，不了解 Java 内存模型就不能写出能够充分利用内存的代码。本文通过对 Java 内存模型的介绍，让读者能够了解 Java 的内存的分配情况，适合 Java 初学者或者对 JMM 不熟悉的同学。后面的博客会针对每个部分做更加深入的解释。&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/&t=JVM 探究（一）：JVM内存模型概念模型"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    ZHANG, BO
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

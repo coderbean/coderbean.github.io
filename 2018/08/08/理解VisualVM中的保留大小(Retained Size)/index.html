@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="是否在各种内存分析工具中看到过保留大小的概念呐，保留大小到底代表着什么？保留大小代表着实例本事和引用的对象的总大小吗？">
+<meta property="og:type" content="article">
+<meta property="og:title" content="理解VisualVM中的保留大小(Retained Size)">
+<meta property="og:url" content="https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="是否在各种内存分析工具中看到过保留大小的概念呐，保留大小到底代表着什么？保留大小代表着实例本事和引用的对象的总大小吗？">
+<meta property="og:locale">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2cp92ho4j30p00fd0v3.jpg">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2cpvt71gj30p00jc76z.jpg">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2d8odqlmj31kw0a1ac9.jpg">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2d9wrsm0j30ny074dgj.jpg">
+<meta property="article:published_time" content="2018-08-08T08:30:53.000Z">
+<meta property="article:modified_time" content="2024-06-13T12:56:22.291Z">
+<meta property="article:author" content="ZHANG, BO">
+<meta property="article:tag" content="JVM">
+<meta property="article:tag" content="tech">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2cp92ho4j30p00fd0v3.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>理解VisualVM中的保留大小(Retained Size)</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2018/09/20/MySQL%20%E4%B8%AD%E7%9A%84%E9%94%81/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2018/04/19/%E3%80%90%E8%AF%91%E3%80%91Python%20Curses%20%E7%BC%96%E7%A8%8B/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/&text=理解VisualVM中的保留大小(Retained Size)"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/&title=理解VisualVM中的保留大小(Retained Size)"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/&is_video=false&description=理解VisualVM中的保留大小(Retained Size)"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=理解VisualVM中的保留大小(Retained Size)&body=Check out this article: https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/&title=理解VisualVM中的保留大小(Retained Size)"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/&title=理解VisualVM中的保留大小(Retained Size)"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/&title=理解VisualVM中的保留大小(Retained Size)"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/&title=理解VisualVM中的保留大小(Retained Size)"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/&name=理解VisualVM中的保留大小(Retained Size)&description=&lt;p&gt;是否在各种内存分析工具中看到过保留大小的概念呐，保留大小到底代表着什么？&lt;br&gt;保留大小代表着实例本事和引用的对象的总大小吗？&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/&t=理解VisualVM中的保留大小(Retained Size)"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Shallow-Size-and-Retained-Size"><span class="toc-number">1.</span> <span class="toc-text">Shallow Size and Retained Size</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Shallow-Size-%E5%90%AB%E4%B9%89"><span class="toc-number">1.1.</span> <span class="toc-text">Shallow Size 含义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Retained-Size-%E5%90%AB%E4%B9%89"><span class="toc-number">1.2.</span> <span class="toc-text">Retained Size 含义</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%92%88%E5%AF%B9%E5%8F%AF%E8%BE%BE%E5%AF%B9%E8%B1%A1"><span class="toc-number">1.2.1.</span> <span class="toc-text">针对可达对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%92%88%E5%AF%B9%E4%B8%8D%E5%8F%AF%E8%BE%BE%E5%AF%B9%E8%B1%A1"><span class="toc-number">1.2.2.</span> <span class="toc-text">针对不可达对象</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%E5%BD%95"><span class="toc-number">2.</span> <span class="toc-text">附录</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%90%86%E8%A7%A3%E8%AF%AF%E5%8C%BA"><span class="toc-number">2.1.</span> <span class="toc-text">理解误区</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%9C%A8-VisualVM-%E4%B8%AD%E8%AE%A1%E7%AE%97%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F%EF%BC%88Retained-Size%EF%BC%89"><span class="toc-number">2.2.</span> <span class="toc-text">如何在 VisualVM 中计算保留大小（Retained Size）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E4%BA%9B-Retained-Size-%E4%B8%BA-0-%E7%9A%84%E4%BE%8B%E5%AD%90"><span class="toc-number">2.3.</span> <span class="toc-text">一些 Retained Size 为 0 的例子</span></a></li></ol></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        理解VisualVM中的保留大小(Retained Size)
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">ZHANG, BO</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-08-08T08:30:53.000Z" class="dt-published" itemprop="datePublished">2018-08-08</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/JVM/" rel="tag">JVM</a>, <a class="p-category" href="/tags/Java/" rel="tag">Java</a>, <a class="p-category" href="/tags/tech/" rel="tag">tech</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>是否在各种内存分析工具中看到过保留大小的概念呐，保留大小到底代表着什么？<br>保留大小代表着实例本事和引用的对象的总大小吗？</p>
+<span id="more"></span>
+
+<h2 id="Shallow-Size-and-Retained-Size"><a href="#Shallow-Size-and-Retained-Size" class="headerlink" title="Shallow Size and Retained Size"></a>Shallow Size and Retained Size</h2><p>Shallow Size and Retained Size 的含义都是指的实例对象，不是类本身。</p>
+<p>下面将用 sampleClass 表示类Sample的一个实例（instance）</p>
+<h3 id="Shallow-Size-含义"><a href="#Shallow-Size-含义" class="headerlink" title="Shallow Size 含义"></a>Shallow Size 含义</h3><p>Shallow Size 就是对象本身所占用的大小，不包括其引用的对象。</p>
+<p>举个例子：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SampleClass</span> &#123;</span><br><span class="line">    <span class="comment">// age 属于 Shallow Size</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">age</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">    <span class="comment">// String 类型引用本身 name 属于 Shallow Size，</span></span><br><span class="line">    <span class="comment">// 被引用对象 &quot;SOME_STRING&quot; 不属于 Sample 的实例Shallow Size</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> SOME_STRING;</span><br><span class="line">    <span class="comment">// 数组所有内容都属于 Shallow Size</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span>[] ids = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Retained-Size-含义"><a href="#Retained-Size-含义" class="headerlink" title="Retained Size 含义"></a>Retained Size 含义</h3><h4 id="针对可达对象"><a href="#针对可达对象" class="headerlink" title="针对可达对象"></a>针对可达对象</h4><p>可达对象就是说，从 GC roots 开始搜索，能够到达的对象，也就是说下一次GC不会被清理的对象，采用下面的计算方法来得到 Retained Size 对象</p>
+<p>Retained Size的含义相对于Shallow Size 不太好理解。依然是上面的例子，在不同的情况下，sampleClass 的Retained Size 并不相同。下面引用StackOverFlow上的一个<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/23941688/yourkit-the-retained-size-of-an-object-doesnt-equal-the-retained-size-of-all">回答</a>来解释这个问题。</p>
+<blockquote>
+<p><strong>Retained size</strong> of an object is its shallow size plus the shallow sizes of the objects that are accessible, directly or indirectly, only from this object. In other words, the retained size represents the amount of memory that will be freed by the garbage collector when this object is collected.</p>
+</blockquote>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2cp92ho4j30p00fd0v3.jpg" alt="图一"></p>
+<p>上图应该比较容易理解，看起来每个对象的Retained Size 都符合公式（ Retained Size &#x3D; Shallow Size + 直接子对象的 Retained Size），并没有什么问题，然后我们看另外一种引用关系中，Obj1 的Retained Size 就会发生变化。</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2cpvt71gj30p00jc76z.jpg" alt="图二"></p>
+<p>第二种图中，你会发现Obj2的Retained Size 不再符合我们刚刚总结出来的公式，这是因为Obj2的直接子对象Obj5还被Obj6所引用，造成的结果就是，如果Obj2被回收，Obj5并不会被回收，所以 Obj2 的Retained Size就不应该包括 Obj5 的Retained Size. 虽然 Obj2 的 Retained Size 发生了变化，但是 Obj1 的 Retained Size 并没有发生变化。</p>
+<h4 id="针对不可达对象"><a href="#针对不可达对象" class="headerlink" title="针对不可达对象"></a>针对不可达对象</h4><p>指的是下一次 GC 会被清理的对象，也就是说没有其他对象引用自己的对象。</p>
+<p>如果你尝试使用 VisualVM 分析dump文件的时候，你会发现有些对象的 Retained Size 居然是0，这个0就推翻了上面那种分析方法的的结论，觉得无论什么样的对象肯定是会有 Shallow Size 的，不可能为0。</p>
+<p>通过分析最后可以这样理解：针对不可达对象，也就是可以完全被清除的对象，Retained Size 都是0</p>
+<h2 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h2><h3 id="理解误区"><a href="#理解误区" class="headerlink" title="理解误区"></a>理解误区</h3><p>好多人是简单的将保留大小描述为，<code>该对象本身和其直接引用或者间接引用的对象的大小的总和</code>。这种理解是片面的，就像上面例子中的 Obj2 一样，如果按照这种理解就会得到错误的结论。</p>
+<h3 id="如何在-VisualVM-中计算保留大小（Retained-Size）"><a href="#如何在-VisualVM-中计算保留大小（Retained-Size）" class="headerlink" title="如何在 VisualVM 中计算保留大小（Retained Size）"></a>如何在 VisualVM 中计算保留大小（Retained Size）</h3><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2d8odqlmj31kw0a1ac9.jpg"></p>
+<h3 id="一些-Retained-Size-为-0-的例子"><a href="#一些-Retained-Size-为-0-的例子" class="headerlink" title="一些 Retained Size 为 0 的例子"></a>一些 Retained Size 为 0 的例子</h3><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/0069RVTdgy1fu2d9wrsm0j30ny074dgj.jpg"></p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Shallow-Size-and-Retained-Size"><span class="toc-number">1.</span> <span class="toc-text">Shallow Size and Retained Size</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Shallow-Size-%E5%90%AB%E4%B9%89"><span class="toc-number">1.1.</span> <span class="toc-text">Shallow Size 含义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Retained-Size-%E5%90%AB%E4%B9%89"><span class="toc-number">1.2.</span> <span class="toc-text">Retained Size 含义</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%92%88%E5%AF%B9%E5%8F%AF%E8%BE%BE%E5%AF%B9%E8%B1%A1"><span class="toc-number">1.2.1.</span> <span class="toc-text">针对可达对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%92%88%E5%AF%B9%E4%B8%8D%E5%8F%AF%E8%BE%BE%E5%AF%B9%E8%B1%A1"><span class="toc-number">1.2.2.</span> <span class="toc-text">针对不可达对象</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%E5%BD%95"><span class="toc-number">2.</span> <span class="toc-text">附录</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%90%86%E8%A7%A3%E8%AF%AF%E5%8C%BA"><span class="toc-number">2.1.</span> <span class="toc-text">理解误区</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%9C%A8-VisualVM-%E4%B8%AD%E8%AE%A1%E7%AE%97%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F%EF%BC%88Retained-Size%EF%BC%89"><span class="toc-number">2.2.</span> <span class="toc-text">如何在 VisualVM 中计算保留大小（Retained Size）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E4%BA%9B-Retained-Size-%E4%B8%BA-0-%E7%9A%84%E4%BE%8B%E5%AD%90"><span class="toc-number">2.3.</span> <span class="toc-text">一些 Retained Size 为 0 的例子</span></a></li></ol></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/&text=理解VisualVM中的保留大小(Retained Size)"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/&title=理解VisualVM中的保留大小(Retained Size)"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/&is_video=false&description=理解VisualVM中的保留大小(Retained Size)"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=理解VisualVM中的保留大小(Retained Size)&body=Check out this article: https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/&title=理解VisualVM中的保留大小(Retained Size)"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/&title=理解VisualVM中的保留大小(Retained Size)"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/&title=理解VisualVM中的保留大小(Retained Size)"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/&title=理解VisualVM中的保留大小(Retained Size)"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/&name=理解VisualVM中的保留大小(Retained Size)&description=&lt;p&gt;是否在各种内存分析工具中看到过保留大小的概念呐，保留大小到底代表着什么？&lt;br&gt;保留大小代表着实例本事和引用的对象的总大小吗？&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2018/08/08/%E7%90%86%E8%A7%A3VisualVM%E4%B8%AD%E7%9A%84%E4%BF%9D%E7%95%99%E5%A4%A7%E5%B0%8F(Retained%20Size)/&t=理解VisualVM中的保留大小(Retained Size)"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    ZHANG, BO
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="服务发生死锁，死锁检测时间较长，31s后死锁检测出来事务才得以回滚，期间不断有相同请求进来，造成死锁越来越复杂，并且服务端线程池中的所有线程都在等待锁，最后造成服务端线程池无空闲线程，拒绝服务。 注意：单条 SQL 也是一个事务，也会和其他事务发生死锁。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="线上死锁分析解决纪实">
+<meta property="og:url" content="https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="服务发生死锁，死锁检测时间较长，31s后死锁检测出来事务才得以回滚，期间不断有相同请求进来，造成死锁越来越复杂，并且服务端线程池中的所有线程都在等待锁，最后造成服务端线程池无空闲线程，拒绝服务。 注意：单条 SQL 也是一个事务，也会和其他事务发生死锁。">
+<meta property="og:locale">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/20190517142816.png">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/20190516203451.png">
+<meta property="article:published_time" content="2019-05-17T08:30:53.000Z">
+<meta property="article:modified_time" content="2024-06-13T12:56:22.291Z">
+<meta property="article:author" content="ZHANG, BO">
+<meta property="article:tag" content="tech">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/20190517142816.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>线上死锁分析解决纪实</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2019/05/30/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%AD%A3%E7%A1%AE%E7%9A%84%E5%8D%95%E4%BE%8B/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/&text=线上死锁分析解决纪实"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/&title=线上死锁分析解决纪实"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/&is_video=false&description=线上死锁分析解决纪实"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=线上死锁分析解决纪实&body=Check out this article: https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/&title=线上死锁分析解决纪实"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/&title=线上死锁分析解决纪实"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/&title=线上死锁分析解决纪实"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/&title=线上死锁分析解决纪实"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/&name=线上死锁分析解决纪实&description=&lt;p&gt;服务发生死锁，死锁检测时间较长，31s后死锁检测出来事务才得以回滚，期间不断有相同请求进来，造成死锁越来越复杂，并且服务端线程池中的所有线程都在等待锁，最后造成服务端线程池无空闲线程，拒绝服务。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;注意：单条 SQL 也是一个事务，也会和其他事务发生死锁。&lt;/strong&gt;&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/&t=线上死锁分析解决纪实"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8E%9F%E5%9B%A0%E5%88%86%E6%9E%90"><span class="toc-number">1.</span> <span class="toc-text">原因分析</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A8%A1%E6%8B%9F%E6%B5%81%E7%A8%8B"><span class="toc-number">2.</span> <span class="toc-text">模拟流程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%AA%8C%E8%AF%81%E7%8C%9C%E6%83%B3"><span class="toc-number">3.</span> <span class="toc-text">验证猜想</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">4.</span> <span class="toc-text">解决方案</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="toc-number">5.</span> <span class="toc-text">参考文档</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        线上死锁分析解决纪实
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">ZHANG, BO</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2019-05-17T08:30:53.000Z" class="dt-published" itemprop="datePublished">2019-05-17</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/MySQL/" rel="tag">MySQL</a>, <a class="p-category" href="/tags/tech/" rel="tag">tech</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>服务发生死锁，死锁检测时间较长，31s后死锁检测出来事务才得以回滚，期间不断有相同请求进来，造成死锁越来越复杂，并且服务端线程池中的所有线程都在等待锁，最后造成服务端线程池无空闲线程，拒绝服务。</p>
+<p><strong>注意：单条 SQL 也是一个事务，也会和其他事务发生死锁。</strong></p>
+<span id="more"></span>
+
+<h1 id="原因分析"><a href="#原因分析" class="headerlink" title="原因分析"></a>原因分析</h1><p>首先奉上 InnoDB 日志 和 DDL</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `campaignmockqueue` (</span><br><span class="line">  `id` <span class="type">int</span>(<span class="number">10</span>) unsigned <span class="keyword">NOT</span> <span class="keyword">NULL</span> AUTO_INCREMENT,</span><br><span class="line">  `campaignid` <span class="type">int</span>(<span class="number">10</span>) unsigned <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  `addtime` <span class="type">int</span>(<span class="number">10</span>) unsigned <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  <span class="keyword">PRIMARY</span> KEY (`id`),</span><br><span class="line">  KEY `idx_campid` (`campaignid`),</span><br><span class="line">  KEY `addtime` (`addtime`)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB AUTO_INCREMENT<span class="operator">=</span><span class="number">1065620134</span> <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">------------------------</span></span><br><span class="line">LATEST DETECTED DEADLOCK</span><br><span class="line"><span class="comment">------------------------</span></span><br><span class="line"><span class="number">2019</span><span class="number">-05</span><span class="number">-16</span> <span class="number">15</span>:<span class="number">38</span>:<span class="number">17</span> <span class="number">0x7f121830f700</span></span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> (<span class="number">1</span>) TRANSACTION:</span><br><span class="line">TRANSACTION <span class="number">161027737922</span>, ACTIVE <span class="number">0</span> sec fetching <span class="keyword">rows</span></span><br><span class="line">mysql tables <span class="keyword">in</span> use <span class="number">1</span>, locked <span class="number">1</span></span><br><span class="line">LOCK WAIT <span class="number">88</span> lock struct(s), heap size <span class="number">24784</span>, <span class="number">1412</span> <span class="type">row</span> lock(s), undo log entries <span class="number">2</span></span><br><span class="line">MySQL thread id <span class="number">42610991</span>, OS thread handle <span class="number">139701841643264</span>, query id <span class="number">40446554160</span> <span class="number">10.7</span><span class="number">.23</span><span class="number">.224</span> promotio_e0a1 updating</span><br><span class="line"><span class="comment">/*id:6d7cc9a7*/</span><span class="keyword">DELETE</span> <span class="keyword">FROM</span> `campaignmockqueue` <span class="keyword">WHERE</span> `campaignid`<span class="operator">=</span><span class="number">52327710</span> <span class="keyword">and</span> `addtime` <span class="operator">&lt;=</span> <span class="number">1557992297</span></span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> (<span class="number">1</span>) WAITING <span class="keyword">FOR</span> THIS LOCK <span class="keyword">TO</span> BE GRANTED:</span><br><span class="line">RECORD LOCKS space id <span class="number">1975</span> page <span class="keyword">no</span> <span class="number">5280</span> n bits <span class="number">1272</span> index idx_campid <span class="keyword">of</span> <span class="keyword">table</span> `promotion`.`campaignmockqueue` trx id <span class="number">161027737922</span> lock_mode X waiting</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> (<span class="number">2</span>) TRANSACTION:</span><br><span class="line">TRANSACTION <span class="number">161027729748</span>, ACTIVE <span class="number">31</span> sec inserting</span><br><span class="line">mysql tables <span class="keyword">in</span> use <span class="number">1</span>, locked <span class="number">1</span></span><br><span class="line"><span class="number">7</span> lock struct(s), heap size <span class="number">1136</span>, <span class="number">7</span> <span class="type">row</span> lock(s), undo log entries <span class="number">14</span></span><br><span class="line">MySQL thread id <span class="number">42610752</span>, OS thread handle <span class="number">139715692001024</span>, query id <span class="number">40446554260</span> <span class="number">10.43</span><span class="number">.174</span><span class="number">.209</span> promotio_e0a1 <span class="keyword">update</span></span><br><span class="line"><span class="comment">/*id:dfdc4b66*/</span><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `campaignmockqueue`(</span><br><span class="line">           `campaignid`, `addtime`</span><br><span class="line">        )</span><br><span class="line">        <span class="keyword">VALUES</span></span><br><span class="line">          </span><br><span class="line">            (<span class="number">52327709</span>, <span class="number">1557992297</span>)</span><br><span class="line">         , </span><br><span class="line">            (<span class="number">52327709</span>, <span class="number">1559383140</span>)</span><br><span class="line">         , </span><br><span class="line">            (<span class="number">52327709</span>, <span class="number">1557992296</span>)</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> (<span class="number">2</span>) HOLDS THE LOCK(S):</span><br><span class="line">RECORD LOCKS space id <span class="number">1975</span> page <span class="keyword">no</span> <span class="number">5280</span> n bits <span class="number">1272</span> index idx_campid <span class="keyword">of</span> <span class="keyword">table</span> `promotion`.`campaignmockqueue` trx id <span class="number">161027729748</span> lock_mode X locks rec but <span class="keyword">not</span> gap</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> (<span class="number">2</span>) WAITING <span class="keyword">FOR</span> THIS LOCK <span class="keyword">TO</span> BE GRANTED:</span><br><span class="line">RECORD LOCKS space id <span class="number">1975</span> page <span class="keyword">no</span> <span class="number">5271</span> n bits <span class="number">1272</span> index idx_campid <span class="keyword">of</span> <span class="keyword">table</span> `promotion`.`campaignmockqueue` trx id <span class="number">161027729748</span> lock_mode X locks gap before rec <span class="keyword">insert</span> intention waiting</span><br><span class="line"><span class="operator">*</span><span class="operator">*</span><span class="operator">*</span> WE ROLL BACK TRANSACTION (<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+
+<p>如果看不懂日志，可以参考 <a target="_blank" rel="noopener" href="https://blog.csdn.net/sun_ashe/article/details/88381576">这个文章</a></p>
+<p>我们先来看看 <strong>事务1</strong> 和<strong>事务2</strong> 分别持有什么锁，又在等待什么锁。由于日志是在事务 1 的角度来打印的，所以我们只能看到事务 2 持有 <code>lock_mode X locks rec but not gap</code> 锁，在等待 <code>lock_mode X locks gap before rec insert intention</code> 锁。</p>
+<blockquote>
+<p><code>lock_mode X locks rec but not gap</code> 就是写记录锁，只锁了单条记录。</p>
+<p> <code>lock_mode X locks gap before rec insert intention</code>  就是一个插入意向锁，目标是在对应的间隙上（不包括记录本身）加锁。</p>
+</blockquote>
+<p>通过事务 2 的锁信息我们可以推测出事务 1 的锁持有信息，因此就有了下面的图。</p>
+<p>事务 1 当前拥有的应该是间隙 A 和 记录X 组成的 nexy-key 锁 ，现在正在等待的是间隙 b 的锁。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DELETE</span> <span class="keyword">FROM</span> `campaignmockqueue` <span class="keyword">WHERE</span> `campaignid`<span class="operator">=</span><span class="number">52327710</span> <span class="keyword">and</span> `addtime` <span class="operator">&lt;=</span> <span class="number">1557992297</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/20190517142816.png"></p>
+<p>事务 2 当前拥有的应该是 记录 Y 的 X锁， 间隙 D 的插入意向锁， 间隙 C 的插入意向锁 ，现在正在等待的是间隙 e 的 间隙插入意向锁（也有可能是 记录 Y 的 record lock）。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> `campaignmockqueue`(`campaignid`, `addtime` )<span class="keyword">VALUES</span> (<span class="number">52327709</span>, <span class="number">1557992297</span>) , (<span class="number">52327709</span>, <span class="number">1559383140</span>), (<span class="number">52327709</span>, <span class="number">1557992296</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/20190516203451.png"></p>
+<p> 由于 next-key 锁 和 插入意向锁互斥，所以事务 1 在等待事务 2 释放 C, Y, D；事务 2 在等待事务 1 释放 A。 这样看来正好符合 InnoDB 中的 log。</p>
+<h1 id="模拟流程"><a href="#模拟流程" class="headerlink" title="模拟流程"></a>模拟流程</h1><p>个人认为 由于 next-key 锁和 Gap 锁不是一种锁，因此必然存在时间差，这种时间差在并发量很大的情况下才会凸显出来。</p>
+<table>
+<thead>
+<tr>
+<th align="left">事务1</th>
+<th>事务2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"></td>
+<td>INSERT INTO <code>campaignmockqueue</code> 记录 Y</td>
+</tr>
+<tr>
+<td align="left">DELETE FROM <code>campaignmockqueue</code> 获取了 A 的间隙锁还没获取 next-key  锁</td>
+<td></td>
+</tr>
+<tr>
+<td align="left"></td>
+<td>INSERT INTO <code>campaignmockqueue</code>(<code>campaignid</code>, <code>addtime</code> )VALUES (52327709, 1557992297) , (52327709, 1559383140), (52327709, 1557992296) （阻塞）</td>
+</tr>
+<tr>
+<td align="left">DELETE FROM <code>campaignmockqueue</code> 获取 next-key  锁 （阻塞）</td>
+<td></td>
+</tr>
+</tbody></table>
+<h1 id="验证猜想"><a href="#验证猜想" class="headerlink" title="验证猜想"></a>验证猜想</h1><p>上面的情况仅仅是推测，如果我们能拿到 INSERT 语句角度的死锁日志就好了。搜寻了一下 InnoDB 日志，得到了下面的日志，通过交叉分析，可以验证了我们的猜想。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">------------------------</span><br><span class="line">LATEST DETECTED DEADLOCK</span><br><span class="line">------------------------</span><br><span class="line">2019-05-16 03:02:36 0x7f11eebd8700</span><br><span class="line">*** (1) TRANSACTION:</span><br><span class="line">TRANSACTION 161022641521, ACTIVE 0 sec inserting</span><br><span class="line">mysql tables in use 1, locked 1</span><br><span class="line">LOCK WAIT 5 lock struct(s), heap size 1136, 3 row lock(s), undo log entries 2</span><br><span class="line">MySQL thread id 42518313, OS thread handle 139715027216128, query id 40270385508 10.7.224.35 promotio_e0a1 update</span><br><span class="line">/*id:dfdc4b66*/INSERT INTO `campaignmockqueue`(</span><br><span class="line">`campaignid`, `addtime`</span><br><span class="line">)</span><br><span class="line">VALUES</span><br><span class="line"></span><br><span class="line">(52247612, 1557946956)</span><br><span class="line">, </span><br><span class="line">(52247612, 1557936000)</span><br><span class="line">, </span><br><span class="line">(52247612, 1558022399)</span><br><span class="line">*** (1) WAITING FOR THIS LOCK TO BE GRANTED:</span><br><span class="line">RECORD LOCKS space id 1975 page no 4904 n bits 1264 index addtime of table `promotion`.`campaignmockqueue` trx id 161022641521 lock_mode X locks gap before rec insert intention waiting</span><br><span class="line">*** (2) TRANSACTION:</span><br><span class="line">TRANSACTION 161022641523, ACTIVE 0 sec fetching rows</span><br><span class="line">mysql tables in use 1, locked 1</span><br><span class="line">4 lock struct(s), heap size 1136, 3 row lock(s), undo log entries 1</span><br><span class="line">MySQL thread id 42543917, OS thread handle 139714996569856, query id 40270385509 10.7.23.224 promotio_e0a1 updating</span><br><span class="line">/*id:6d7cc9a7*/DELETE FROM `campaignmockqueue` WHERE `campaignid`=52247612 and `addtime` &lt;= 1557946956</span><br><span class="line">*** (2) HOLDS THE LOCK(S):</span><br><span class="line">RECORD LOCKS space id 1975 page no 4904 n bits 1264 index addtime of table `promotion`.`campaignmockqueue` trx id 161022641523 lock_mode X</span><br><span class="line">*** (2) WAITING FOR THIS LOCK TO BE GRANTED:</span><br><span class="line">RECORD LOCKS space id 1975 page no 4904 n bits 1264 index addtime of table `promotion`.`campaignmockqueue` trx id 161022641523 lock_mode X waiting</span><br><span class="line">*** WE ROLL BACK TRANSACTION (2)</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h1><p>DELETE FROM <code>campaignmockqueue</code> 不使用 <code>idx_campid</code> 这个索引加锁，而使用唯一主键来做操作，和 insert 操作使用不同的索引，来避免这个问题。</p>
+<h1 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h1><ol>
+<li><a target="_blank" rel="noopener" href="http://hedengcheng.com/?p=771#_Toc374698311">何登成的技术博客 » MySQL 加锁处理分析</a></li>
+<li><a target="_blank" rel="noopener" href="https://my.oschina.net/hebaodan/blog/1835966">mysql并发insert死锁问题——gap、插入意向锁冲突 - hebaodan的博客 - OSCHINA</a></li>
+<li><a href="https://jacobchang.cn/lock-of-mysql.html#%E8%AF%BB%E5%86%99%E6%84%8F%E5%90%91%E9%94%81">MySQL 中的锁 [ 黄小豆的博客 ]</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.aneasystone.com/archives/2018/06/insert-locks-via-mysql-source-code.html">读 MySQL 源码再看 INSERT 加锁流程 - aneasystone’s blog</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/sun_ashe/article/details/88381576">Innodb死锁日志分段解读-如何阅读死锁日志 - 奎因&amp;华洛 - CSDN博客</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.fordba.com/lock-analyse-of-delete.html">MySQL DELETE 删除语句加锁分析 | | For DBA</a></li>
+</ol>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8E%9F%E5%9B%A0%E5%88%86%E6%9E%90"><span class="toc-number">1.</span> <span class="toc-text">原因分析</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A8%A1%E6%8B%9F%E6%B5%81%E7%A8%8B"><span class="toc-number">2.</span> <span class="toc-text">模拟流程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%AA%8C%E8%AF%81%E7%8C%9C%E6%83%B3"><span class="toc-number">3.</span> <span class="toc-text">验证猜想</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">4.</span> <span class="toc-text">解决方案</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="toc-number">5.</span> <span class="toc-text">参考文档</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/&text=线上死锁分析解决纪实"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/&title=线上死锁分析解决纪实"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/&is_video=false&description=线上死锁分析解决纪实"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=线上死锁分析解决纪实&body=Check out this article: https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/&title=线上死锁分析解决纪实"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/&title=线上死锁分析解决纪实"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/&title=线上死锁分析解决纪实"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/&title=线上死锁分析解决纪实"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/&name=线上死锁分析解决纪实&description=&lt;p&gt;服务发生死锁，死锁检测时间较长，31s后死锁检测出来事务才得以回滚，期间不断有相同请求进来，造成死锁越来越复杂，并且服务端线程池中的所有线程都在等待锁，最后造成服务端线程池无空闲线程，拒绝服务。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;注意：单条 SQL 也是一个事务，也会和其他事务发生死锁。&lt;/strong&gt;&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2019/05/17/%E7%BA%BF%E4%B8%8A%E6%AD%BB%E9%94%81%E5%88%86%E6%9E%90%E8%A7%A3%E5%86%B3%E7%BA%AA%E5%AE%9E/&t=线上死锁分析解决纪实"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    ZHANG, BO
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="利用 Spring 框架可以很容易的使用注解的方式来使用事务，为我们的开发带来了巨大的便利，这种便利的实现是通过 Spring 本身的一系列机制来实现的，主要包含动态代理和 Spring Bean 的加载过程。本文将深入源码，揭开层层面纱…">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring 中 Transactional 注解原理">
+<meta property="og:url" content="https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="利用 Spring 框架可以很容易的使用注解的方式来使用事务，为我们的开发带来了巨大的便利，这种便利的实现是通过 Spring 本身的一系列机制来实现的，主要包含动态代理和 Spring Bean 的加载过程。本文将深入源码，揭开层层面纱…">
+<meta property="og:locale">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcgy1g0m8bd5ifmj31zi0m276o.jpg">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcgy1g0mbz0xk0rj31yg0mytgq.jpg">
+<meta property="article:published_time" content="2019-02-28T08:08:53.000Z">
+<meta property="article:modified_time" content="2024-06-13T12:56:22.288Z">
+<meta property="article:author" content="ZHANG, BO">
+<meta property="article:tag" content="tech">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcgy1g0m8bd5ifmj31zi0m276o.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Spring 中 Transactional 注解原理</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2019/01/24/%E5%88%A9%E7%94%A8%20JavaSE%20%E5%88%9B%E5%BB%BA%E7%AE%80%E5%8D%95%20HTTP%20Server/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/&text=Spring 中 Transactional 注解原理"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/&title=Spring 中 Transactional 注解原理"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/&is_video=false&description=Spring 中 Transactional 注解原理"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Spring 中 Transactional 注解原理&body=Check out this article: https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/&title=Spring 中 Transactional 注解原理"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/&title=Spring 中 Transactional 注解原理"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/&title=Spring 中 Transactional 注解原理"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/&title=Spring 中 Transactional 注解原理"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/&name=Spring 中 Transactional 注解原理&description=&lt;p&gt;利用 Spring 框架可以很容易的使用注解的方式来使用事务，为我们的开发带来了巨大的便利，这种便利的实现是通过 Spring 本身的一系列机制来实现的，主要包含动态代理和 Spring Bean 的加载过程。本文将深入源码，揭开层层面纱…&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/&t=Spring 中 Transactional 注解原理"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Spring-Transactional-%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">1.</span> <span class="toc-text">Spring @Transactional 的使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Spring-BeanPostProcessor"><span class="toc-number">2.</span> <span class="toc-text">Spring BeanPostProcessor</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DefaultAdvisorAutoProxyCreator-%E5%A6%82%E4%BD%95%E4%BB%A3%E7%90%86%E8%A2%AB-Transactional%E6%B3%A8%E8%A7%A3%E7%9A%84%E6%96%B9%E6%B3%95%E6%89%80%E5%B1%9E%E7%B1%BB"><span class="toc-number">3.</span> <span class="toc-text">DefaultAdvisorAutoProxyCreator 如何代理被@Transactional注解的方法所属类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TransactionInterceptor-%E7%B1%BB"><span class="toc-number">4.</span> <span class="toc-text">TransactionInterceptor 类</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Spring 中 Transactional 注解原理
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">ZHANG, BO</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2019-02-28T08:08:53.000Z" class="dt-published" itemprop="datePublished">2019-02-28</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Java/" rel="tag">Java</a>, <a class="p-category" href="/tags/tech/" rel="tag">tech</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>利用 Spring 框架可以很容易的使用注解的方式来使用事务，为我们的开发带来了巨大的便利，这种便利的实现是通过 Spring 本身的一系列机制来实现的，主要包含动态代理和 Spring Bean 的加载过程。本文将深入源码，揭开层层面纱…</p>
+<span id="more"></span>
+
+<h2 id="Spring-Transactional-的使用"><a href="#Spring-Transactional-的使用" class="headerlink" title="Spring @Transactional 的使用"></a>Spring @Transactional 的使用</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">methodInTransaction</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 对数据库的一些操作</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们只需要在对应的方法上使用 <code>@Transactional</code> 注解即可让这个方法在事务中执行。这里需要注意的是，如果是在一个类中的两个方法，事务是不会生效的。举例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.transaction.annotation.Propagation;</span><br><span class="line"><span class="keyword">import</span> org.springframework.transaction.annotation.Transactional;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Created by zhangbo on 2019-02-28.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TransactionTest</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">methodNotIntransaction</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.methodInTransaction(); <span class="comment">// 此时被调用的方法 methodInTransaction 的事务并不会生效</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">methodInTransaction</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// 对数据库的一些操作</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>为何不会生效？是因为这样的调用不会经过 Spring 的代理，无法通过 Spring 的 advisor 来拦截数据库操作请求。</p>
+<h2 id="Spring-BeanPostProcessor"><a href="#Spring-BeanPostProcessor" class="headerlink" title="Spring BeanPostProcessor"></a>Spring BeanPostProcessor</h2><p>首先我们来了解一下 Spring Bean 的生命周期</p>
+<blockquote>
+<ol>
+<li>调用InstantiationAwareBeanPostProcessor的postProcessBeforeInstantiation(Class&lt;?&gt; beanClass, String beanName)</li>
+<li>bean实例化</li>
+<li>调用InstantiationAwareBeanPostProcessor的postProcessAfterInstantiation(Object bean, String beanName)</li>
+<li>调用InstantiationAwareBeanPostProcessor的postProcessPropertyValues(PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName)</li>
+<li>bean注入properties</li>
+<li>分别调用BeanNameAware,BeanClassLoaderAware,BeanFactoryAware中的方法</li>
+<li>调用BeanPostProcessor的postProcessBeforeInitialization(Object bean, String beanName)</li>
+<li>调用InitializingBean的afterPropertiesSet方法</li>
+<li>调用自定义初始化方法</li>
+<li>调用BeanPostProcessor的postProcessAfterInitialization(Object bean, String beanName)</li>
+<li>调用DisposableBean的destroy()方法</li>
+<li>调用自定义销毁方法</li>
+</ol>
+<p>作者：土豆肉丝盖浇饭</p>
+<p>链接：<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/6d5c58168493">https://www.jianshu.com/p/6d5c58168493</a></p>
+<p>来源：简书</p>
+<p>简书著作权归作者所有，任何形式的转载都请联系作者获得授权并注明出处。</p>
+</blockquote>
+<p>通过上面的流程我们可以看到，BeanPostProcessor 中的两个方法 <code>postProcessBeforeInitialization</code>和<code>postProcessAfterInitialization</code> 分别在 bean 调用 init 方法前后调用。其中对于对象的代理就是在 <code>postProcessAfterInitialization</code> 方法中完成的，用代理的 bean 来替换原来的 bean</p>
+<p>默认情况下，<code>BeanPostProcessor</code> 的职能是通过默认实现类 <code>DefaultAdvisorAutoProxyCreator</code>实现的，类 <code>DefaultAdvisorAutoProxyCreator</code>继承自<code>AbstractAdvisorAutoProxyCreator</code>该类的继承关系如下图</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcgy1g0m8bd5ifmj31zi0m276o.jpg" alt="AbstractAutoProxyCreator继承关系"></p>
+<h2 id="DefaultAdvisorAutoProxyCreator-如何代理被-Transactional注解的方法所属类"><a href="#DefaultAdvisorAutoProxyCreator-如何代理被-Transactional注解的方法所属类" class="headerlink" title="DefaultAdvisorAutoProxyCreator 如何代理被@Transactional注解的方法所属类"></a><code>DefaultAdvisorAutoProxyCreator</code> 如何代理被<code>@Transactional</code>注解的方法所属类</h2><p>来看看 <code>AbstractAutoProxyCreator</code>中发生了什么</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* Create a proxy with the configured interceptors if the bean is</span></span><br><span class="line"><span class="comment">* identified as one to proxy by the subclass.</span></span><br><span class="line"><span class="comment">* <span class="doctag">@see</span> #getAdvicesAndAdvisorsForBean</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="comment">// 类 AbstractAutoProxyCreator</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> Object <span class="title function_">postProcessAfterInitialization</span><span class="params">(<span class="meta">@Nullable</span> Object bean, String beanName)</span> <span class="keyword">throws</span> BeansException &#123;</span><br><span class="line">    <span class="keyword">if</span> (bean != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="type">Object</span> <span class="variable">cacheKey</span> <span class="operator">=</span> getCacheKey(bean.getClass(), beanName);</span><br><span class="line">        <span class="keyword">if</span> (!<span class="built_in">this</span>.earlyProxyReferences.contains(cacheKey)) &#123;</span><br><span class="line">            <span class="keyword">return</span> wrapIfNecessary(bean, beanName, cacheKey); <span class="comment">// 主要逻辑在这里</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> bean;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>跟进 <code>wrapIfNecessary</code> 方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* Wrap the given bean if necessary, i.e. if it is eligible for being proxied.</span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> bean the raw bean instance</span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> beanName the name of the bean</span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> cacheKey the cache key for metadata access</span></span><br><span class="line"><span class="comment">* <span class="doctag">@return</span> a proxy wrapping the bean, or the raw bean instance as-is</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="comment">// 类 AbstractAutoProxyCreator</span></span><br><span class="line"><span class="keyword">protected</span> Object <span class="title function_">wrapIfNecessary</span><span class="params">(Object bean, String beanName, Object cacheKey)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (StringUtils.hasLength(beanName) &amp;&amp; <span class="built_in">this</span>.targetSourcedBeans.contains(beanName)) &#123;</span><br><span class="line">        <span class="keyword">return</span> bean;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (Boolean.FALSE.equals(<span class="built_in">this</span>.advisedBeans.get(cacheKey))) &#123;</span><br><span class="line">        <span class="keyword">return</span> bean;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (isInfrastructureClass(bean.getClass()) || shouldSkip(bean.getClass(), beanName)) &#123;</span><br><span class="line">        <span class="built_in">this</span>.advisedBeans.put(cacheKey, Boolean.FALSE);</span><br><span class="line">        <span class="keyword">return</span> bean;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Create proxy if we have advice.</span></span><br><span class="line">    <span class="comment">// 查找 advice 从而创建代理类</span></span><br><span class="line">    Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, <span class="literal">null</span>);</span><br><span class="line">    <span class="keyword">if</span> (specificInterceptors != DO_NOT_PROXY) &#123;</span><br><span class="line">        <span class="built_in">this</span>.advisedBeans.put(cacheKey, Boolean.TRUE);</span><br><span class="line">        <span class="type">Object</span> <span class="variable">proxy</span> <span class="operator">=</span> createProxy(</span><br><span class="line">            bean.getClass(), beanName, specificInterceptors, <span class="keyword">new</span> <span class="title class_">SingletonTargetSource</span>(bean));</span><br><span class="line">        <span class="built_in">this</span>.proxyTypes.put(cacheKey, proxy.getClass());</span><br><span class="line">        <span class="keyword">return</span> proxy;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">this</span>.advisedBeans.put(cacheKey, Boolean.FALSE);</span><br><span class="line">    <span class="keyword">return</span> bean;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AbstractAdvisorAutoProxyCreator 类</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="meta">@Nullable</span></span><br><span class="line"><span class="keyword">protected</span> Object[] getAdvicesAndAdvisorsForBean(</span><br><span class="line">    Class&lt;?&gt; beanClass, String beanName, <span class="meta">@Nullable</span> TargetSource targetSource) &#123;</span><br><span class="line"></span><br><span class="line">    List&lt;Advisor&gt; advisors = findEligibleAdvisors(beanClass, beanName);</span><br><span class="line">    <span class="keyword">if</span> (advisors.isEmpty()) &#123;</span><br><span class="line">        <span class="keyword">return</span> DO_NOT_PROXY;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> advisors.toArray();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* Find all eligible Advisors for auto-proxying this class.</span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> beanClass the clazz to find advisors for</span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> beanName the name of the currently proxied bean</span></span><br><span class="line"><span class="comment">* <span class="doctag">@return</span> the empty List, not &#123;<span class="doctag">@code</span> null&#125;,</span></span><br><span class="line"><span class="comment">* if there are no pointcuts or interceptors</span></span><br><span class="line"><span class="comment">* <span class="doctag">@see</span> #findCandidateAdvisors</span></span><br><span class="line"><span class="comment">* <span class="doctag">@see</span> #sortAdvisors</span></span><br><span class="line"><span class="comment">* <span class="doctag">@see</span> #extendAdvisors</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// AbstractAdvisorAutoProxyCreator 类</span></span><br><span class="line"><span class="keyword">protected</span> List&lt;Advisor&gt; <span class="title function_">findEligibleAdvisors</span><span class="params">(Class&lt;?&gt; beanClass, String beanName)</span> &#123;</span><br><span class="line">    <span class="comment">// 获取 候选 advisor </span></span><br><span class="line">    <span class="comment">// BeanFactoryUtils.beanNamesForTypeIncludingAncestors(this.beanFactory, Advisor.class, true, false);</span></span><br><span class="line">    List&lt;Advisor&gt; candidateAdvisors = findCandidateAdvisors();</span><br><span class="line">    <span class="comment">// 筛选 可用的 advisor</span></span><br><span class="line">    List&lt;Advisor&gt; eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 此处会获取名称为org.springframework.transaction.interceptor.TransactionInterceptor#0的拦截器</span></span><br><span class="line">    extendAdvisors(eligibleAdvisors);</span><br><span class="line">    <span class="keyword">if</span> (!eligibleAdvisors.isEmpty()) &#123;</span><br><span class="line">        eligibleAdvisors = sortAdvisors(eligibleAdvisors);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> eligibleAdvisors;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们来看看生成的动态类是什么样子的？</p>
+<p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcgy1g0mbz0xk0rj31yg0mytgq.jpg" alt="Jietu20190228-174753@2x"></p>
+<p>其中有一个 advisor 为</p>
+<p>adviceBeanName：org.springframework.transaction.interceptor.TransactionInterceptor#0</p>
+<h2 id="TransactionInterceptor-类"><a href="#TransactionInterceptor-类" class="headerlink" title="TransactionInterceptor 类"></a>TransactionInterceptor 类</h2><p>我们此时来看看 <code>org.springframework.transaction.interceptor.TransactionInterceptor</code> 里究竟是如何执行 SQL 语句的。我们需要关注的方法为 <code>invoke</code> 方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> Object <span class="title function_">invoke</span><span class="params">(<span class="keyword">final</span> MethodInvocation invocation)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">    <span class="comment">// Work out the target class: may be &#123;@code null&#125;.</span></span><br><span class="line">    <span class="comment">// The TransactionAttributeSource should be passed the target class</span></span><br><span class="line">    <span class="comment">// as well as the method, which may be from an interface.</span></span><br><span class="line">    Class&lt;?&gt; targetClass = (invocation.getThis() != <span class="literal">null</span> ? AopUtils.getTargetClass(invocation.getThis()) : <span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Adapt to TransactionAspectSupport&#x27;s invokeWithinTransaction...</span></span><br><span class="line">    <span class="keyword">return</span> invokeWithinTransaction(invocation.getMethod(), targetClass, <span class="keyword">new</span> <span class="title class_">InvocationCallback</span>() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> Object <span class="title function_">proceedWithInvocation</span><span class="params">()</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">            <span class="keyword">return</span> invocation.proceed();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>查看 <code>invokeWithinTransaction</code> 方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// TransactionAspectSupport.java</span></span><br><span class="line"><span class="keyword">protected</span> Object <span class="title function_">invokeWithinTransaction</span><span class="params">(Method method, Class&lt;?&gt; targetClass, <span class="keyword">final</span> InvocationCallback invocation)</span></span><br><span class="line">		<span class="keyword">throws</span> Throwable &#123;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// If the transaction attribute is null, the method is non-transactional.</span></span><br><span class="line">	<span class="keyword">final</span> <span class="type">TransactionAttribute</span> <span class="variable">txAttr</span> <span class="operator">=</span> getTransactionAttributeSource().getTransactionAttribute(method, targetClass);</span><br><span class="line">	<span class="keyword">final</span> <span class="type">PlatformTransactionManager</span> <span class="variable">tm</span> <span class="operator">=</span> determineTransactionManager(txAttr);</span><br><span class="line">	<span class="keyword">final</span> <span class="type">String</span> <span class="variable">joinpointIdentification</span> <span class="operator">=</span> methodIdentification(method, targetClass);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// txAttr（事务属性）为空或者tm（事务管理器）为空时，是声明式事务</span></span><br><span class="line">	<span class="keyword">if</span> (txAttr == <span class="literal">null</span> || !(tm <span class="keyword">instanceof</span> CallbackPreferringPlatformTransactionManager)) &#123;</span><br><span class="line">		<span class="comment">// Standard transaction demarcation with getTransaction and commit/rollback calls.</span></span><br><span class="line">        <span class="comment">// 获取该方法上事务的信息</span></span><br><span class="line">		<span class="type">TransactionInfo</span> <span class="variable">txInfo</span> <span class="operator">=</span> createTransactionIfNecessary(tm, txAttr, joinpointIdentification);</span><br><span class="line">		<span class="type">Object</span> <span class="variable">retVal</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			<span class="comment">// This is an around advice: Invoke the next interceptor in the chain.</span></span><br><span class="line">			<span class="comment">// This will normally result in a target object being invoked.</span></span><br><span class="line">			retVal = invocation.proceedWithInvocation();</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">			<span class="comment">// target invocation exception</span></span><br><span class="line">            <span class="comment">// 事务回滚</span></span><br><span class="line">			completeTransactionAfterThrowing(txInfo, ex);</span><br><span class="line">			<span class="keyword">throw</span> ex;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">finally</span> &#123;</span><br><span class="line">			cleanupTransactionInfo(txInfo);</span><br><span class="line">		&#125;</span><br><span class="line">		commitTransactionAfterReturning(txInfo);</span><br><span class="line">		<span class="keyword">return</span> retVal;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="comment">// It&#x27;s a CallbackPreferringPlatformTransactionManager: pass a TransactionCallback in.</span></span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			<span class="type">Object</span> <span class="variable">result</span> <span class="operator">=</span> ((CallbackPreferringPlatformTransactionManager) tm).execute(txAttr,</span><br><span class="line">					<span class="keyword">new</span> <span class="title class_">TransactionCallback</span>&lt;Object&gt;() &#123;</span><br><span class="line">						<span class="meta">@Override</span></span><br><span class="line">						<span class="keyword">public</span> Object <span class="title function_">doInTransaction</span><span class="params">(TransactionStatus status)</span> &#123;</span><br><span class="line">							<span class="type">TransactionInfo</span> <span class="variable">txInfo</span> <span class="operator">=</span> prepareTransactionInfo(tm, txAttr, joinpointIdentification, status);</span><br><span class="line">							<span class="keyword">try</span> &#123;</span><br><span class="line">								<span class="keyword">return</span> invocation.proceedWithInvocation();</span><br><span class="line">							&#125;</span><br><span class="line">							<span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">								<span class="keyword">if</span> (txAttr.rollbackOn(ex)) &#123;</span><br><span class="line">									<span class="comment">// A RuntimeException: will lead to a rollback.</span></span><br><span class="line">									<span class="keyword">if</span> (ex <span class="keyword">instanceof</span> RuntimeException) &#123;</span><br><span class="line">										<span class="keyword">throw</span> (RuntimeException) ex;</span><br><span class="line">									&#125;</span><br><span class="line">									<span class="keyword">else</span> &#123;</span><br><span class="line">										<span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">ThrowableHolderException</span>(ex);</span><br><span class="line">									&#125;</span><br><span class="line">								&#125;</span><br><span class="line">								<span class="keyword">else</span> &#123;</span><br><span class="line">									<span class="comment">// A normal return value: will lead to a commit.</span></span><br><span class="line">									<span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ThrowableHolder</span>(ex);</span><br><span class="line">								&#125;</span><br><span class="line">							&#125;</span><br><span class="line">							<span class="keyword">finally</span> &#123;</span><br><span class="line">								cleanupTransactionInfo(txInfo);</span><br><span class="line">							&#125;</span><br><span class="line">						&#125;</span><br><span class="line">					&#125;);</span><br><span class="line"></span><br><span class="line">			<span class="comment">// Check result: It might indicate a Throwable to rethrow.</span></span><br><span class="line">			<span class="keyword">if</span> (result <span class="keyword">instanceof</span> ThrowableHolder) &#123;</span><br><span class="line">				<span class="keyword">throw</span> ((ThrowableHolder) result).getThrowable();</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">else</span> &#123;</span><br><span class="line">				<span class="keyword">return</span> result;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">catch</span> (ThrowableHolderException ex) &#123;</span><br><span class="line">			<span class="keyword">throw</span> ex.getCause();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>至此，我们基本了解了 Spring 声明式事务的工作流程</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Spring-Transactional-%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">1.</span> <span class="toc-text">Spring @Transactional 的使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Spring-BeanPostProcessor"><span class="toc-number">2.</span> <span class="toc-text">Spring BeanPostProcessor</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DefaultAdvisorAutoProxyCreator-%E5%A6%82%E4%BD%95%E4%BB%A3%E7%90%86%E8%A2%AB-Transactional%E6%B3%A8%E8%A7%A3%E7%9A%84%E6%96%B9%E6%B3%95%E6%89%80%E5%B1%9E%E7%B1%BB"><span class="toc-number">3.</span> <span class="toc-text">DefaultAdvisorAutoProxyCreator 如何代理被@Transactional注解的方法所属类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TransactionInterceptor-%E7%B1%BB"><span class="toc-number">4.</span> <span class="toc-text">TransactionInterceptor 类</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/&text=Spring 中 Transactional 注解原理"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/&title=Spring 中 Transactional 注解原理"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/&is_video=false&description=Spring 中 Transactional 注解原理"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Spring 中 Transactional 注解原理&body=Check out this article: https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/&title=Spring 中 Transactional 注解原理"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/&title=Spring 中 Transactional 注解原理"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/&title=Spring 中 Transactional 注解原理"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/&title=Spring 中 Transactional 注解原理"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/&name=Spring 中 Transactional 注解原理&description=&lt;p&gt;利用 Spring 框架可以很容易的使用注解的方式来使用事务，为我们的开发带来了巨大的便利，这种便利的实现是通过 Spring 本身的一系列机制来实现的，主要包含动态代理和 Spring Bean 的加载过程。本文将深入源码，揭开层层面纱…&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/&t=Spring 中 Transactional 注解原理"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    ZHANG, BO
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

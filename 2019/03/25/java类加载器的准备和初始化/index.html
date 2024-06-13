@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="好久没有更新博客了，昨天在浏览微信公众号的时候看到了一道面试题，给出一个包含 main 方法的类，一些输出语句，让读者判断这些语句的输出顺序，其实也就是考察读者的对于 Java 类的初始化的顺序，看到这道题目的时候，我也就按照自己的理解得出了一个顺序，可是和答案却大相径庭，原因就在于对于 Java 类加载器在加载类时候的两个阶段：**准备 **和 初始化 没有足够的理解。今天我们在本文中就来聊聊类">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java类加载器的准备和初始化">
+<meta property="og:url" content="https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="好久没有更新博客了，昨天在浏览微信公众号的时候看到了一道面试题，给出一个包含 main 方法的类，一些输出语句，让读者判断这些语句的输出顺序，其实也就是考察读者的对于 Java 类的初始化的顺序，看到这道题目的时候，我也就按照自己的理解得出了一个顺序，可是和答案却大相径庭，原因就在于对于 Java 类加载器在加载类时候的两个阶段：**准备 **和 初始化 没有足够的理解。今天我们在本文中就来聊聊类">
+<meta property="og:locale">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcgy1g1fanowdz6j311q0fqwqu.jpg">
+<meta property="article:published_time" content="2019-03-25T11:42:05.000Z">
+<meta property="article:modified_time" content="2024-06-13T12:56:22.288Z">
+<meta property="article:author" content="ZHANG, BO">
+<meta property="article:tag" content="JVM">
+<meta property="article:tag" content="tech">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcgy1g1fanowdz6j311q0fqwqu.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Java类加载器的准备和初始化</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2019/04/09/Aria2-GUI%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2019/02/28/Spring%20%E4%B8%AD%20Transactional%20%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/&text=Java类加载器的准备和初始化"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/&title=Java类加载器的准备和初始化"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/&is_video=false&description=Java类加载器的准备和初始化"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Java类加载器的准备和初始化&body=Check out this article: https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/&title=Java类加载器的准备和初始化"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/&title=Java类加载器的准备和初始化"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/&title=Java类加载器的准备和初始化"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/&title=Java类加载器的准备和初始化"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/&name=Java类加载器的准备和初始化&description=&lt;p&gt;好久没有更新博客了，昨天在浏览微信公众号的时候看到了一道面试题，给出一个包含 main 方法的类，一些输出语句，让读者判断这些语句的输出顺序，其实也就是考察读者的对于 Java 类的初始化的顺序，看到这道题目的时候，我也就按照自己的理解得出了一个顺序，可是和答案却大相径庭，原因就在于对于 Java 类加载器在加载类时候的两个阶段：**准备 **和 &lt;strong&gt;初始化&lt;/strong&gt; 没有足够的理解。今天我们在本文中就来聊聊类加载的这两个阶段&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/&t=Java类加载器的准备和初始化"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%82%A3%E9%81%93%E9%A2%98"><span class="toc-number">1.</span> <span class="toc-text">那道题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD"><span class="toc-number">2.</span> <span class="toc-text">类加载</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%86%E5%A4%87"><span class="toc-number">2.1.</span> <span class="toc-text">准备</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">2.2.</span> <span class="toc-text">初始化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%BA%E4%BE%BF%E8%AF%B4%E8%AF%B4%E5%AE%9E%E4%BE%8B%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96%E9%A1%BA%E5%BA%8F"><span class="toc-number">3.</span> <span class="toc-text">顺便说说实例的初始化顺序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E8%A7%A3%E6%9E%90"><span class="toc-number">4.</span> <span class="toc-text">题目解析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Java类加载器的准备和初始化
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">ZHANG, BO</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2019-03-25T11:42:05.000Z" class="dt-published" itemprop="datePublished">2019-03-25</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/JVM/" rel="tag">JVM</a>, <a class="p-category" href="/tags/Java/" rel="tag">Java</a>, <a class="p-category" href="/tags/tech/" rel="tag">tech</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>好久没有更新博客了，昨天在浏览微信公众号的时候看到了一道面试题，给出一个包含 main 方法的类，一些输出语句，让读者判断这些语句的输出顺序，其实也就是考察读者的对于 Java 类的初始化的顺序，看到这道题目的时候，我也就按照自己的理解得出了一个顺序，可是和答案却大相径庭，原因就在于对于 Java 类加载器在加载类时候的两个阶段：**准备 **和 <strong>初始化</strong> 没有足够的理解。今天我们在本文中就来聊聊类加载的这两个阶段</p>
+<span id="more"></span>
+
+<h2 id="那道题"><a href="#那道题" class="headerlink" title="那道题"></a>那道题</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StaticTest</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        staticFunction();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="type">StaticTest</span> <span class="variable">st</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StaticTest</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;1&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;2&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    StaticTest() &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;3&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;a=&quot;</span> + a + <span class="string">&quot;,b=&quot;</span> + b);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">staticFunction</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;4&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> <span class="variable">a</span> <span class="operator">=</span> <span class="number">110</span>;</span><br><span class="line">    <span class="keyword">static</span> <span class="type">int</span> <span class="variable">b</span> <span class="operator">=</span> <span class="number">112</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>如果你能很简单的得到这段代码的输出结果，也就无需继续看下去了，如果结果和你得出的结果有差异，那不妨看看类加载器是如何来对这些变量做处理的。</p>
+<p>答案如下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">2</span><br><span class="line">3</span><br><span class="line">a=110,b=0</span><br><span class="line">1</span><br><span class="line">4</span><br></pre></td></tr></table></figure>
+
+<p>看那道题目之前我们先看些简单的吧！</p>
+<h2 id="类加载"><a href="#类加载" class="headerlink" title="类加载"></a>类加载</h2><p><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcgy1g1fanowdz6j311q0fqwqu.jpg" alt="类加载过程"></p>
+<p>上图是类加载的过程，涉及到类变量和类实例变量的初始化和赋值都在<strong>准备</strong>和<strong>初始化</strong>这两个阶段，因此我们只讨论这两部分。</p>
+<h3 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h3><p>此时是为类变量（静态变量或者静态代码块）分配内存并进行初始化的阶段。这些变量都是分配在<strong>方法区</strong>的，而不是在堆中。并且这里的初始化指的是数据类型的<strong>零值</strong>，对于基本数据类型就是0，对于引用类型则是 <code>null</code>。这里我们举两个例子</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">value</span> <span class="operator">=</span> <span class="number">123</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">Person</span> <span class="variable">person</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Person</span>(<span class="string">&quot;Jacob&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>在准备阶段，<code>value</code> 会被初始化为0，<code>person</code> 会被初始化为 <code>null</code>，将 value 设置为 123 ，是在类加载的初始化阶段中，在<code>&lt;clinit&gt;()</code> 方法中。但是有一种情况除外，如果一个字段是常量，这个字段就会在准备阶段赋值，如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">x</span> <span class="operator">=</span> <span class="number">999</span>; <span class="comment">// x会在准备阶段被赋值为999</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><p>在准备阶段被初始化为零值的那些变量会在初始化阶段赋值为在代码中定义的值。初始化阶段其实就是执行 <code>&lt;clinit&gt;()</code> 方法。 <code>&lt;clinit&gt;()</code> 方法是做的就是类变量的赋值动作和静态语句块。<strong>并且变量的赋值顺序就是在代码源文件中的出现顺序</strong>，静态语句块只能访问到定义在它之前的变量，定义在它之后的变量可以赋值，但是不能访问。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="variable">value</span> <span class="operator">=</span> <span class="number">123</span>;</span><br><span class="line"><span class="keyword">static</span> &#123; <span class="comment">// 静态语句块</span></span><br><span class="line">  System.out.println(<span class="string">&quot;This is a static code block&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">  <span class="keyword">static</span> &#123;</span><br><span class="line">    i = <span class="number">0</span>;  <span class="comment">// 赋值可以通过</span></span><br><span class="line">    Ssytem.out.print(i); <span class="comment">// 引用无法通过编译（提示“非法向前引用”）</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">static</span> <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="顺便说说实例的初始化顺序"><a href="#顺便说说实例的初始化顺序" class="headerlink" title="顺便说说实例的初始化顺序"></a>顺便说说实例的初始化顺序</h2><p>实例的初始化函数是 <code>&lt;init&gt;()</code>，它的执行顺序是：</p>
+<blockquote>
+<ol>
+<li>父类变量初始化 和  父类语句块  （顺序是源码顺序）</li>
+<li>父类构造函数 </li>
+<li>子类变量初始化 和 子类语句块 （顺序是源码顺序）</li>
+<li>子类构造函数</li>
+</ol>
+</blockquote>
+<p>对应的类初始化函数 <code>&lt;client&gt;()</code> 的执行顺序是：</p>
+<blockquote>
+<ol>
+<li>父类静态变量初始化 和 静态语句块 （顺序是源码顺序）</li>
+<li>子类静态变量初始化 和 子类静态语句块（顺序是源码顺序）</li>
+</ol>
+</blockquote>
+<p>综合上面两个函数可以得到一个包含所有步骤的顺序</p>
+<blockquote>
+<ol>
+<li>父类静态变量初始化 和 静态语句块 （顺序是源码顺序）</li>
+<li>子类静态变量初始化 和 子类静态语句块（顺序是源码顺序）</li>
+<li>父类变量初始化 和  父类语句块  （顺序是源码顺序）</li>
+<li>父类构造函数 </li>
+<li>子类变量初始化 和 子类语句块 （顺序是源码顺序）</li>
+<li>子类构造函数</li>
+</ol>
+</blockquote>
+<p>注意这里说的是开始顺序，并不是结束顺序，实例的初始化可以在类的初始化之前完成，也就是说，<code>&lt;clinit&gt;()</code> 可能发生在 <code>&lt;init&gt;()</code> 之后，文章开头的例子就是这样。</p>
+<h2 id="题目解析"><a href="#题目解析" class="headerlink" title="题目解析"></a>题目解析</h2><p>在本文的例子中，当准备阶段完成后，类变量会被赋值为以下值：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StaticTest</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        staticFunction();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="type">StaticTest</span> <span class="variable">st</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StaticTest</span>(); <span class="comment">// 此时 st 为 null</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;1&quot;</span>); <span class="comment">// 还未执行，这个会在&lt;clinit&gt;()执行, 也就是类加载的初始化阶段</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;2&quot;</span>);<span class="comment">// 还未执行，这个会在&lt;init&gt;()执行</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    StaticTest() &#123; <span class="comment">// 还未执行，这个会在&lt;init&gt;()执行</span></span><br><span class="line">        System.out.println(<span class="string">&quot;3&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;a=&quot;</span> + a + <span class="string">&quot;,b=&quot;</span> + b);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">staticFunction</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;4&quot;</span>); <span class="comment">// 还未执行，这个会在类加载完成后被调用的时候执行</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> <span class="variable">a</span> <span class="operator">=</span> <span class="number">110</span>; <span class="comment">// 还未执行，这个会在&lt;init&gt;()执行</span></span><br><span class="line">    <span class="keyword">static</span> <span class="type">int</span> <span class="variable">b</span> <span class="operator">=</span> <span class="number">112</span>; <span class="comment">// 此时 b 为 0</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>完成准备阶段后，来到了初始化阶段 <code>&lt;clinit&gt;()</code>的前半段，会在 <code>&lt;clinit&gt;()</code>结束前，执行 <code>&lt;init&gt;()</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StaticTest</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        staticFunction();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="type">StaticTest</span> <span class="variable">st</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StaticTest</span>(); <span class="comment">// 此时 需要为st赋值，因此会进入 StaticTest 的 &lt;init&gt;() 函数</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;1&quot;</span>); <span class="comment">// 还未执行，需要先执行StaticTest 的 &lt;init&gt;() 函数，由于上一条语句需要实例化 StaticTest</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;2&quot;</span>);<span class="comment">// 执行作为第1行输出，因为已经进入了 &lt;init&gt;() 函数 ---------</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    StaticTest() &#123; <span class="comment">// 执行，晚于实例代码块和实例变量</span></span><br><span class="line">        System.out.println(<span class="string">&quot;3&quot;</span>); <span class="comment">//第2行输出 ---------</span></span><br><span class="line">        <span class="comment">// 此时由于构造函数晚于实例代码块和实例变量的赋值，</span></span><br><span class="line">        <span class="comment">// 因此 a=110, 由于&lt;clinit&gt;()没有完成，所以 b=0</span></span><br><span class="line">        System.out.println(<span class="string">&quot;a=&quot;</span> + a + <span class="string">&quot;,b=&quot;</span> + b); <span class="comment">//第3行输出---------</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">staticFunction</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;4&quot;</span>); <span class="comment">// 还未执行，这个会在类加载完成后被调用的时候执行</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> <span class="variable">a</span> <span class="operator">=</span> <span class="number">110</span>; <span class="comment">// 执行，被赋值为110</span></span><br><span class="line">    <span class="keyword">static</span> <span class="type">int</span> <span class="variable">b</span> <span class="operator">=</span> <span class="number">112</span>; <span class="comment">// 此时 b 为 0</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后是  <code>&lt;clinit&gt;()</code> 的后半段</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StaticTest</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        staticFunction();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="type">StaticTest</span> <span class="variable">st</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StaticTest</span>(); <span class="comment">// 赋值完成</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;1&quot;</span>); <span class="comment">// 作为第4行输出---------</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;2&quot;</span>);<span class="comment">// 已经执行完毕</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    StaticTest() &#123; <span class="comment">// 已经执行完毕</span></span><br><span class="line">        System.out.println(<span class="string">&quot;3&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;a=&quot;</span> + a + <span class="string">&quot;,b=&quot;</span> + b); </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">staticFunction</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;4&quot;</span>); <span class="comment">// 作为第5行输出---------</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> <span class="variable">a</span> <span class="operator">=</span> <span class="number">110</span>; <span class="comment">// 已经在&lt;init&gt;()执行完毕</span></span><br><span class="line">    <span class="keyword">static</span> <span class="type">int</span> <span class="variable">b</span> <span class="operator">=</span> <span class="number">112</span>; <span class="comment">// 执行赋值操作， b 为 112</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>至此，对于变量的初始化应该就在比较明确了。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>重点还是记住下面的顺序，同时对 类加载过程有一定的了解。</p>
+<blockquote>
+<ol>
+<li>父类静态变量初始化 和 静态语句块 （顺序是源码顺序）</li>
+<li>子类静态变量初始化 和 子类静态语句块（顺序是源码顺序）</li>
+<li>父类变量初始化 和  父类语句块  （顺序是源码顺序）</li>
+<li>父类构造函数 </li>
+<li>子类变量初始化 和 子类语句块 （顺序是源码顺序）</li>
+<li>子类构造函数</li>
+</ol>
+</blockquote>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%82%A3%E9%81%93%E9%A2%98"><span class="toc-number">1.</span> <span class="toc-text">那道题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD"><span class="toc-number">2.</span> <span class="toc-text">类加载</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%86%E5%A4%87"><span class="toc-number">2.1.</span> <span class="toc-text">准备</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">2.2.</span> <span class="toc-text">初始化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%BA%E4%BE%BF%E8%AF%B4%E8%AF%B4%E5%AE%9E%E4%BE%8B%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96%E9%A1%BA%E5%BA%8F"><span class="toc-number">3.</span> <span class="toc-text">顺便说说实例的初始化顺序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E8%A7%A3%E6%9E%90"><span class="toc-number">4.</span> <span class="toc-text">题目解析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/&text=Java类加载器的准备和初始化"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/&title=Java类加载器的准备和初始化"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/&is_video=false&description=Java类加载器的准备和初始化"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Java类加载器的准备和初始化&body=Check out this article: https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/&title=Java类加载器的准备和初始化"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/&title=Java类加载器的准备和初始化"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/&title=Java类加载器的准备和初始化"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/&title=Java类加载器的准备和初始化"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/&name=Java类加载器的准备和初始化&description=&lt;p&gt;好久没有更新博客了，昨天在浏览微信公众号的时候看到了一道面试题，给出一个包含 main 方法的类，一些输出语句，让读者判断这些语句的输出顺序，其实也就是考察读者的对于 Java 类的初始化的顺序，看到这道题目的时候，我也就按照自己的理解得出了一个顺序，可是和答案却大相径庭，原因就在于对于 Java 类加载器在加载类时候的两个阶段：**准备 **和 &lt;strong&gt;初始化&lt;/strong&gt; 没有足够的理解。今天我们在本文中就来聊聊类加载的这两个阶段&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2019/03/25/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%87%86%E5%A4%87%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96/&t=Java类加载器的准备和初始化"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    ZHANG, BO
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

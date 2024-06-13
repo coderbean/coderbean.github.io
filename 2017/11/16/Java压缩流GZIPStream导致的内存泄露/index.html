@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="我们来聊聊GZIPOutputStream 和 GZIPInputStream, 如果不关闭流会引起的内存泄露问题，以及GZIPStream申请和释放堆外内存的流程， Let’s do it!">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java压缩流GZIPStream导致的内存泄露">
+<meta property="og:url" content="https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="我们来聊聊GZIPOutputStream 和 GZIPInputStream, 如果不关闭流会引起的内存泄露问题，以及GZIPStream申请和释放堆外内存的流程， Let’s do it!">
+<meta property="og:locale">
+<meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1flnrogyecdj316u0mudiq.jpg">
+<meta property="article:published_time" content="2017-11-16T09:51:20.000Z">
+<meta property="article:modified_time" content="2024-06-13T12:56:22.287Z">
+<meta property="article:author" content="ZHANG, BO">
+<meta property="article:tag" content="tech">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1flnrogyecdj316u0mudiq.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Java压缩流GZIPStream导致的内存泄露</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/11/30/JVM%20%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9AJVM%E5%AE%9E%E9%AA%8C%E5%92%8CGC%E6%97%A5%E5%BF%97%E8%A7%A3%E8%AF%BB/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/&text=Java压缩流GZIPStream导致的内存泄露"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/&title=Java压缩流GZIPStream导致的内存泄露"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/&is_video=false&description=Java压缩流GZIPStream导致的内存泄露"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Java压缩流GZIPStream导致的内存泄露&body=Check out this article: https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/&title=Java压缩流GZIPStream导致的内存泄露"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/&title=Java压缩流GZIPStream导致的内存泄露"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/&title=Java压缩流GZIPStream导致的内存泄露"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/&title=Java压缩流GZIPStream导致的内存泄露"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/&name=Java压缩流GZIPStream导致的内存泄露&description=&lt;p&gt;我们来聊聊&lt;code&gt;GZIPOutputStream&lt;/code&gt; 和 &lt;code&gt;GZIPInputStream&lt;/code&gt;, 如果不关闭流会引起的内存泄露问题，以及&lt;code&gt;GZIPStream&lt;/code&gt;申请和释放堆外内存的流程， Let’s do it!&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/&t=Java压缩流GZIPStream导致的内存泄露"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%95%E5%AD%90"><span class="toc-number">1.</span> <span class="toc-text">引子</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#try-with-resource-%E6%89%A7%E8%A1%8C%E6%97%B6%E6%9C%BA%E5%92%8C%E6%9D%A1%E4%BB%B6"><span class="toc-number">2.</span> <span class="toc-text">try-with-resource 执行时机和条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E5%BC%95%E8%B5%B7%E7%9A%84%E5%A0%86%E5%A4%96%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F"><span class="toc-number">3.</span> <span class="toc-text">为什么会引起的堆外内存泄漏</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">4.</span> <span class="toc-text">参考</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Java压缩流GZIPStream导致的内存泄露
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">ZHANG, BO</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-11-16T09:51:20.000Z" class="dt-published" itemprop="datePublished">2017-11-16</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/%E6%8A%80%E6%9C%AF/">技术</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/Java/" rel="tag">Java</a>, <a class="p-category" href="/tags/tech/" rel="tag">tech</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>我们来聊聊<code>GZIPOutputStream</code> 和 <code>GZIPInputStream</code>, 如果不关闭流会引起的内存泄露问题，以及<code>GZIPStream</code>申请和释放堆外内存的流程， Let’s do it!</p>
+<span id="more"></span>
+
+<h3 id="引子"><a href="#引子" class="headerlink" title="引子"></a>引子</h3><p>在我的工程里面又一个工具类 <code>ZipHelper</code> 用来压缩和解压 <code>String</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.ByteArrayInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.ByteArrayOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.util.zip.GZIPInputStream;</span><br><span class="line"><span class="keyword">import</span> java.util.zip.GZIPOutputStream;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 用来压缩和解压字符串</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ZipHelper</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 压缩</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">compress</span><span class="params">(String str)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="keyword">if</span> (str == <span class="literal">null</span> || str.length() == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> str;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">ByteArrayOutputStream</span> <span class="variable">out</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>();</span><br><span class="line">        <span class="type">GZIPOutputStream</span> <span class="variable">gzip</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">GZIPOutputStream</span>(out);</span><br><span class="line">        gzip.write(str.getBytes());</span><br><span class="line">        gzip.close();</span><br><span class="line">        <span class="keyword">return</span> out.toString(<span class="string">&quot;ISO-8859-1&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 解压缩</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">uncompress</span><span class="params">(String str)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="keyword">if</span> (str == <span class="literal">null</span> || str.length() == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> str;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">ByteArrayOutputStream</span> <span class="variable">out</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>();</span><br><span class="line">        <span class="type">ByteArrayInputStream</span> <span class="variable">in</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayInputStream</span>(str.getBytes(<span class="string">&quot;ISO-8859-1&quot;</span>));</span><br><span class="line">        <span class="type">GZIPInputStream</span> <span class="variable">gunzip</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">GZIPInputStream</span>(in);</span><br><span class="line">        <span class="type">byte</span>[] buffer = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1024</span>];</span><br><span class="line">        <span class="type">int</span> n;</span><br><span class="line">        <span class="keyword">while</span> ((n = gunzip.read(buffer)) &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">            out.write(buffer, <span class="number">0</span>, n);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> out.toString();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最近服务出现了占用swap空间的问题，初步定位为内存泄漏，最后通过分析定位到是 Native 方法<code>Java_java_util_zip_Inflater_init</code>一直在申请内存（关于分析方法可以查阅这篇博客<a href="https://jacobchang.cn/action-in-memory-leak-analysis.html">内存泄露分析实战</a>）但是没有释放，很有可能就是流没有关闭造成的，而这部分代码最大的问题就是没有在<code>finally</code>里面去关闭流，于是乎我打算改造这部分代码，利用 try-with-resource 语法糖，然后代码就被修改成了这样：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.ByteArrayInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.ByteArrayOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.util.zip.GZIPInputStream;</span><br><span class="line"><span class="keyword">import</span> java.util.zip.GZIPOutputStream;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Created by jacob.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 用来压缩和解压字符串</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ZipHelper</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 压缩字符串</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> str 待压缩的字符串</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 压缩后的字符串</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> Exception 压缩过程中的异常</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">compress</span><span class="params">(String str)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="keyword">if</span> (str == <span class="literal">null</span> || str.length() == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> str;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// ByteArrayOutputStream 和 ByteArrayInputStream 是一个虚拟的流,</span></span><br><span class="line">        <span class="comment">// JDk源码中关闭方法是空的, 所以无需关闭, 为了代码整洁，还是放到了try-with-resource里面</span></span><br><span class="line">        <span class="keyword">try</span> (<span class="type">ByteArrayOutputStream</span> <span class="variable">out</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>();</span><br><span class="line">             <span class="type">GZIPOutputStream</span> <span class="variable">gzip</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">GZIPOutputStream</span>(out)) &#123;</span><br><span class="line">            gzip.write(str.getBytes());</span><br><span class="line"><span class="comment">//            gzip.finish();</span></span><br><span class="line">            <span class="keyword">return</span> out.toString(<span class="string">&quot;ISO-8859-1&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 解压字符串</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> str 待解压的字符串</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 解压后的字符串</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> Exception 解压过程中的异常</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">uncompress</span><span class="params">(String str)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="keyword">if</span> (str == <span class="literal">null</span> || str.length() == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> str;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">try</span> (<span class="type">ByteArrayOutputStream</span> <span class="variable">out</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>();</span><br><span class="line">             <span class="type">ByteArrayInputStream</span> <span class="variable">in</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayInputStream</span>(str.getBytes(<span class="string">&quot;ISO-8859-1&quot;</span>));</span><br><span class="line">             <span class="type">GZIPInputStream</span> <span class="variable">gunzip</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">GZIPInputStream</span>(in)) &#123;</span><br><span class="line">            <span class="type">byte</span>[] buffer = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1024</span>];</span><br><span class="line">            <span class="type">int</span> n;</span><br><span class="line">            <span class="keyword">while</span> ((n = gunzip.read(buffer)) &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">                out.write(buffer, <span class="number">0</span>, n);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> out.toString();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>是不是顺眼多了呐，可是这样的代码可以压缩的，在解压的时候会报错。一开始我以为是解压的代码出现了问题，最后才发现是因为压缩的时候没有成功压缩，导致解压的时候无法解压。报以下错误</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Exception in thread &quot;main&quot; java.io.EOFException: Unexpected end of ZLIB input stream</span><br><span class="line">	at java.util.zip.InflaterInputStream.fill(InflaterInputStream.java:240)</span><br><span class="line">	at java.util.zip.InflaterInputStream.read(InflaterInputStream.java:158)</span><br><span class="line">	at java.util.zip.GZIPInputStream.read(GZIPInputStream.java:117)</span><br><span class="line">	at java.io.FilterInputStream.read(FilterInputStream.java:107)</span><br><span class="line">	at coderbean.ZipHelper.uncompress(ZipHelper.java:52)</span><br><span class="line">	at coderbean.Main.main(Main.java:12)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>好好的代码怎么会突然压缩失败，后来发现的问题是在<code>GZIPOutputStream</code>中，在<code>close()</code>方法中会主动调用<code>finish()</code>方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* Writes remaining compressed data to the output stream and closes the</span></span><br><span class="line"><span class="comment">* underlying stream.</span></span><br><span class="line"><span class="comment">* <span class="doctag">@exception</span> IOException if an I/O error has occurred</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">close</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">   <span class="keyword">if</span> (!closed) &#123;</span><br><span class="line">       finish();</span><br><span class="line">       <span class="keyword">if</span> (usesDefaultDeflater)</span><br><span class="line">           def.end();</span><br><span class="line">       out.close();</span><br><span class="line">       closed = <span class="literal">true</span>;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在下面的方法中才会将压缩后的数据输出到输入流，由于原来的代码会调用 <code>close()</code>方法，从而间接调用了 <code>finish()</code> 方法。那我我们的<code>try-with-resource</code>到底出了什么问题，其实问题就在于执行<code>close()</code>的时间。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Finishes writing compressed data to the output stream without closing</span></span><br><span class="line"><span class="comment"> * the underlying stream. Use this method when applying multiple filters</span></span><br><span class="line"><span class="comment"> * in succession to the same output stream.</span></span><br><span class="line"><span class="comment"> * 在该方法中才会将压缩后的数据输出到输入流，由于原来的代码会调用 close()方法，从而</span></span><br><span class="line"><span class="comment"> * 间接调用了 finish() 方法。</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@exception</span> IOException if an I/O error has occurred</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">finish</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">    <span class="keyword">if</span> (!def.finished()) &#123;</span><br><span class="line">        def.finish();</span><br><span class="line">        <span class="keyword">while</span> (!def.finished()) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> def.deflate(buf, <span class="number">0</span>, buf.length);</span><br><span class="line">            <span class="keyword">if</span> (def.finished() &amp;&amp; len &lt;= buf.length - TRAILER_SIZE) &#123;</span><br><span class="line">                <span class="comment">// last deflater buffer. Fit trailer at the end</span></span><br><span class="line">                writeTrailer(buf, len);</span><br><span class="line">                len = len + TRAILER_SIZE;</span><br><span class="line">                out.write(buf, <span class="number">0</span>, len);</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (len &gt; <span class="number">0</span>)</span><br><span class="line">                out.write(buf, <span class="number">0</span>, len);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// if we can&#x27;t fit the trailer at the end of the last</span></span><br><span class="line">        <span class="comment">// deflater buffer, we write it separately</span></span><br><span class="line">        <span class="type">byte</span>[] trailer = <span class="keyword">new</span> <span class="title class_">byte</span>[TRAILER_SIZE];</span><br><span class="line">        writeTrailer(trailer, <span class="number">0</span>);</span><br><span class="line">        out.write(trailer);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="try-with-resource-执行时机和条件"><a href="#try-with-resource-执行时机和条件" class="headerlink" title="try-with-resource 执行时机和条件"></a><code>try-with-resource</code> 执行时机和条件</h3><p><code>try-with-resource</code> 是在 JDK7 中新增加的语法糖（其实就是抄的C#），用来自动执行流的关闭操作，只要该类实现了<code>AutoCloseable</code>的<code>close()</code>方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">package</span> java.lang;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">AutoCloseable</span> &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> Exception if this resource cannot be closed</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">close</span><span class="params">()</span> <span class="keyword">throws</span> Exception;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>实现了这个接口之后，我们可以将会在<code>try</code>代码块执行结束之后自动关闭流</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span>(<span class="comment">/* 在此处初始化资源 */</span>)&#123;</span><br><span class="line">  <span class="comment">// do something</span></span><br><span class="line">&#125; <span class="comment">//在代码块执行结束前最后一步关闭流</span></span><br></pre></td></tr></table></figure>
+<p>由于在<code>GZIPOutputStream</code>执行了<code>finish()</code>方法或者<code>close()</code>方法之后才会真正的将压缩后的数据写入流，在上文我改造的代码中并没有首先执行<code>finish()</code>方法，而是直接在<code>try</code>代码块执行完之后关闭了流 <code>GZIPOutputStream</code>, 由于<code>close()</code>方法执行在<code>out.toString(&quot;ISO-8859-1&quot;)</code>之后，因此压缩并没有真正的被执行，然而对于<code>ZipHelper.compress()</code>方法并没有感知，而是返回了没有压缩成功的字符串，从而造成在解压的时候报错。</p>
+<h3 id="为什么会引起的堆外内存泄漏"><a href="#为什么会引起的堆外内存泄漏" class="headerlink" title="为什么会引起的堆外内存泄漏"></a>为什么会引起的堆外内存泄漏</h3><p>通过最开始的代码我们可以看出，在没有发生异常的情况下，<code>compress()</code>方法是可以正常的关闭流的，所以内存泄露的根源应该是在<code>uncompress()</code>方法，通过跟踪<code>GZIPInputStream</code>的构造函数和<code>close()</code>应该很快就能找到答案。</p>
+<p>下面是申请堆外内存和释放堆外内存的过程调用图，可以对比代码参考<br><img src="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1flnrogyecdj316u0mudiq.jpg" alt="堆外内存调用释放流程图"></p>
+<p>由于篇幅的原因就不将JDK源码注释一同贴上来了，感兴趣的同学可以按图索骥，找到对应的注释。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//java.util.zip.GZIPInputStream.java</span></span><br><span class="line"><span class="keyword">public</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">GZIPInputStream</span> <span class="keyword">extends</span> <span class="title class_">InflaterInputStream</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">GZIPInputStream</span><span class="params">(InputStream in)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="built_in">this</span>(in, <span class="number">512</span>); <span class="comment">//调用下面的构造函数</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">GZIPInputStream</span><span class="params">(InputStream in, <span class="type">int</span> size)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="built_in">super</span>(in, <span class="keyword">new</span> <span class="title class_">Inflater</span>(<span class="literal">true</span>), size); <span class="comment">//新建 Inflater 对象</span></span><br><span class="line">        usesDefaultInflater = <span class="literal">true</span>;</span><br><span class="line">        readHeader(in);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">close</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="keyword">if</span> (!closed) &#123;</span><br><span class="line">            <span class="built_in">super</span>.close(); <span class="comment">//这里的父类是java.util.zip.InflaterInputStream</span></span><br><span class="line">            eos = <span class="literal">true</span>;</span><br><span class="line">            closed = <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//java.util.zip.Inflater.java</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Inflater</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Inflater</span><span class="params">(<span class="type">boolean</span> nowrap)</span> &#123;</span><br><span class="line">        zsRef = <span class="keyword">new</span> <span class="title class_">ZStreamRef</span>(init(nowrap));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Closes the decompressor and discards any unprocessed input.</span></span><br><span class="line"><span class="comment">     * This method should be called when the decompressor is no longer</span></span><br><span class="line"><span class="comment">     * being used, but will also be called automatically by the finalize()</span></span><br><span class="line"><span class="comment">     * method. Once this method is called, the behavior of the Inflater</span></span><br><span class="line"><span class="comment">     * object is undefined.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">end</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (zsRef) &#123;</span><br><span class="line">            <span class="type">long</span> <span class="variable">addr</span> <span class="operator">=</span> zsRef.address();</span><br><span class="line">            zsRef.clear();</span><br><span class="line">            <span class="keyword">if</span> (addr != <span class="number">0</span>) &#123;</span><br><span class="line">                end(addr);</span><br><span class="line">                buf = <span class="literal">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 此处调用了 Native 方法</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">native</span> <span class="keyword">static</span> <span class="type">long</span> <span class="title function_">init</span><span class="params">(<span class="type">boolean</span> nowrap)</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">native</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">end</span><span class="params">(<span class="type">long</span> addr)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//java.util.zip.InflaterInputStream.java</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">InflaterInputStream</span> <span class="keyword">extends</span> <span class="title class_">FilterInputStream</span> &#123;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Closes this input stream and releases any system resources associated</span></span><br><span class="line"><span class="comment">   * with the stream.</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@exception</span> IOException if an I/O error has occurred</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">close</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">      <span class="keyword">if</span> (!closed) &#123;</span><br><span class="line">          <span class="keyword">if</span> (usesDefaultInflater)</span><br><span class="line">              inf.end();</span><br><span class="line">          in.close();</span><br><span class="line">          closed = <span class="literal">true</span>;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>openJDK 中 JVM 关于这个本地方法的实现</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">JNIEXPORT jlong JNICALL</span></span><br><span class="line"><span class="function"><span class="title">Java_java_util_zip_Inflater_init</span><span class="params">(JNIEnv *env, jclass cls, jboolean nowrap)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//此处使用 calloc 申请了堆外内存</span></span><br><span class="line">    z_stream *strm = <span class="built_in">calloc</span>(<span class="number">1</span>, <span class="built_in">sizeof</span>(z_stream));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (strm == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">JNU_ThrowOutOfMemoryError</span>(env, <span class="number">0</span>);</span><br><span class="line">        <span class="keyword">return</span> jlong_zero;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="type">const</span> <span class="type">char</span> *msg;</span><br><span class="line">        <span class="type">int</span> ret = <span class="built_in">inflateInit2</span>(strm, nowrap ? -MAX_WBITS : MAX_WBITS);</span><br><span class="line">        <span class="keyword">switch</span> (ret) &#123;</span><br><span class="line">          <span class="keyword">case</span> Z_OK:</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">ptr_to_jlong</span>(strm);</span><br><span class="line">          <span class="keyword">case</span> Z_MEM_ERROR:</span><br><span class="line">            <span class="built_in">free</span>(strm);</span><br><span class="line">            <span class="built_in">JNU_ThrowOutOfMemoryError</span>(env, <span class="number">0</span>);</span><br><span class="line">            <span class="keyword">return</span> jlong_zero;</span><br><span class="line">          <span class="keyword">default</span>:</span><br><span class="line">            msg = ((strm-&gt;msg != <span class="literal">NULL</span>) ? strm-&gt;msg :</span><br><span class="line">                   (ret == Z_VERSION_ERROR) ?</span><br><span class="line">                   <span class="string">&quot;zlib returned Z_VERSION_ERROR: &quot;</span></span><br><span class="line">                   <span class="string">&quot;compile time and runtime zlib implementations differ&quot;</span> :</span><br><span class="line">                   (ret == Z_STREAM_ERROR) ?</span><br><span class="line">                   <span class="string">&quot;inflateInit2 returned Z_STREAM_ERROR&quot;</span> :</span><br><span class="line">                   <span class="string">&quot;unknown error initializing zlib library&quot;</span>);</span><br><span class="line">            <span class="built_in">free</span>(strm);</span><br><span class="line">            <span class="built_in">JNU_ThrowInternalError</span>(env, msg);</span><br><span class="line">            <span class="keyword">return</span> jlong_zero;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">JNIEXPORT <span class="type">void</span> JNICALL</span></span><br><span class="line"><span class="function"><span class="title">Java_java_util_zip_Inflater_end</span><span class="params">(JNIEnv *env, jclass cls, jlong addr)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">inflateEnd</span>(<span class="built_in">jlong_to_ptr</span>(addr)) == Z_STREAM_ERROR) &#123;</span><br><span class="line">        <span class="built_in">JNU_ThrowInternalError</span>(env, <span class="number">0</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">free</span>(<span class="built_in">jlong_to_ptr</span>(addr)); <span class="comment">//此处释放堆外内存</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ul>
+<li><a target="_blank" rel="noopener" href="http://blog.csdn.net/Revivedsun/article/details/52073554">java.io.EOFException: Unexpected end of ZLIB input stream异常处理</a></li>
+</ul>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%95%E5%AD%90"><span class="toc-number">1.</span> <span class="toc-text">引子</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#try-with-resource-%E6%89%A7%E8%A1%8C%E6%97%B6%E6%9C%BA%E5%92%8C%E6%9D%A1%E4%BB%B6"><span class="toc-number">2.</span> <span class="toc-text">try-with-resource 执行时机和条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E5%BC%95%E8%B5%B7%E7%9A%84%E5%A0%86%E5%A4%96%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F"><span class="toc-number">3.</span> <span class="toc-text">为什么会引起的堆外内存泄漏</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">4.</span> <span class="toc-text">参考</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/&text=Java压缩流GZIPStream导致的内存泄露"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/&title=Java压缩流GZIPStream导致的内存泄露"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/&is_video=false&description=Java压缩流GZIPStream导致的内存泄露"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Java压缩流GZIPStream导致的内存泄露&body=Check out this article: https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/&title=Java压缩流GZIPStream导致的内存泄露"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/&title=Java压缩流GZIPStream导致的内存泄露"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/&title=Java压缩流GZIPStream导致的内存泄露"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/&title=Java压缩流GZIPStream导致的内存泄露"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/&name=Java压缩流GZIPStream导致的内存泄露&description=&lt;p&gt;我们来聊聊&lt;code&gt;GZIPOutputStream&lt;/code&gt; 和 &lt;code&gt;GZIPInputStream&lt;/code&gt;, 如果不关闭流会引起的内存泄露问题，以及&lt;code&gt;GZIPStream&lt;/code&gt;申请和释放堆外内存的流程， Let’s do it!&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2017/11/16/Java%E5%8E%8B%E7%BC%A9%E6%B5%81GZIPStream%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2/&t=Java压缩流GZIPStream导致的内存泄露"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    ZHANG, BO
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
