@@ -10,7 +10,7 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="JVM 探究（一）：JVM内存模型概念模型">
 <meta property="og:url" content="https://jacobchang.cn/2017/11/12/JVM-%E6%8E%A2%E7%A9%B6%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9AJVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B5%85%E6%9E%90/index.html">
-<meta property="og:site_name" content="Hexo">
+<meta property="og:site_name" content="黄小豆的笔记">
 <meta property="og:description" content="作为一个 Java 程序员，不了解 Java 内存模型就不能写出能够充分利用内存的代码。本文通过对 Java 内存模型的介绍，让读者能够了解 Java 的内存的分配情况，适合 Java 初学者或者对 JMM 不熟悉的同学。后面的博客会针对每个部分做更加深入的解释。">
 <meta property="og:locale">
 <meta property="og:image" content="https://image-hosting-1251780645.cos.ap-beijing.myqcloud.com/fromSina/006tKfTcly1fnvc6jtby5j30r50l9wh2.jpg">
@@ -78,8 +78,6 @@
        --><li><a href="/about/">About</a></li><!--
      --><!--
        --><li><a href="/archives/">Writing</a></li><!--
-     --><!--
-       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
      -->
       </ul>
     </span>
@@ -221,8 +219,6 @@
         
           <li><a href="/archives/">Writing</a></li>
         
-          <li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li>
-        
       </ul>
     </div>
 
@@ -268,7 +264,7 @@
     Copyright &copy;
     
     
-    2016-2024
+    2017-2024
     ZHANG, BO
   </div>
   <div class="footer-right">
@@ -280,8 +276,6 @@
        --><li><a href="/about/">About</a></li><!--
      --><!--
        --><li><a href="/archives/">Writing</a></li><!--
-     --><!--
-       --><li><a target="_blank" rel="noopener" href="http://github.com/probberechts">Projects</a></li><!--
      -->
       </ul>
     </nav>
