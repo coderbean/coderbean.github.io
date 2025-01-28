@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="本文接受如何通过iOS的快捷指令和自动化能力，实现节假日闹钟自动跳过，调休自动打开闹钟的功能。让大家在中国特色补班制度下更好的工作。 前置准备快捷指令软件目前iOS系统支持卸载大部分自带软件，如果你发现你的iOS设备上没有这个软件，去AppStore把他下载回来！ 订阅节假日日历其实这一步使用系统的日历也能实现，无奈苹果的日历更新比较慢，为了保证在元旦的时候也能生效，我们使用了第三方的日历订阅。不">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS自动闹钟跳过节假日">
+<meta property="og:url" content="https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/index.html">
+<meta property="og:site_name" content="黄小豆的笔记">
+<meta property="og:description" content="本文接受如何通过iOS的快捷指令和自动化能力，实现节假日闹钟自动跳过，调休自动打开闹钟的功能。让大家在中国特色补班制度下更好的工作。 前置准备快捷指令软件目前iOS系统支持卸载大部分自带软件，如果你发现你的iOS设备上没有这个软件，去AppStore把他下载回来！ 订阅节假日日历其实这一步使用系统的日历也能实现，无奈苹果的日历更新比较慢，为了保证在元旦的时候也能生效，我们使用了第三方的日历订阅。不">
+<meta property="og:locale">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/PicBed-repo/uPic-Bed@main/uPic/gqf4lj.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/PicBed-repo/uPic-Bed@main/uPic/3ruLh2.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/PicBed-repo/uPic-Bed@main/uPic/ff6zEF.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/PicBed-repo/uPic-Bed@main/uPic/ZZL6mc.jpg">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/PicBed-repo/uPic-Bed@main/uPic/AyQgcu.jpg">
+<meta property="article:published_time" content="2025-01-28T04:46:17.000Z">
+<meta property="article:modified_time" content="2025-01-28T05:13:27.452Z">
+<meta property="article:author" content="ZHANG, BO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/PicBed-repo/uPic-Bed@main/uPic/gqf4lj.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>iOS自动闹钟跳过节假日</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.2.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2024/11/05/vscode-gopls-%E5%A4%9A%E7%89%88%E6%9C%AC%E8%AE%BE%E7%BD%AE/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/&text=iOS自动闹钟跳过节假日"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/&title=iOS自动闹钟跳过节假日"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/&is_video=false&description=iOS自动闹钟跳过节假日"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=iOS自动闹钟跳过节假日&body=Check out this article: https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/&title=iOS自动闹钟跳过节假日"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/&title=iOS自动闹钟跳过节假日"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/&title=iOS自动闹钟跳过节假日"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/&title=iOS自动闹钟跳过节假日"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/&name=iOS自动闹钟跳过节假日&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/&t=iOS自动闹钟跳过节假日"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E7%BD%AE%E5%87%86%E5%A4%87"><span class="toc-number">1.</span> <span class="toc-text">前置准备</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BF%AB%E6%8D%B7%E6%8C%87%E4%BB%A4%E8%BD%AF%E4%BB%B6"><span class="toc-number">1.1.</span> <span class="toc-text">快捷指令软件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A2%E9%98%85%E8%8A%82%E5%81%87%E6%97%A5%E6%97%A5%E5%8E%86"><span class="toc-number">1.2.</span> <span class="toc-text">订阅节假日日历</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%87%AA%E5%8A%A8%E5%8C%96%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.</span> <span class="toc-text">自动化设计</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9D%A1%E7%9C%A0%E9%97%B9%E9%92%9F%E8%AE%BE%E7%BD%AE"><span class="toc-number">2.1.</span> <span class="toc-text">睡眠闹钟设置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BF%AB%E6%8D%B7%E6%8C%87%E4%BB%A4%E4%B8%8B%E8%BD%BD"><span class="toc-number">2.2.</span> <span class="toc-text">快捷指令下载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E5%8A%A8%E5%8C%96%E8%AE%BE%E7%BD%AE"><span class="toc-number">2.3.</span> <span class="toc-text">自动化设置</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9C%80%E7%BB%88%E6%95%88%E6%9E%9C"><span class="toc-number">3.</span> <span class="toc-text">最终效果</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        iOS自动闹钟跳过节假日
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">ZHANG, BO</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2025-01-28T04:46:17.000Z" class="dt-published" itemprop="datePublished">2025-01-28</time>
+        
+      
+    </div>
+
+
+      
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>本文接受如何通过iOS的快捷指令和自动化能力，实现节假日闹钟自动跳过，调休自动打开闹钟的功能。让大家在中国特色补班制度下更好的工作。</p>
+<h1 id="前置准备"><a href="#前置准备" class="headerlink" title="前置准备"></a>前置准备</h1><h2 id="快捷指令软件"><a href="#快捷指令软件" class="headerlink" title="快捷指令软件"></a>快捷指令软件</h2><p>目前iOS系统支持卸载大部分自带软件，如果你发现你的iOS设备上没有这个软件，去AppStore把他下载回来！<br><img src="https://cdn.jsdelivr.net/gh/PicBed-repo/uPic-Bed@main/uPic/gqf4lj.jpg" alt="gqf4lj"></p>
+<h2 id="订阅节假日日历"><a href="#订阅节假日日历" class="headerlink" title="订阅节假日日历"></a>订阅节假日日历</h2><p>其实这一步使用系统的日历也能实现，无奈苹果的日历更新比较慢，为了保证在元旦的时候也能生效，我们使用了第三方的日历订阅。不过不用担心，我们并不需要新下载一个日历软件，只是订阅一个公共日历<br><img src="https://cdn.jsdelivr.net/gh/PicBed-repo/uPic-Bed@main/uPic/3ruLh2.jpg" alt="3ruLh2"></p>
+<ol>
+<li>打开自带的日历应用</li>
+<li>点击下边栏中间的日历</li>
+<li>点击左下角添加订阅日历</li>
+<li>填入该链接：<a target="_blank" rel="noopener" href="https://www.shuyz.com/githubfiles/china-holiday-calender/master/holidayCal.ics">https://www.shuyz.com/githubfiles/china-holiday-calender/master/holidayCal.ics</a></li>
+<li>最后可以按照截图将这个日历取消勾选，这个就不会影响你平时日历的查看了。</li>
+</ol>
+<h1 id="自动化设计"><a href="#自动化设计" class="headerlink" title="自动化设计"></a>自动化设计</h1><h2 id="睡眠闹钟设置"><a href="#睡眠闹钟设置" class="headerlink" title="睡眠闹钟设置"></a>睡眠闹钟设置</h2><p>如果你没有修改快捷指令的能力，想要直接使用我提供的快捷指令，那么就需要你的闹钟是睡眠闹钟，而不是普通闹钟。如果你不知道怎么设置睡眠闹钟，可以参考以下步骤：</p>
+<ol>
+<li>在健康APP中搜索睡眠定时</li>
+<li>在所有定时中添加定时</li>
+<li>启用日期一定要全周一到周日全部（我们的快捷指令会自动化的跳过其中的周末和节假日）</li>
+<li>按照你想起床的时间设置好就行了。</li>
+</ol>
+<h2 id="快捷指令下载"><a href="#快捷指令下载" class="headerlink" title="快捷指令下载"></a>快捷指令下载</h2><ol>
+<li>下载我编写好的快捷指令：<a target="_blank" rel="noopener" href="https://www.icloud.com/shortcuts/28d3e180f0634a8d89d64657e5977d33">https://www.icloud.com/shortcuts/28d3e180f0634a8d89d64657e5977d33</a></li>
+<li>检查这两个位置的日历是我们上面刚刚订阅的ShuYz中国节假日日历，如果默认是空的，需要手动填写一下。<br><img src="https://cdn.jsdelivr.net/gh/PicBed-repo/uPic-Bed@main/uPic/ff6zEF.jpg" alt="ff6zEF"><br><img src="https://cdn.jsdelivr.net/gh/PicBed-repo/uPic-Bed@main/uPic/ZZL6mc.jpg" alt="ZZL6mc"></li>
+</ol>
+<h2 id="自动化设置"><a href="#自动化设置" class="headerlink" title="自动化设置"></a>自动化设置</h2><ol>
+<li>在快捷指令中，有一个自动化的TAB</li>
+<li>点击右上角的加号，选择特定时间&#x2F;也可以选择就寝开始时（注意这里需要选择凌晨到你闹钟响的时间段，必须是闹钟当天，否则影响跳过的判断）</li>
+<li>选择执行我们上面下载好的快捷指令，并取消勾选运行时通知</li>
+</ol>
+<h1 id="最终效果"><a href="#最终效果" class="headerlink" title="最终效果"></a>最终效果</h1><p>快捷指令会在补班&#x2F;节假日推送这条消息，让你放心闹钟确实被跳过了。如果是正常的工作日&#x2F;周末，不会推送这条消息。<br><img src="https://cdn.jsdelivr.net/gh/PicBed-repo/uPic-Bed@main/uPic/AyQgcu.jpg" alt="AyQgcu"></p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/about/">About</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E7%BD%AE%E5%87%86%E5%A4%87"><span class="toc-number">1.</span> <span class="toc-text">前置准备</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BF%AB%E6%8D%B7%E6%8C%87%E4%BB%A4%E8%BD%AF%E4%BB%B6"><span class="toc-number">1.1.</span> <span class="toc-text">快捷指令软件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A2%E9%98%85%E8%8A%82%E5%81%87%E6%97%A5%E6%97%A5%E5%8E%86"><span class="toc-number">1.2.</span> <span class="toc-text">订阅节假日日历</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%87%AA%E5%8A%A8%E5%8C%96%E8%AE%BE%E8%AE%A1"><span class="toc-number">2.</span> <span class="toc-text">自动化设计</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9D%A1%E7%9C%A0%E9%97%B9%E9%92%9F%E8%AE%BE%E7%BD%AE"><span class="toc-number">2.1.</span> <span class="toc-text">睡眠闹钟设置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BF%AB%E6%8D%B7%E6%8C%87%E4%BB%A4%E4%B8%8B%E8%BD%BD"><span class="toc-number">2.2.</span> <span class="toc-text">快捷指令下载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E5%8A%A8%E5%8C%96%E8%AE%BE%E7%BD%AE"><span class="toc-number">2.3.</span> <span class="toc-text">自动化设置</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9C%80%E7%BB%88%E6%95%88%E6%9E%9C"><span class="toc-number">3.</span> <span class="toc-text">最终效果</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/&text=iOS自动闹钟跳过节假日"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/&title=iOS自动闹钟跳过节假日"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/&is_video=false&description=iOS自动闹钟跳过节假日"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=iOS自动闹钟跳过节假日&body=Check out this article: https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/&title=iOS自动闹钟跳过节假日"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/&title=iOS自动闹钟跳过节假日"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/&title=iOS自动闹钟跳过节假日"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/&title=iOS自动闹钟跳过节假日"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/&name=iOS自动闹钟跳过节假日&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://jacobchang.cn/2025/01/28/iOS%E8%87%AA%E5%8A%A8%E9%97%B9%E9%92%9F%E8%B7%B3%E8%BF%87%E8%8A%82%E5%81%87%E6%97%A5/&t=iOS自动闹钟跳过节假日"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2017-2025
+    ZHANG, BO
+  </div>
+  <div class="footer-right">
+    <a target="_blank" rel="noopener" href="https://beian.miit.gov.cn">备案号：浙ICP备2021033778号-1</a> 
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
